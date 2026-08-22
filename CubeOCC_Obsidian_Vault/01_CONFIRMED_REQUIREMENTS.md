@@ -4,89 +4,205 @@ type: requirements
 status: source-of-truth
 last_reviewed: 2026-08-22
 ---
+
 # Confirmed Requirements
 
-## Scope
-- Two-person GitHub project, roughly one month.
-- FPGA-oriented Optical Camera Communication receiver using cubic RGB on/off symbols on an LED/pixel grid.
-- Initial implementation is simulation-first because FPGA/cameras are not currently available.
-- Main tests are expected to use text, while the receiver ultimately produces a generic bitstream.
+## Project scope
 
-## 8-symbol RGB cube alphabet
-The symbol set is: **R, G, B, R+G, R+B, G+B, White, Black**. This is naturally 3 bits per symbol. The exact bit-to-color numbering is not yet locked.
+- Two-person GitHub project.
+- Approximate duration: one month.
+- FPGA-oriented Optical Camera Communication receiver.
+- Simulation-first because the physical FPGA/camera setup is not currently available.
+- Main initial payload is text, but the receiver should recover a generic bitstream.
+- The testbench should behave like real camera hardware as closely as practical so the FPGA-side code can later be connected to a real sensor with minimal or no redesign.
+
+## RGB symbol alphabet
+
+All **8 binary RGB combinations are legal DATA symbols**:
+
+| RGB state | Example bit mapping |
+|---|---|
+| Black | 000 |
+| Blue | 001 |
+| Green | 010 |
+| Green + Blue | 011 |
+| Red | 100 |
+| Red + Blue | 101 |
+| Red + Green | 110 |
+| White | 111 |
 
 ## 8×8 DATA frame
-- 64 cells total.
-- 4 fixed white corner markers during normal DATA frames.
-- 1 dedicated CLK/frame-change cell.
+
+- 64 total optical cells.
+- 4 corner markers are white during normal DATA.
+- 1 dedicated CLK/toggle cell.
 - 59 remaining cells carry payload + ECC symbols.
-- 59 × 3 = **177 coded bits per DATA frame** before deciding the payload/ECC split.
+- Each of those 59 cells carries one of 8 RGB states = 3 bits.
+- Therefore **177 coded bits per 8×8 DATA frame** before payload/ECC packing is chosen.
+
+## CLK cell
+
+- Exact physical cell coordinate is not important.
+- It may be first row/second column, last row, or another reserved cell.
+- It should be configurable in code.
+- CLK toggles between successive transmitted DATA frames.
+- This lets identical consecutive payload layouts still represent different transmitted frames.
 
 ## START frame
-- Full bright white frame.
-- Used as start/preamble of a transfer.
-- Transfer begins from a button action in future hardware; the button is simulated in the testbench.
 
-## END frame — latest correction
-- All ordinary data cells are black/off.
-- Top-left marker = white/on.
-- Top-right marker = white/on.
-- Bottom-left marker = white/on.
-- Bottom-right marker = off.
-- CLK = off.
+- Exactly one transmitted optical frame in the current baseline.
+- **All 64 cells are white**, including the CLK position.
+- Carries no payload.
 
-> [!important]
-> This supersedes any older diagram/text showing END as fully black or showing the bottom-right marker still white.
+## END frame
 
-## CLK behavior
-- CLK allows two visually identical consecutive DATA frames to still be recognized as different frames.
-- Exact CLK grid coordinate has **not** been explicitly confirmed.
+Exactly one transmitted optical frame:
 
-## Camera 1 — grayscale feedback/tracking
-- Lower quality, grayscale.
-- Detects ROI and the white corner markers.
-- Feeds marker/position information toward the RGB camera path.
-- Must account for physical offset between the two cameras.
-- Can suggest processing parameters such as denoising/other correction.
+- TL marker = white
+- TR marker = white
+- BL marker = white
+- BR marker = off/black
+- CLK = off/black
+- all ordinary data cells = off/black
 
-## Camera 2 — RGB data path
-- RGB and allowed to be lower speed.
-- Used for the actual data image.
-- Uses ROI so processing focuses on the optical grid.
+This supersedes earlier generated diagrams that showed END incorrectly.
 
-## Requested buffering/parallelism concept
-- Keep several recent frames in FIFO-like order.
-- New frames push older frames back; oldest is discarded after buffer depth is exceeded.
-- Multiple image-processing units operate in parallel.
-- A scheduler checks worker free/busy state, waiting images, and maps images to workers.
-- Original proposal preferred latches/FFs rather than RAM; this implementation choice is separated into [[08_ARCHITECTURE_RECOMMENDATIONS]].
+## Control-frame policy
 
-## Image processing
-- Denoising.
-- Reduce effects of sun glare/lighting.
-- Perspective correction/warp so the grid becomes box-like rather than diagonal.
-- Configurable grid size such as 8×8, 10×10, etc.
-- Separate cells.
-- For each cell: find center, choose a radius, average R/G/B inside that radius, map to nearest 8-symbol RGB cube state.
-- Convert symbols back to bits.
+- Black and white remain legal DATA cell symbols.
+- START and END are reserved **whole-frame patterns**, not reserved individual colors.
+- No two-frame persistence requirement in V1.
+- Sequence number is **optional/V2 only**, not required in V1.
+
+## Capture/transmit-rate concept
+
+Example target relationship:
+
+- Camera 1 / tracking camera: about **60 FPS**
+- Camera 2 / RGB data camera: about **30 FPS**
+- A camera may capture the same displayed optical frame multiple times.
+- CLK distinguishes a genuinely new transmitted DATA frame from repeated camera captures of the same displayed frame.
+
+## Camera 1
+
+- grayscale
+- lower quality is acceptable
+- faster than Camera 2
+- continuously tracks ROI
+- detects marker positions
+- computes/updates geometry
+- estimates simple brightness
+- outputs tracking/frame confidence
+- sends feedback/parameters to the processing path
+
+### Explicitly removed from V1
+
+- no glare-detection algorithm
+- no glare-compensation algorithm
+
+Glare remains a test condition whose effect on BER can be measured.
+
+## Camera 2
+
+- RGB
+- slower than Camera 1
+- used for DATA recovery
+- configured using ROI information from Camera 1
+- uses sensor-level ROI/windowing
+- FPGA receives the cropped ROI stream rather than the full raw sensor frame
+
+## Camera calibration at transfer start
+
+At START:
+
+1. Both cameras observe the START/marker geometry.
+2. Detect the four corresponding corner positions in Camera 1.
+3. Detect the four corresponding corner positions in Camera 2.
+4. Compute the relationship/per-corner coordinate differences between both views.
+5. Use that mapping during the transfer to translate Camera 1 ROI information into Camera 2 sensor-window coordinates.
+
+Large residuals should be reported as mapping/calibration error rather than claimed as a specific defect such as fisheye distortion.
+
+## Warp
+
+- Marker geometry is available every frame.
+- Warp/geometric correction is updated from current marker positions every frame.
+- No V1 optimization that reuses an old warp is required.
+
+## V1 image-processing flow
+
+- sensor-cropped RGB ROI stream
+- denoise/bypass experiment
+- perspective/geometric correction
+- configurable grid extraction
+- per-cell center-region RGB accumulation/averaging
+- RGB threshold classifier
+- frame/link decode
+- ECC decode
+- recovered bitstream
+
+## Storage philosophy
+
+V1 should **not** store complete raw images merely to process them later.
+
+Instead:
+
+- stream pixels through image processing
+- use only required line/local buffers
+- accumulate per-cell RGB information
+- retain reduced results such as averages, symbols, metadata or decoded bits
+
+Full-frame FF storage is no longer a V1 requirement.
+
+## Sampling radius
+
+- configurable experiment parameter
+- test several values/fractions in the testbench
+- visualize the sampling region during validation
+- choose the V1 default using measured BER/classification results
+
+## Color decision
+
+V1: simple per-channel RGB thresholds.
+
+V2: normalized RGB/chromaticity experiment.
 
 ## ECC
-- Compare Hamming and BCH.
-- Test multiple strengths (low/medium/strong conceptually).
-- Compare error rate and speed.
 
-## Output
-- Main goal is the recovered bitstream/file.
-- Future hardware interfaces mentioned: UART, USB-C, I2C, other FPGA pins/interfaces.
+Compare:
 
-## Simulation/testbench
-- Vivado/Vitis HLS style simulation.
-- Use phone captures of a laptop/display, labeled by conditions.
-- Testbench should behave like a camera source, not just pass a perfect image array.
-- Read labeled image folders, compare output to ground truth, and write CSV/TXT results.
+- no-ECC baseline
+- multiple Hamming candidates
+- multiple BCH candidates
+- different correction strengths
+- payload efficiency
+- raw BER
+- post-ECC BER
+- goodput
+- latency
+- FPGA resources
 
-## Evaluation
-- BER.
-- Speed/throughput.
-- Condition labels.
-- Effect of processing and ECC choices.
+## Simulation
+
+- simulated start button
+- testbench emulates camera register behavior and pixel-stream behavior
+- Camera 2 ROI/windowing registers are modeled
+- DUT interacts with simulated sensor as if it were hardware
+- real phone captures from a laptop/display are used as dataset inputs
+- images are labeled by conditions
+- CSV/TXT results are generated
+
+## Parallelism policy
+
+V1:
+
+- one reusable processing pipeline
+- no scheduler required if one pipeline keeps up
+- no input FIFO required if there is only one worker and it can sustain sensor rate
+
+Optional optimization:
+
+- instantiate the same pipeline module N times
+- input scheduler chooses a free worker
+- one shared overflow buffer only if needed
+- output reorder buffer restores frame order

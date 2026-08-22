@@ -1,0 +1,218 @@
+{
+  "main": {
+    "id": "2a6700cd7eecc390",
+    "type": "split",
+    "children": [
+      {
+        "id": "e31f7bc5588042eb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d489b874bb0aea56",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "00_HOME.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "00_HOME"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "128df1dd290d1ab1",
+    "type": "split",
+    "children": [
+      {
+        "id": "75f39a33214856f3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b4da90099c61a22",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "7b7fa07152cd7c95",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "ceea63a3fd6d5c8b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "56ce6b17eb0773f0",
+    "type": "split",
+    "children": [
+      {
+        "id": "12b4f26d05169913",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6d6c246894d518c8",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "00_HOME.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "46cc90019d174839",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "00_HOME.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "4e08b89be81ab7a6",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e774601090c1ed43",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "140b1c3b88447195",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "00_HOME.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "d489b874bb0aea56",
+  "lastOpenFiles": [
+    "02_OPEN_QUESTIONS.md",
+    "README.md",
+    "14_GLOSSARY.md",
+    "13_MONTH_PLAN.md",
+    "12_DECISION_LOG.md",
+    "11_VERIFICATION_CHECKLIST.md",
+    "10_ADAPTIVE_TRANSMISSION_EXPERIMENT.md",
+    "09_IMAGE_PROCESSING_EXPERIMENTS.md",
+    "08_SIMULATION_CAMERA_MODEL.md",
+    "07_ECC_AND_METRICS.md",
+    "06_OPTIONAL_PARALLEL_PIPELINES.md",
+    "05_V1_STREAMING_PIPELINE.md",
+    "04_CAMERA_ROI_AND_CALIBRATION.md",
+    "03_FRAME_AND_LINK_PROTOCOL.md",
+    "01_CONFIRMED_REQUIREMENTS.md",
+    "00_HOME.md",
+    "02_OPEN_QUESTIONS_AND_AMBIGUITIES.md",
+    "11_MONTH_PLAN.md",
+    "10_DECISION_LOG.md",
+    "09_VERIFICATION_CHECKLIST.md",
+    "08_ARCHITECTURE_RECOMMENDATIONS.md",
+    "06_SIMULATION_AND_TESTBENCH.md",
+    "05_FPGA_PROCESSING_PIPELINE.md",
+    "04_TWO_CAMERA_FEEDBACK_SYSTEM.md"
+  ]
+}

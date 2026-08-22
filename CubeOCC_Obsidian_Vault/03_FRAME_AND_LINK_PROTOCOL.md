@@ -1,52 +1,89 @@
 ---
 project: CubeOCC
 type: protocol
-status: draft
+status: confirmed-draft
 last_reviewed: 2026-08-22
 ---
-# Frame and Optical Link Protocol
 
-## DATA capacity in 8×8 mode
-`64 = 4 markers + 1 CLK + 59 coded data/ECC cells`
+# Frame and Link Protocol
 
-Each coded cell has 8 RGB states = 3 bits, therefore:
+## DATA frame — 8×8
 
-**59 × 3 = 177 coded bits per DATA frame.**
+```text
+64 cells total
+= 4 white corner markers
++ 1 CLK/toggle cell
++ 59 RGB payload/ECC cells
+```
 
-## Normal DATA invariants
-- TL, TR, BL, BR corner markers = white.
-- CLK toggles/changes between transmitted frames so identical payload patterns can still represent different frames.
-- 59 other cells carry payload+ECC symbols.
+**59 × 3 = 177 coded bits.**
+
+### Normal DATA invariants
+
+- TL = white marker
+- TR = white marker
+- BL = white marker
+- BR = white marker
+- CLK = toggles on each newly transmitted DATA frame
+- 59 remaining cells = legal 8-state RGB symbols
+
+> [!note]
+> CLK location is configurable and architecturally unimportant.
 
 ## START
-- Entire frame bright white.
-- Marks start/preamble.
-- Triggered by a simulated button in the testbench.
 
-## END — exact latest definition
 ```text
-TL marker = WHITE
-TR marker = WHITE
-BL marker = WHITE
-BR marker = BLACK/OFF
-CLK       = BLACK/OFF
-all ordinary data cells = BLACK/OFF
+All 64 cells = WHITE
 ```
 
-> [!warning]
-> The CLK physical coordinate is still TBD; do not hard-code a location from an earlier generated image.
+- one optical frame
+- no payload
+- enters active transfer state
 
-## Suggested receiver state machine
+## END
+
+```text
+TL = WHITE
+TR = WHITE
+BL = WHITE
+BR = BLACK/OFF
+CLK = BLACK/OFF
+all ordinary cells = BLACK/OFF
+```
+
+- one optical frame
+- no payload
+
+## Why black and white can still be legal DATA symbols
+
+The protocol reserves **full-frame layouts**, not individual colors. Normal DATA can contain black and white cells freely.
+
+## Receiver FSM
+
 ```mermaid
 stateDiagram-v2
-[*] --> IDLE
-IDLE --> START: stable START pattern
-START --> DATA: first valid normal frame
-DATA --> DATA: next valid frame / CLK event
-DATA --> END: special END pattern
-END --> DONE: close transfer
-DONE --> IDLE: reset / next transfer
+    [*] --> IDLE
+    IDLE --> ACTIVE: START detected
+    ACTIVE --> ACTIVE: DATA + new CLK state
+    ACTIVE --> ACTIVE: repeated camera capture / same CLK
+    ACTIVE --> END_SEEN: END pattern
+    END_SEEN --> DONE
+    DONE --> IDLE: reset / next transfer
 ```
 
-## Important CLK limitation
-The one-bit optical CLK distinguishes two identical adjacent transmitted frames, but alone it cannot prove that an even number of frames was not missed. A protected sequence number is therefore a recommendation, not yet a requirement.
+## Multiple camera captures of one optical frame
+
+Example:
+
+```text
+Optical frame A / CLK=0 -> capture 1
+Optical frame A / CLK=0 -> capture 2
+Optical frame A / CLK=0 -> capture 3
+Optical frame B / CLK=1 -> capture 4
+```
+
+Only the transition to the new CLK state commits a new optical DATA frame.
+
+## Optional V2 sequence number
+
+Not required in V1. A small sequence field can later be placed inside the protected payload to detect missed/duplicated transmitted frames. No machine learning is involved; it is only a small counter.
