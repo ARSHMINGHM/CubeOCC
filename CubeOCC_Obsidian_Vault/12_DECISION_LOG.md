@@ -70,3 +70,10 @@ V1 simple RGB thresholds. V2 normalized RGB.
 ## 2026-08-22 — ECC table expanded
 
 Compare no ECC, multiple Hamming codes and multiple BCH codes. Document useful payload per 177-bit frame and correction capability.
+
+## 2026-08-23 — DVP First, MIPI Deferred
+
+- Decision by Armin: Focus V1 physical implementation strictly on DVP.
+- MIPI implementation on FPGA (D-PHY routing/debugging) can be complex and time-consuming.
+- MIPI behavioral model is built and passing tests but is marked optional/V2 for physical integration.
+- DVP is selected as the primary interface for the one-month V1 baseline.
