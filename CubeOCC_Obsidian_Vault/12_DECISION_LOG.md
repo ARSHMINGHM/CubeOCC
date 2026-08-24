@@ -77,3 +77,15 @@ Compare no ECC, multiple Hamming codes and multiple BCH codes. Document useful p
 - MIPI implementation on FPGA (D-PHY routing/debugging) can be complex and time-consuming.
 - MIPI behavioral model is built and passing tests but is marked optional/V2 for physical integration.
 - DVP is selected as the primary interface for the one-month V1 baseline.
+
+# 2026-08-24 — Standard I2C Master & DVP-to-AXIS Bridge RTL Verified
+
+- Rewrote i2c_master.v based on standard I2C protocols:
+  - Implemented true bidirectional inout SDA pin.
+  - Added proper ACK reading/handling after every 8-bit byte.
+  - Added OV5640 initialization sequence (Power-On Reset) to the testbench.
+- Developed dvp_to_axis.v (Synthesizable RTL) to convert raw DVP signals to standard AXI4-Stream (tvalid, tlast, tuser).
+
+- Strictly followed V1 rule: No full-frame buffering (RAM/BRAM) in the AXIS bridge. Pure streaming with 1-clock pipeline delay.
+
+- End-to-end simulation PASSED: FPGA configures ROI via I2C, camera streams ROI, AXIS bridge outputs exactly 92,160 pixels (128x720).
