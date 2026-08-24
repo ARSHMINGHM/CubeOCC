@@ -47,3 +47,14 @@ last_reviewed: 2026-08-22
 - [ ] Does one pipeline meet the target frame rate after synthesis?
 - [ ] If not, how many workers are needed?
 - [ ] If every worker is busy when a new frame begins, use shared overflow buffering, sensor/backpressure, or frame drop?
+
+## 2026-08-24 — Camera Output Bit-Width Benchmarking (Optional / V2)
+
+- **Idea by:** Armin
+- **Goal:** Test different camera output data formats (e.g., RAW8, RGB565, YUV422) to evaluate their impact on overall speed and throughput.
+- **Current V1 State:** V1 uses standard 8-bit DVP streaming.
+- **Future Work:** Run a benchmark matrix comparing:
+  - FPS
+  - Resource usage
+  - Image processing latency
+  - Overall throughput
