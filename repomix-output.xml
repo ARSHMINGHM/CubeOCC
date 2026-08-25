@@ -1,0 +1,3106 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+camera_sim/
+  camera_regs_pkg.sv
+  dvp_camera_model.sv
+  mipi_camera_model.sv
+CubeOCC_Obsidian_Vault/
+  .obsidian/
+    app.json
+    appearance.json
+    core-plugins.json
+    graph.json
+    workspace.json
+  00_HOME.md
+  01_CONFIRMED_REQUIREMENTS.md
+  02_OPEN_QUESTIONS.md
+  03_FRAME_AND_LINK_PROTOCOL.md
+  04_CAMERA_ROI_AND_CALIBRATION.md
+  05_V1_STREAMING_PIPELINE.md
+  06_OPTIONAL_PARALLEL_PIPELINES.md
+  07_ECC_AND_METRICS.md
+  08_SIMULATION_CAMERA_MODEL.md
+  09_IMAGE_PROCESSING_EXPERIMENTS.md
+  10_ADAPTIVE_TRANSMISSION_EXPERIMENT.md
+  11_VERIFICATION_CHECKLIST.md
+  12_DECISION_LOG.md
+  13_MONTH_PLAN.md
+  14_GLOSSARY.md
+  README.md
+docs/
+  .gitkeep
+  ChatGPT Image Aug 20, 2026, 07_51_27 PM.png
+  cubeocc_design_report.pdf
+rtl/
+  .gitkeep
+  dvp_to_axis.sv
+  i2c_master.sv
+sim/
+  .gitkeep
+tb/
+  .gitkeep
+  axis_cam_tb.sv
+  dvp_camera_tb.sv
+  i2c_cam_tb.sv
+  mipi_camera_tb.sv
+LICENSE
+README.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="camera_sim/camera_regs_pkg.sv">
+//------------------------------------------------------------------------
+// camera_regs_pkg.sv
+// Updated to match OV5640 Datasheet Register Map for Windowing (ROI)
+//------------------------------------------------------------------------
+package camera_regs_pkg;
+
+  // Using 16-bit addresses to match OV5640 SCCB/I2C protocol
+  typedef enum logic [15:0] {
+    REG_STREAM_ENABLE = 16'h3008, // System reset / power down (Placeholder for stream enable)
+    REG_ROI_HSTART    = 16'h3800, // Horizontal start (HSTART)
+    REG_ROI_VSTART    = 16'h3802, // Vertical start (VSTART)
+    REG_ROI_HSIZE     = 16'h3804, // Horizontal size (Width)
+    REG_ROI_VSIZE     = 16'h3806  // Vertical size (Height)
+  } camera_reg_addr_e;
+
+  // REG_FRAME_STATUS bit map
+  localparam int FS_FRAME_ACTIVE = 0;
+  localparam int FS_LINE_ACTIVE  = 1;
+  localparam int FS_STREAMING    = 2;
+
+  // Simple synchronous test-pattern generator
+  function automatic logic [7:0] test_pixel(input int row, input int col);
+    test_pixel = (row[7:0] ^ col[7:0]) + 8'd1;
+  endfunction
+
+endpackage : camera_regs_pkg
+</file>
+
+<file path="camera_sim/dvp_camera_model.sv">
+`timescale 1ns/1ps
+
+module dvp_camera_model
+  import camera_regs_pkg::*;
+#(
+  parameter int  SENSOR_MAX_WIDTH  = 2592,
+  parameter int  SENSOR_MAX_HEIGHT = 1944,
+  parameter int  HBLANK            = 688,
+  parameter real PCLK_PERIOD_NS    = 10.0,
+  parameter int  VBLANK            = 10
+)(
+  input  logic                  clk,
+  input  logic                  rst_n,
+  input  logic                  reg_wr_en,
+  input  logic [15:0]           reg_addr,
+  input  logic [15:0]           reg_wdata,
+  input  logic                  reg_rd_en,
+  input  logic [15:0]           reg_raddr,
+  output logic [15:0]           reg_rdata,
+
+  output logic                  pclk,
+  output logic                  vsync,
+  output logic                  href,
+  output logic [7:0]            pixel_data,
+  output logic                  sof
+);
+
+  logic        stream_enable;
+  logic [15:0] roi_x_start, roi_y_start, roi_width, roi_height;
+  logic        frame_active, line_active;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      stream_enable <= 1'b0;
+      roi_x_start   <= 16'd0;
+      roi_y_start   <= 16'd0;
+      roi_width     <= SENSOR_MAX_WIDTH[15:0];
+      roi_height    <= SENSOR_MAX_HEIGHT[15:0];
+    end else if (reg_wr_en) begin
+      case (reg_addr)
+        REG_STREAM_ENABLE: stream_enable <= reg_wdata[0];
+        REG_ROI_HSTART:    roi_x_start   <= reg_wdata;
+        REG_ROI_VSTART:    roi_y_start   <= reg_wdata;
+        REG_ROI_HSIZE:     roi_width     <= reg_wdata;
+        REG_ROI_VSIZE:      roi_height    <= reg_wdata;
+        default: ;
+      endcase
+    end
+  end
+
+  always_comb begin
+    reg_rdata = 16'h0000;
+    if (reg_rd_en) begin
+      case (reg_raddr)
+        REG_STREAM_ENABLE: reg_rdata = {15'd0, stream_enable};
+        REG_ROI_HSTART:    reg_rdata = roi_x_start;
+        REG_ROI_VSTART:    reg_rdata = roi_y_start;
+        REG_ROI_HSIZE:     reg_rdata = roi_width;
+        REG_ROI_VSIZE:      reg_rdata = roi_height;
+        default: reg_rdata = 16'hFFFF;
+      endcase
+    end
+  end
+
+  initial pclk = 1'b0;
+  always #(PCLK_PERIOD_NS/2.0) pclk = ~pclk;
+
+  initial begin
+    vsync        = 1'b1; 
+    href         = 1'b0;
+    pixel_data   = '0;
+    sof          = 1'b0;
+    frame_active = 1'b0;
+    line_active  = 1'b0;
+    wait (rst_n === 1'b1);
+    forever begin
+      if (stream_enable) begin
+        drive_one_frame(roi_x_start, roi_y_start, roi_width, roi_height);
+      end else begin
+        @(posedge pclk);
+      end
+    end
+  end
+
+  task automatic drive_one_frame(
+    input int unsigned x0, input int unsigned y0,
+    input int unsigned w,  input int unsigned h
+  );
+    int row, col;
+    begin
+      frame_active = 1'b1;
+      vsync = 1'b0;
+      
+      sof = 1'b1;
+      @(posedge pclk);
+      sof = 1'b0;
+
+      for (row = 0; row < h; row++) begin
+        line_active = 1'b1;
+        href = 1'b0;
+        repeat (HBLANK) @(posedge pclk); 
+        href = 1'b1;
+        for (col = 0; col < w; col++) begin
+          pixel_data = test_pixel(y0 + row, x0 + col);
+          @(posedge pclk);
+        end
+        href = 1'b0;
+        line_active = 1'b0;
+      end
+
+      vsync = 1'b1; 
+
+      repeat (VBLANK) begin
+        repeat (w + HBLANK) @(posedge pclk);
+      end
+
+      frame_active = 1'b0;
+    end
+  endtask
+
+endmodule : dvp_camera_model
+</file>
+
+<file path="camera_sim/mipi_camera_model.sv">
+`timescale 1ns/1ps
+
+module mipi_camera_model
+  import camera_regs_pkg::*;
+#(
+  parameter int  SENSOR_MAX_WIDTH  = 2592,
+  parameter int  SENSOR_MAX_HEIGHT = 1944,
+  parameter real BYTE_PERIOD_NS    = 2.5,   // Abstracted deserialized byte rate
+  parameter int  LINE_GAP_BYTES    = 32,    // Inter-line packet gap (blanking)
+  parameter int  FRAME_GAP_BYTES   = 128    // Inter-frame packet gap (blanking)
+)(
+  input  logic                  clk,
+  input  logic                  rst_n,
+  input  logic                  reg_wr_en,
+  input  logic [15:0]           reg_addr,
+  input  logic [15:0]           reg_wdata,
+  input  logic                  reg_rd_en,
+  input  logic [15:0]           reg_raddr,
+  output logic [15:0]           reg_rdata,
+
+  // ---- raw CSI-2-like byte-serial view ----
+  output logic                  byte_clk,
+  output logic                  byte_valid,
+  output logic [7:0]            byte_data,
+  output logic                  sop,
+  output logic                  eop,
+  output logic [7:0]            packet_di,
+
+  // ---- DVP-shaped convenience view ----
+  output logic                  frame_valid,
+  output logic                  line_valid,
+  output logic [7:0]            pixel_data,
+  output logic                  sof
+);
+
+  localparam logic [7:0] DI_FRAME_START = 8'h00;
+  localparam logic [7:0] DI_FRAME_END   = 8'h01;
+  localparam logic [7:0] DI_RAW8        = 8'h2A;
+
+  logic        stream_enable;
+  logic [15:0] roi_x_start, roi_y_start, roi_width, roi_height;
+  logic        frame_active, line_active;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      stream_enable <= 1'b0;
+      roi_x_start   <= 16'd0;
+      roi_y_start   <= 16'd0;
+      roi_width     <= SENSOR_MAX_WIDTH[15:0];
+      roi_height    <= SENSOR_MAX_HEIGHT[15:0];
+    end else if (reg_wr_en) begin
+      case (reg_addr)
+        REG_STREAM_ENABLE: stream_enable <= reg_wdata[0];
+        REG_ROI_HSTART:    roi_x_start   <= reg_wdata;
+        REG_ROI_VSTART:    roi_y_start   <= reg_wdata;
+        REG_ROI_HSIZE:     roi_width     <= reg_wdata;
+        REG_ROI_VSIZE:      roi_height    <= reg_wdata;
+        default: ;
+      endcase
+    end
+  end
+
+  always_comb begin
+    reg_rdata = 16'h0000;
+    if (reg_rd_en) begin
+      case (reg_raddr)
+        REG_STREAM_ENABLE: reg_rdata = {15'd0, stream_enable};
+        REG_ROI_HSTART:    reg_rdata = roi_x_start;
+        REG_ROI_VSTART:    reg_rdata = roi_y_start;
+        REG_ROI_HSIZE:     reg_rdata = roi_width;
+        REG_ROI_VSIZE:      reg_rdata = roi_height;
+        default: reg_rdata = 16'hFFFF;
+      endcase
+    end
+  end
+
+  initial byte_clk = 1'b0;
+  always #(BYTE_PERIOD_NS/2.0) byte_clk = ~byte_clk;
+
+  initial begin
+    byte_valid = 1'b0; byte_data = '0; sop = 1'b0; eop = 1'b0; packet_di = '0;
+    frame_valid = 1'b0; line_valid = 1'b0; pixel_data = '0; sof = 1'b0;
+    frame_active = 1'b0; line_active = 1'b0;
+    wait (rst_n === 1'b1);
+    forever begin
+      if (stream_enable) begin
+        drive_one_frame(roi_x_start, roi_y_start, roi_width, roi_height);
+      end else begin
+        @(posedge byte_clk);
+      end
+    end
+  end
+
+  task automatic send_short_packet(input logic [7:0] di, input logic [15:0] wc);
+    begin
+      sop = 1'b1; packet_di = di;
+      byte_valid = 1'b1; byte_data = di;           @(posedge byte_clk);
+      byte_data  = wc[7:0];                        @(posedge byte_clk);
+      byte_data  = wc[15:8];                        @(posedge byte_clk);
+      byte_data  = 8'h00; eop = 1'b1;               @(posedge byte_clk);
+      byte_valid = 1'b0; sop = 1'b0; eop = 1'b0;
+    end
+  endtask
+
+  task automatic send_long_packet_line(
+    input int unsigned x0, input int unsigned row, input int unsigned w
+  );
+    int col;
+    begin
+      sop = 1'b1; packet_di = DI_RAW8;
+      byte_valid = 1'b1;
+      byte_data = DI_RAW8;                          @(posedge byte_clk);
+      byte_data = w[7:0];                            @(posedge byte_clk);
+      byte_data = w[15:8];                           @(posedge byte_clk);
+      byte_data = 8'h00;                             @(posedge byte_clk);
+      sop = 1'b0;
+
+      line_active = 1'b1;
+      for (col = 0; col < w; col++) begin
+        byte_data  = test_pixel(row, x0 + col);
+        pixel_data = byte_data;
+        line_valid = 1'b1;
+        @(posedge byte_clk);
+      end
+      line_valid = 1'b0;
+
+      byte_data = 8'h00; @(posedge byte_clk); // checksum byte 0
+      eop = 1'b1;
+      byte_data = 8'h00; @(posedge byte_clk); // checksum byte 1
+      byte_valid = 1'b0; eop = 1'b0;
+      line_active = 1'b0;
+
+      repeat (LINE_GAP_BYTES) @(posedge byte_clk);
+    end
+  endtask
+
+  task automatic drive_one_frame(
+    input int unsigned x0, input int unsigned y0,
+    input int unsigned w,  input int unsigned h
+  );
+    int row;
+    begin
+      frame_active = 1'b1;
+      frame_valid  = 1'b1;
+
+      send_short_packet(DI_FRAME_START, 16'h0000);
+      sof = 1'b1; @(posedge byte_clk); sof = 1'b0;
+
+      for (row = 0; row < h; row++)
+        send_long_packet_line(x0, y0 + row, w);
+
+      send_short_packet(DI_FRAME_END, 16'h0000);
+      repeat (FRAME_GAP_BYTES) @(posedge byte_clk);
+
+      frame_active = 1'b0;
+      frame_valid  = 1'b0;
+    end
+  endtask
+
+endmodule : mipi_camera_model
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/.obsidian/app.json">
+{}
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/.obsidian/appearance.json">
+{}
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/.obsidian/core-plugins.json">
+{
+  "file-explorer": true,
+  "global-search": true,
+  "switcher": true,
+  "graph": true,
+  "backlink": true,
+  "canvas": true,
+  "outgoing-link": true,
+  "tag-pane": true,
+  "footnotes": false,
+  "properties": true,
+  "page-preview": true,
+  "daily-notes": true,
+  "templates": true,
+  "note-composer": true,
+  "command-palette": true,
+  "slash-command": false,
+  "editor-status": true,
+  "bookmarks": true,
+  "markdown-importer": false,
+  "zk-prefixer": false,
+  "random-note": false,
+  "outline": true,
+  "word-count": true,
+  "slides": false,
+  "audio-recorder": false,
+  "workspaces": false,
+  "file-recovery": true,
+  "publish": false,
+  "sync": true,
+  "bases": true,
+  "webviewer": false
+}
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/.obsidian/graph.json">
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.518713248970312,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 1,
+  "close": false
+}
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/04_CAMERA_ROI_AND_CALIBRATION.md">
+---
+project: CubeOCC
+type: camera
+status: confirmed-draft
+last_reviewed: 2026-08-22
+---
+
+# Camera ROI and Calibration
+
+## Camera 1 — tracking/feedback
+
+Target example: ~60 FPS.
+
+Outputs:
+
+- current four marker coordinates
+- ROI geometry
+- mapping to Camera 2 coordinates
+- simple average brightness
+- tracking/marker confidence
+- processing-control metadata
+
+Does **not** perform V1 glare detection.
+
+## Camera 2 — RGB DATA camera
+
+Target example: ~30 FPS.
+
+- receives ROI/window coordinates
+- uses sensor-level crop/windowing
+- outputs only the cropped RGB ROI pixel stream to the FPGA
+
+## Startup mapping
+
+At START, both cameras see the same known optical object.
+
+```text
+C1_TL <-> C2_TL
+C1_TR <-> C2_TR
+C1_BL <-> C2_BL
+C1_BR <-> C2_BR
+```
+
+Store a four-point relationship.
+
+Simple first implementation:
+
+- compare corresponding coordinates
+- derive per-corner offset/relationship
+- interpolate/predict Camera 2 ROI from current Camera 1 marker geometry
+
+More formal implementation if needed:
+
+- compute a 2D projective transform/homography from the four correspondences
+
+## Every-frame tracking
+
+Camera 1 continues to detect current marker geometry. That current geometry feeds:
+
+1. Camera 2 sensor-window coordinates
+2. image warp/geometric correction
+3. frame confidence
+4. simple brightness feedback
+
+## Mapping residual
+
+If predicted and observed coordinates disagree significantly:
+
+- report high geometric residual / poor calibration confidence
+- do not call it “fisheye detected” unless a lens-distortion model is actually implemented
+
+## Brightness
+
+Simple V1 metric: average grayscale intensity over the selected tracking region or marker-related region.
+
+## Glare
+
+V1 decision: **no glare detection or compensation**.
+
+Reason: white is itself a valid symbol, so saturated/white DATA regions can be ambiguous with glare.
+
+Instead:
+
+- label glare conditions in the dataset
+- measure BER/SER impact
+- document mitigation as future work
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/05_V1_STREAMING_PIPELINE.md">
+---
+project: CubeOCC
+type: architecture
+status: v1
+last_reviewed: 2026-08-22
+---
+
+# V1 Streaming Pipeline
+
+## Core rule
+
+**Do not store full raw RGB frames in V1 unless a specific stage proves it unavoidable.**
+
+```mermaid
+flowchart LR
+    S[Camera 2 cropped ROI pixel stream] --> D[Denoise or bypass]
+    D --> W[Warp / coordinate mapping]
+    W --> G[Grid extraction]
+    G --> A[Per-cell RGB accumulators]
+    A --> M[Per-cell averages]
+    M --> T[RGB threshold classifier]
+    T --> F[Frame/link decoder]
+    F --> E[ECC decoder]
+    E --> O[Recovered bitstream]
+```
+
+## Storage inside V1
+
+Allowed/expected:
+
+- line buffers needed by small spatial filters
+- small warp/LUT state
+- grid/cell metadata
+- R/G/B accumulators per active cell
+- pixel count per cell
+- final per-cell average
+- classified 3-bit symbol
+- ECC/codeword buffers
+- packet/reassembly metadata
+
+Avoid:
+
+- complete raw frame in FFs
+- multiple complete raw frames just to create parallelism
+
+## Per-cell reduction
+
+For pixels inside the selected sampling region:
+
+```text
+sum_R += R
+sum_G += G
+sum_B += B
+count += 1
+```
+
+Then:
+
+```text
+avg_R = sum_R / count
+avg_G = sum_G / count
+avg_B = sum_B / count
+```
+
+After the cell result is finalized, raw pixels are no longer needed.
+
+## Warp
+
+Because current corner geometry is available every frame, V1 updates the grid mapping every frame.
+
+Possible implementations:
+
+- warp pixel coordinates then grid
+- inverse-map output grid positions to input pixels
+- directly derive cell boundaries from the quadrilateral without materializing a full rectified frame
+
+## Output ordering
+
+With one V1 pipeline, frames are inherently in order. Therefore no input scheduler, reorder buffer or waiting FIFO is needed unless benchmarking proves otherwise.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/06_OPTIONAL_PARALLEL_PIPELINES.md">
+---
+project: CubeOCC
+type: optional-architecture
+status: v2-if-needed
+last_reviewed: 2026-08-22
+---
+
+# Optional Scalable Parallel Pipelines
+
+Implement only after benchmarking V1.
+
+## Reusable pipeline module
+
+Define one complete end-to-end processing worker and instantiate it `N` times only if required.
+
+```mermaid
+flowchart LR
+    IN[Incoming ROI frames] --> SCH[Input scheduler]
+    SCH --> W0[Worker 0]
+    SCH --> W1[Worker 1]
+    SCH --> WN[Worker N-1]
+    W0 --> RB[Output reorder buffer]
+    W1 --> RB
+    WN --> RB
+    RB --> OUT[Bitstream in frame order]
+```
+
+## Input scheduler
+
+At frame start:
+
+1. assign monotonic `frame_id`
+2. find a free worker
+3. send frame to that worker
+4. tag worker/result with `frame_id`
+
+Example:
+
+```text
+frame 1 -> worker 2
+frame 2 -> worker 0
+frame 3 -> worker 1
+```
+
+## Output reorder buffer
+
+If results finish:
+
+```text
+frame 2
+frame 1
+frame 3
+```
+
+the reorder buffer releases:
+
+```text
+frame 1
+frame 2
+frame 3
+```
+
+## When every worker is busy
+
+A scheduler cannot queue an incoming raw frame without storage.
+
+Options:
+
+### A. One shared overflow buffer
+
+- one shared buffer, not one per worker
+- used only if every worker is busy
+- depth selected from measured worst case
+
+### B. Sensor/backpressure control
+
+If physical sensor/interface permits delaying new frames.
+
+### C. Frame drop
+
+Explicitly mark a missed frame if neither buffering nor backpressure is available.
+
+> [!important]
+> The shared FIFO/buffer is optional. It is not needed when one worker can sustain the camera rate.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/09_IMAGE_PROCESSING_EXPERIMENTS.md">
+---
+project: CubeOCC
+type: experiments
+status: active
+last_reviewed: 2026-08-22
+---
+
+# Image Processing Experiments
+
+## 1. Denoising
+
+V1 should not assume denoising is always beneficial.
+
+### Baseline comparison
+
+- bypass / no denoise
+- 3×3 median filter
+
+Possible later comparison:
+
+- 3×3 mean
+- small Gaussian
+
+Measure:
+
+- symbol error rate
+- raw BER
+- ECC corrections
+- post-ECC BER
+- FPGA resources
+- latency
+
+### Optional adaptive denoising
+
+Not V1-required.
+
+Idea:
+
+- first frame uses baseline setting
+- observe downstream symbol confidence/ECC statistics
+- only if several frames show both low symbol confidence and high ECC correction activity, switch denoise mode/strength
+
+Do not switch based on one noisy frame. Validate this experimentally because denoising can also damage boundaries/colors.
+
+## 2. Glare
+
+V1:
+
+- no detection
+- no compensation
+
+Experiment only:
+
+- label glare severity
+- report BER/SER degradation
+
+## 3. Sampling radius sweep
+
+Sampling radius is configurable.
+
+Suggested sweep uses several fractions of cell size. Testbench debug overlays should show:
+
+- detected cell boundary
+- cell center
+- sampling circle/region
+- averaged RGB
+- classified symbol
+- ground-truth symbol
+- confidence
+
+Select the V1 radius using raw BER, SER, ECC correction count and stability across conditions. Do not spend V1 FPGA resources auto-detecting an oversized radius.
+
+## 4. Color classification
+
+### V1 — threshold classifier
+
+```text
+R_on = avg_R >= T_R
+G_on = avg_G >= T_G
+B_on = avg_B >= T_B
+symbol = {R_on, G_on, B_on}
+```
+
+### V2 — normalized RGB
+
+Later compare normalized/chromaticity classification against the simple threshold baseline.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/10_ADAPTIVE_TRANSMISSION_EXPERIMENT.md">
+---
+project: CubeOCC
+type: optional-experiment
+status: future
+last_reviewed: 2026-08-22
+---
+
+# Adaptive Transmission Experiment
+
+Optional research work, not core V1.
+
+## Goal
+
+Explore 8×8, 16×16 and 32×32 depending on channel quality.
+
+Larger grids increase bits per optical frame but reduce camera pixels per optical cell and can increase classification error.
+
+## Known reference payload
+
+Before real DATA, optionally transmit a known test pattern that both sides already know.
+
+Receiver/testbench can calculate:
+
+- raw BER
+- symbol confidence
+- ECC correction count
+
+Then select grid size using simple rules, no machine learning required.
+
+Example:
+
+```text
+if quality >= HIGH_THRESHOLD:
+    use 32x32
+elif quality >= MEDIUM_THRESHOLD:
+    use 16x16
+else:
+    use 8x8
+```
+
+## Compare
+
+- fixed 8×8
+- fixed 16×16
+- fixed 32×32
+- optional adaptive mode
+
+Measure throughput, goodput, BER, post-ECC BER, distance, angle, brightness and camera resolution/FPS.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/11_VERIFICATION_CHECKLIST.md">
+---
+project: CubeOCC
+type: checklist
+status: active
+last_reviewed: 2026-08-22
+---
+
+# Verification Checklist
+
+## Protocol
+
+- [ ] 8×8 = 64 total cells.
+- [ ] DATA = 4 white corner markers + 1 CLK + 59 coded cells.
+- [ ] 59 × 3 = 177 coded bits.
+- [ ] CLK position is configurable.
+- [ ] START is exactly one all-white frame.
+- [ ] START includes white at CLK position.
+- [ ] END keeps TL/TR/BL white.
+- [ ] END has BR off.
+- [ ] END has CLK off.
+- [ ] END ordinary cells are black.
+- [ ] All 8 RGB states are legal DATA symbols.
+- [ ] Sequence number is marked optional/V2.
+
+## Cameras
+
+- [ ] Camera 1 is grayscale tracking/feedback.
+- [ ] Camera 1 target example is ~60 FPS.
+- [ ] Camera 2 is RGB DATA camera.
+- [ ] Camera 2 target example is ~30 FPS.
+- [ ] Camera 1 produces ROI/geometry, brightness and confidence.
+- [ ] No V1 glare detector exists.
+- [ ] Both cameras establish four-point relationship at START.
+- [ ] Camera 2 uses sensor-level ROI/windowing.
+- [ ] FPGA receives Camera 2 cropped ROI stream.
+
+## V1 processing
+
+- [ ] One pipeline works before replication.
+- [ ] Full raw frame is not stored by default.
+- [ ] Required line/local buffers are allowed.
+- [ ] Grid geometry updates each frame.
+- [ ] Per-cell RGB values are accumulated.
+- [ ] Sampling radius is configurable in simulation.
+- [ ] Debug visualization shows sampling region.
+- [ ] V1 classifier uses RGB thresholds.
+- [ ] Normalized RGB is marked V2.
+
+## Denoise / glare
+
+- [ ] No-denoise baseline exists.
+- [ ] 3×3 median experiment exists.
+- [ ] Adaptive denoise is marked optional.
+- [ ] Glare is only a labeled impairment/measurement condition in V1.
+
+## ECC
+
+- [ ] No-ECC baseline.
+- [ ] Multiple Hamming candidates.
+- [ ] Multiple BCH candidates.
+- [ ] Correction capability documented.
+- [ ] Useful bits per 177-bit DATA frame documented.
+- [ ] Raw BER measured.
+- [ ] Post-ECC BER measured.
+- [ ] Goodput measured.
+- [ ] FPGA resources measured.
+
+## Testbench
+
+- [ ] Simulated button.
+- [ ] Camera-register model.
+- [ ] Camera 2 ROI register/window behavior.
+- [ ] Camera-like pixel timing/stream.
+- [ ] Dataset full image is cropped by simulated sensor, not DUT.
+- [ ] Repeated captures of same optical frame tested.
+- [ ] CLK transition tested.
+- [ ] START and END tested.
+- [ ] CSV/TXT log generated.
+
+## Optional parallelism
+
+- [ ] Benchmark one worker first.
+- [ ] Replicated workers use same reusable module.
+- [ ] Input scheduler only added if N > 1.
+- [ ] Output reorder buffer restores frame order.
+- [ ] If all workers busy, overflow/backpressure/drop policy is explicit.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/13_MONTH_PLAN.md">
+---
+project: CubeOCC
+type: plan
+status: proposed
+last_reviewed: 2026-08-22
+---
+
+# Two-Person / One-Month Plan
+
+## Week 1 — Protocol + golden model
+
+**Person A:** frame generator, START/DATA/END, CLK, RGB bit mapping, no-ECC + Hamming baseline.
+
+**Person B:** dataset tooling, four-marker detector, ROI geometry, threshold RGB classifier software model.
+
+Exit: clean synthetic frame decodes, END verified, 177-bit packing understood.
+
+## Week 2 — Sensor/testbench + streaming pipeline
+
+**Person A:** camera register model, pixel-stream model, sensor ROI/window simulation.
+
+**Person B:** streaming image processing, warp/grid extraction, RGB accumulators, sampling-radius debug visualization.
+
+Exit: phone-captured input travels through simulated camera interface and DUT receives cropped ROI only.
+
+## Week 3 — ECC + dataset experiments
+
+**Person A:** multiple Hamming/BCH candidates, BER/post-ECC BER/goodput logging, synthesis resources.
+
+**Person B:** bypass vs median, radius sweep, brightness/angle/blur/glare conditions, threshold tuning.
+
+Exit: full START -> DATA -> END transfer and automatic CSV results.
+
+## Week 4 — Optimize + paper material
+
+- benchmark one pipeline
+- only then test optional N-worker scaling if needed
+- prepare ECC comparison table
+- prepare radius/denoise/grid-size results
+- test 8×8 and, if time permits, 16×16/32×32
+- document limitations
+- reproducible GitHub instructions
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/14_GLOSSARY.md">
+---
+project: CubeOCC
+type: glossary
+status: active
+last_reviewed: 2026-08-22
+---
+
+# Glossary
+
+## OCC
+Optical Camera Communication.
+
+## RGB cube
+The 8 binary on/off combinations of R, G and B.
+
+## Marker
+White corner cell used for frame geometry during DATA.
+
+## CLK
+Reserved optical cell whose state toggles for every newly transmitted DATA frame.
+
+## START
+One all-white 64-cell frame in 8×8 mode.
+
+## END
+TL/TR/BL white; BR off; CLK off; ordinary cells black.
+
+## ROI
+Region of Interest.
+
+## Sensor windowing
+Programming camera registers so the camera itself transmits only a selected crop.
+
+## SER
+Symbol Error Rate.
+
+## Raw BER
+Bit Error Rate before ECC.
+
+## Post-ECC BER
+Bit Error Rate after error correction.
+
+## Goodput
+Correct useful payload bits per second after protocol/ECC overhead.
+
+## Reorder buffer
+Output structure that accepts results from parallel workers and releases them in original frame order.
+
+## SEC
+Single Error Correction.
+
+## SECDED
+Single Error Correction, Double Error Detection.
+</file>
+
+<file path="docs/.gitkeep">
+
+</file>
+
+<file path="rtl/.gitkeep">
+
+</file>
+
+<file path="rtl/dvp_to_axis.sv">
+`timescale 1ns/1ps
+
+// This module is SYNTHESIZABLE. It converts raw DVP camera signals
+// into a standard AXI4-Stream video interface to feed the HLS pipeline.
+module dvp_to_axis (
+    input  logic        pclk,        // Camera Pixel Clock
+    input  logic        rst_n,       // Async reset (active low)
+    
+    // DVP Camera Inputs
+    input  logic        vsync,       // Frame valid (1=blanking, 0=active frame)
+    input  logic        href,        // Line valid (1=active pixel data)
+    input  logic [7:0]  pixel_data,  // Raw 8-bit pixel data
+    
+    // AXI4-Stream Master Outputs
+    output logic [7:0]  m_axis_tdata,
+    output logic        m_axis_tvalid,
+    input  logic        m_axis_tready, // Driven by downstream HLS IP
+    output logic        m_axis_tlast,  // End of line
+    output logic        m_axis_tuser   // Start of frame
+);
+
+    // We delay signals by 1 clock to safely detect edges (like end of line)
+    logic href_d;
+    logic vsync_d;
+    logic [7:0] data_d;
+    logic sof_detected;
+
+    always_ff @(posedge pclk or negedge rst_n) begin
+        if (!rst_n) begin
+            href_d <= 1'b0;
+            vsync_d <= 1'b1; // Default high (blanking)
+            data_d <= 8'd0;
+            sof_detected <= 1'b0;
+        end else begin
+            href_d <= href;
+            vsync_d <= vsync;
+            data_d <= pixel_data;
+            
+            // Detect Start of Frame (falling edge of vsync: 1 -> 0)
+            if (vsync_d == 1'b1 && vsync == 1'b0) begin
+                sof_detected <= 1'b1;
+            end
+            
+            // Clear SOF after the first valid pixel is sent
+            if (m_axis_tvalid && m_axis_tready && m_axis_tuser) begin
+                sof_detected <= 1'b0;
+            end
+        end
+    end
+
+    // AXI-Stream assignments
+    // tvalid is high when delayed href is high (meaning data is valid)
+    assign m_axis_tvalid = href_d;
+    assign m_axis_tdata  = data_d;
+    
+    // tlast is high on the last pixel of a line
+    // (current href is high, but the NEXT href will be low)
+    assign m_axis_tlast  = (href_d == 1'b1 && href == 1'b0);
+    
+    // tuser is high only for the very first pixel of the frame
+    assign m_axis_tuser  = sof_detected && href_d;
+
+endmodule
+</file>
+
+<file path="rtl/i2c_master.sv">
+`timescale 1ns/1ps
+
+// Fully Standard I2C Master with inout SDA and ACK handling.
+module i2c_master #(
+    parameter SYS_CLK_FREQ = 100_000_000,
+    parameter I2C_CLK_FREQ = 400_000
+)(
+    input  logic        clk,
+    input  logic        rst_n,
+    input  logic        start,
+    input  logic [15:0] reg_addr,
+    input  logic [15:0] reg_data,
+    output logic        done,
+    output logic        scl,
+    inout               sda
+);
+
+    localparam CLK_DIV = SYS_CLK_FREQ / (I2C_CLK_FREQ * 4);
+    localparam SLAVE_ADDR = 8'h78;
+
+    typedef enum logic [3:0] {
+        IDLE,
+        START,
+        SEND_BIT,
+        WAIT_HIGH,
+        STOP_LOW,
+        STOP_HIGH,
+        DONE_STATE
+    } state_e;
+
+    state_e state;
+    logic [15:0] clk_cnt;
+    logic [3:0]  bit_cnt; 
+    logic [7:0]  shift_reg;
+    logic [7:0]  data_arr [0:4];
+    logic [2:0]  byte_idx;
+    
+    logic sda_o;
+    logic sda_oe;
+    assign sda = sda_oe ? sda_o : 1'bz;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            state <= IDLE;
+            done <= 0;
+            scl <= 1;
+            sda_o <= 1;
+            sda_oe <= 0;
+            clk_cnt <= 0;
+            bit_cnt <= 0;
+            shift_reg <= 0;
+            byte_idx <= 0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    done <= 0;
+                    scl <= 1;
+                    sda_o <= 1;
+                    sda_oe <= 0; // High-Z
+                    clk_cnt <= 0;
+                    if (start) begin
+                        data_arr[0] <= SLAVE_ADDR;
+                        data_arr[1] <= reg_addr[15:8];
+                        data_arr[2] <= reg_addr[7:0];
+                        data_arr[3] <= reg_data[15:8];
+                        data_arr[4] <= reg_data[7:0];
+                        byte_idx <= 0;
+                        shift_reg <= SLAVE_ADDR;
+                        state <= START;
+                    end
+                end
+
+                START: begin
+                    sda_oe <= 1;
+                    sda_o <= 0; // SDA goes low while SCL is high (Start)
+                    if (clk_cnt == CLK_DIV/2 - 1) begin
+                        scl <= 0; // Pull SCL low
+                        clk_cnt <= 0;
+                        bit_cnt <= 0;
+                        state <= SEND_BIT;
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                SEND_BIT: begin
+                    sda_oe <= 1;
+                    if (clk_cnt == 0) begin
+                        if (bit_cnt < 8) begin
+                            sda_o <= shift_reg[7];
+                            shift_reg <= shift_reg << 1;
+                        end else begin
+                            sda_oe <= 0; // Release SDA for ACK
+                            sda_o <= 1;
+                        end
+                    end
+                    
+                    if (clk_cnt == CLK_DIV - 1) begin
+                        clk_cnt <= 0;
+                        scl <= 1; // SCL goes high
+                        state <= WAIT_HIGH;
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                WAIT_HIGH: begin
+                    if (clk_cnt == CLK_DIV - 1) begin
+                        clk_cnt <= 0;
+                        scl <= 0; // SCL goes low
+                        if (bit_cnt == 8) begin
+                            // ACK bit just finished
+                            bit_cnt <= 0;
+                            if (byte_idx < 4) begin
+                                byte_idx <= byte_idx + 1;
+                                shift_reg <= data_arr[byte_idx + 1];
+                                state <= SEND_BIT;
+                            end else begin
+                                state <= STOP_LOW;
+                            end
+                        end else begin
+                            bit_cnt <= bit_cnt + 1;
+                            state <= SEND_BIT;
+                        end
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                STOP_LOW: begin
+                    sda_oe <= 1;
+                    if (clk_cnt == 0) begin
+                        sda_o <= 0;
+                    end
+                    if (clk_cnt == CLK_DIV - 1) begin
+                        clk_cnt <= 0;
+                        scl <= 1; // SCL goes high
+                        state <= STOP_HIGH;
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                STOP_HIGH: begin
+                    if (clk_cnt == 0) begin
+                        sda_o <= 1; // SDA goes high (Stop condition)
+                    end
+                    if (clk_cnt == CLK_DIV - 1) begin
+                        clk_cnt <= 0;
+                        state <= DONE_STATE;
+                    end else begin
+                        clk_cnt <= clk_cnt + 1;
+                    end
+                end
+
+                DONE_STATE: begin
+                    done <= 1;
+                    state <= IDLE;
+                end
+            endcase
+        end
+    end
+
+endmodule
+</file>
+
+<file path="sim/.gitkeep">
+
+</file>
+
+<file path="tb/.gitkeep">
+
+</file>
+
+<file path="tb/axis_cam_tb.sv">
+`timescale 1ns/1ps
+
+module axis_cam_tb;
+  import camera_regs_pkg::*;
+
+  logic clk;
+  logic rst_n;
+
+  // I2C Master (DUT) signals
+  logic        start;
+  logic [15:0] reg_addr;
+  logic [15:0] reg_data;
+  logic        done;
+  
+  // I2C physical wires
+  logic        scl;
+  wire         sda; 
+  
+  // Camera Model signals
+  logic        reg_wr_en;
+  logic [15:0] cam_reg_addr;
+  logic [15:0] cam_reg_wdata;
+  logic        reg_rd_en = 0;
+  logic [15:0] reg_raddr = 0;
+  logic [15:0] reg_rdata;
+
+  logic        pclk, vsync, href, sof;
+  logic [7:0]  pixel_data;
+
+  // AXI4-Stream signals
+  logic [7:0]  axis_tdata;
+  logic        axis_tvalid;
+  logic        axis_tready;
+  logic        axis_tlast;
+  logic        axis_tuser;
+
+  // Pullup for I2C SDA
+  pullup(sda);
+
+  // 1. Instantiate I2C Master
+  i2c_master dut_master (
+    .clk(clk), .rst_n(rst_n),
+    .start(start), .reg_addr(reg_addr), .reg_data(reg_data), .done(done),
+    .scl(scl), .sda(sda)
+  );
+
+  // 2. Instantiate Camera Model
+  dvp_camera_model cam (
+    .clk(clk), .rst_n(rst_n),
+    .reg_wr_en(reg_wr_en), .reg_addr(cam_reg_addr), .reg_wdata(cam_reg_wdata),
+    .reg_rd_en(reg_rd_en), .reg_raddr(reg_raddr), .reg_rdata(reg_rdata),
+    .pclk(pclk), .vsync(vsync), .href(href), .pixel_data(pixel_data), .sof(sof)
+  );
+
+  // 3. Instantiate DVP to AXI-Stream Bridge
+  dvp_to_axis axis_bridge (
+    .pclk(pclk), .rst_n(rst_n),
+    .vsync(vsync), .href(href), .pixel_data(pixel_data),
+    .m_axis_tdata(axis_tdata),
+    .m_axis_tvalid(axis_tvalid),
+    .m_axis_tready(axis_tready),
+    .m_axis_tlast(axis_tlast),
+    .m_axis_tuser(axis_tuser)
+  );
+
+  // 4. I2C Monitor 
+  logic [39:0] packet;
+  logic [7:0]  shift_reg_mon;
+  logic [3:0]  bit_idx;
+  logic [3:0]  byte_idx;
+  logic        is_started;
+  logic        old_sda;
+  logic        old_scl;
+
+  always_ff @(posedge clk) begin
+    old_sda <= sda;
+    old_scl <= scl;
+    reg_wr_en <= 0;
+
+    if (!rst_n) begin
+      is_started <= 0; bit_idx <= 0; byte_idx <= 0; packet <= 0; shift_reg_mon <= 0;
+    end else begin
+      if (scl == 1 && old_sda == 1 && sda == 0) begin
+        is_started <= 1; bit_idx <= 0; byte_idx <= 0;
+      end 
+      else if (is_started) begin
+        if (scl == 1 && old_sda == 0 && sda == 1) begin
+          is_started <= 0;
+          if (byte_idx == 5) begin
+            reg_wr_en   <= 1;
+            cam_reg_addr  <= {packet[31:24], packet[23:16]};
+            cam_reg_wdata <= {packet[15:8],  packet[7:0]};
+            $display(" [I2C MON] Decoded Write: Addr=0x%04X, Data=0x%04X", {packet[31:24], packet[23:16]}, {packet[15:8], packet[7:0]});
+          end
+        end 
+        else if (old_scl == 0 && scl == 1) begin
+          if (bit_idx < 8) begin
+            shift_reg_mon <= {shift_reg_mon[6:0], sda}; 
+            bit_idx <= bit_idx + 1;
+          end else begin
+            bit_idx <= 0; 
+            byte_idx <= byte_idx + 1;
+            packet <= {packet[31:0], shift_reg_mon};
+          end
+        end
+      end
+    end
+  end
+
+  initial clk = 1'b0;
+  always #5 clk = ~clk; 
+
+  task automatic i2c_write(input [15:0] addr, input [15:0] data);
+    begin
+      @(posedge clk);
+      reg_addr <= addr;
+      reg_data <= data;
+      start <= 1'b1;
+      @(posedge clk);
+      start <= 1'b0;
+      wait (done == 1'b1);
+      @(posedge clk);
+    end
+  endtask
+
+  // AXI-Stream Slave
+  initial begin
+    axis_tready = 1'b1;
+  end
+
+  // AXI-Stream Pixel Counter
+  int axis_pix_count = 0;
+  int axis_line_count = 0;
+  always @(posedge pclk) begin
+    if (axis_tvalid && axis_tready) begin
+      axis_pix_count <= axis_pix_count + 1;
+      if (axis_tuser) begin
+        $display(" [AXIS] SOF (tuser) received. New frame starting.");
+      end
+      if (axis_tlast) begin
+        axis_line_count <= axis_line_count + 1;
+      end
+    end
+  end
+
+  initial begin
+    rst_n = 0;
+    start = 0;
+    reg_addr = 0;
+    reg_data = 0;
+    axis_pix_count = 0;
+    axis_line_count = 0;
+    repeat (10) @(posedge clk);
+    rst_n = 1;
+
+    $display("================================================================");
+    $display(" FPGA RTL to Camera Model Integration Test (Standard I2C + AXIS)");
+    $display("================================================================");
+
+    // OV5640 Initialization Sequence
+    $display(" FPGA -> I2C -> Power ON Reset (0x3008 = 0x82)...");
+    i2c_write(16'h3008, 16'h0082);
+    
+    $display(" FPGA -> I2C -> Power ON Enable (0x3008 = 0x02)...");
+    i2c_write(16'h3008, 16'h0002);
+
+    // Program ROI
+    $display(" FPGA -> I2C -> Writing ROI HSTART (0x3800)...");
+    i2c_write(16'h3800, 16'h0000);
+    $display(" FPGA -> I2C -> Writing ROI VSTART (0x3802)...");
+    i2c_write(16'h3802, 16'h0000);
+    $display(" FPGA -> I2C -> Writing ROI WIDTH (0x3804) to 128...");
+    i2c_write(16'h3804, 16'h0080); 
+    $display(" FPGA -> I2C -> Writing ROI HEIGHT (0x3806) to 720...");
+    i2c_write(16'h3806, 16'h02D0); 
+    
+    $display(" FPGA -> I2C -> Enabling Stream (0x3008)...");
+    i2c_write(16'h3008, 16'h0001);
+
+    $display(" Waiting for camera to stream the ROI frame...");
+    
+    fork
+      begin : timeout_block
+        #50000000; // 50 ms timeout
+        $display(" Result: INTEGRATION FAIL (Timeout waiting for SOF)");
+        $finish;
+      end
+      begin : wait_sof
+        @(posedge axis_tuser); 
+        $display(" AXIS Frame 1 started. Waiting for Frame 2...");
+        axis_pix_count = 0;
+        @(posedge axis_tuser); 
+        $display(" AXIS Frame 2 received.");
+        $display(" Active pixels counted via AXIS: %0d (expected %0d)", axis_pix_count, 128 * 720);
+        if (axis_pix_count == 128 * 720)
+          $display(" Result: INTEGRATION PASS");
+        else
+          $display(" Result: INTEGRATION FAIL (Pixel count mismatch)");
+        $finish;
+      end
+    join_any
+  end
+
+endmodule : axis_cam_tb
+</file>
+
+<file path="tb/dvp_camera_tb.sv">
+`timescale 1ns/1ps
+
+module dvp_camera_tb;
+  import camera_regs_pkg::*;
+
+  logic clk;
+  logic rst_n;
+  logic reg_wr_en;
+  logic [15:0] reg_addr;
+  logic [15:0] reg_wdata;
+  logic reg_rd_en;
+  logic [15:0] reg_raddr;
+  logic [15:0] reg_rdata;
+
+  logic pclk, vsync, href, sof;
+  logic [7:0] pixel_data;
+
+  dvp_camera_model dut (
+    .clk(clk), .rst_n(rst_n),
+    .reg_wr_en(reg_wr_en), .reg_addr(reg_addr), .reg_wdata(reg_wdata),
+    .reg_rd_en(reg_rd_en), .reg_raddr(reg_raddr), .reg_rdata(reg_rdata),
+    .pclk(pclk), .vsync(vsync), .href(href), .pixel_data(pixel_data), .sof(sof)
+  );
+
+  initial clk = 1'b0;
+  always #5 clk = ~clk; 
+
+  task automatic reg_write(input camera_reg_addr_e a, input [15:0] d);
+    begin
+      @(posedge clk);
+      reg_wr_en = 1'b1; reg_addr = a; reg_wdata = d;
+      @(posedge clk);
+      reg_wr_en = 1'b0;
+    end
+  endtask
+
+  task automatic program_roi(input int x0, input int y0, input int w, input int h);
+    begin
+      reg_write(REG_ROI_HSTART, x0[15:0]);
+      reg_write(REG_ROI_VSTART, y0[15:0]);
+      reg_write(REG_ROI_HSIZE,  w[15:0]);
+      reg_write(REG_ROI_VSIZE,   h[15:0]);
+    end
+  endtask
+
+  task automatic run_case(
+    input string name,
+    input int x0, input int y0, input int w, input int h
+  );
+    int local_pix;
+    real t0, t1, frame_time_ns;
+    begin
+      $display("------------------------------------------------------------------");
+      $display(" Case: %s", name);
+      $display(" Window: (%0d,%0d) - (%0d,%0d) = %0dx%0d", x0, y0, x0+w-1, y0+h-1, w, h);
+      $display("------------------------------------------------------------------");
+
+      reg_write(REG_STREAM_ENABLE, 16'h0000);
+      program_roi(x0, y0, w, h);
+
+      @(posedge clk);
+      reg_write(REG_STREAM_ENABLE, 16'h0001);
+
+      // ??? ?? ?? ???? ??? ???? ???
+      @(posedge sof);
+      t0 = $realtime;
+      
+      // ????? ???????? ??? ???? ?? ????
+      local_pix = 0;
+      fork : count_pixels
+        begin
+          forever begin
+            @(posedge pclk);
+            if (href) local_pix++;
+          end
+        end
+      join_none
+      
+      // ??? ?? ?? ???? ???? ???? ??? (???? ?? ???? ???? ????)
+      @(posedge sof);
+      t1 = $realtime;
+      
+      // ????? ???? ???????
+      disable count_pixels;
+
+      reg_write(REG_STREAM_ENABLE, 16'h0000);
+
+      frame_time_ns = t1 - t0;
+      $display(" Measured frame time: %.1f ns (%.1f us)", frame_time_ns, frame_time_ns/1000.0);
+      $display(" Measured FPS: ~%0d", (frame_time_ns > 0.0) ? int'(1.0e9 / frame_time_ns) : 0);
+      $display(" Active pixels counted: %0d (expected %0d)", local_pix, w*h);
+
+      if (local_pix == w*h)
+        $display(" Result: PASS");
+      else
+        $display(" Result: FAIL (pixel count mismatch)");
+      $display("");
+    end
+  endtask
+
+  initial begin
+    reg_wr_en = 0; reg_addr = 0; reg_wdata = 0;
+    reg_rd_en = 0; reg_raddr = 0;
+    rst_n = 0;
+    repeat (5) @(posedge clk);
+    rst_n = 1;
+
+    $display("================================================================");
+    $display(" OV5640 DVP Camera Model - Register-Driven ROI Regression");
+    $display("================================================================");
+
+    run_case("A: Full res (2592x1944)",     0,   0, 2592, 1944);
+    run_case("B: Half-height (2592x972)",   0, 486, 2592,  972);
+    run_case("C: Tall-narrow (128x720)",    0,   0,  128,  720);
+
+    $display("================================================================");
+    $display(" OVERALL: DONE");
+    $display("================================================================");
+    $finish;
+  end
+
+endmodule : dvp_camera_tb
+</file>
+
+<file path="tb/i2c_cam_tb.sv">
+`timescale 1ns/1ps
+
+module i2c_cam_tb;
+  import camera_regs_pkg::*;
+
+  logic clk;
+  logic rst_n;
+
+  // I2C Master (DUT) signals
+  logic        start;
+  logic [15:0] reg_addr;
+  logic [15:0] reg_data;
+  logic        done;
+  
+  // I2C physical wires (sda is now a simple logic, no inout/pullup)
+  logic        scl;
+  wire         sda; // ??? ?? ????? ???
+  pullup(sda);     // ??? ?? ?? ????? ??
+  // Camera Model signals
+  logic        reg_wr_en;
+  logic [15:0] cam_reg_addr;
+  logic [15:0] cam_reg_wdata;
+  logic        reg_rd_en = 0;
+  logic [15:0] reg_raddr = 0;
+  logic [15:0] reg_rdata;
+
+  logic        pclk, vsync, href, sof;
+  logic [7:0]  pixel_data;
+
+  // 1. Instantiate the I2C Master (FPGA RTL)
+  i2c_master dut_master (
+    .clk(clk), .rst_n(rst_n),
+    .start(start), .reg_addr(reg_addr), .reg_data(reg_data), .done(done),
+    .scl(scl), .sda(sda)
+  );
+
+  // 2. Instantiate the Camera Model
+  dvp_camera_model cam (
+    .clk(clk), .rst_n(rst_n),
+    .reg_wr_en(reg_wr_en), .reg_addr(cam_reg_addr), .reg_wdata(cam_reg_wdata),
+    .reg_rd_en(reg_rd_en), .reg_raddr(reg_raddr), .reg_rdata(reg_rdata),
+    .pclk(pclk), .vsync(vsync), .href(href), .pixel_data(pixel_data), .sof(sof)
+  );
+
+  // 3. I2C Monitor 
+  logic [39:0] packet;
+  logic [7:0]  shift_reg_mon;
+  logic [3:0]  bit_idx;
+  logic [3:0]  byte_idx;
+  logic        is_started;
+  logic        old_sda;
+  logic        old_scl;
+
+  always_ff @(posedge clk) begin
+    old_sda <= sda;
+    old_scl <= scl;
+    reg_wr_en <= 0;
+
+    if (!rst_n) begin
+      is_started <= 0; bit_idx <= 0; byte_idx <= 0; packet <= 0; shift_reg_mon <= 0;
+    end else begin
+      if (scl == 1 && old_sda == 1 && sda == 0) begin
+        is_started <= 1; bit_idx <= 0; byte_idx <= 0;
+      end 
+      else if (is_started) begin
+        if (scl == 1 && old_sda == 0 && sda == 1) begin
+          is_started <= 0;
+          if (byte_idx == 5) begin
+            reg_wr_en   <= 1;
+            cam_reg_addr  <= {packet[31:24], packet[23:16]};
+            cam_reg_wdata <= {packet[15:8],  packet[7:0]};
+            $display(" [I2C MON] Decoded Write: Addr=0x%04X, Data=0x%04X", {packet[31:24], packet[23:16]}, {packet[15:8], packet[7:0]});
+          end
+        end 
+        else if (old_scl == 0 && scl == 1) begin
+          if (bit_idx < 8) begin
+            shift_reg_mon <= {shift_reg_mon[6:0], sda}; 
+            bit_idx <= bit_idx + 1;
+          end else begin
+            bit_idx <= 0; 
+            byte_idx <= byte_idx + 1;
+            packet <= {packet[31:0], shift_reg_mon};
+          end
+        end
+      end
+    end
+  end
+
+  initial clk = 1'b0;
+  always #5 clk = ~clk; 
+
+  task automatic i2c_write(input [15:0] addr, input [15:0] data);
+    begin
+      @(posedge clk);
+      reg_addr <= addr;
+      reg_data <= data;
+      start <= 1'b1;
+      @(posedge clk);
+      start <= 1'b0;
+      wait (done == 1'b1);
+      @(posedge clk);
+    end
+  endtask
+
+  // Pixel counter (Fixed Race Condition)
+  logic        count_en = 0;
+  int local_pix;
+  always @(posedge pclk) begin
+    if (count_en && href) local_pix <= local_pix + 1;
+  end
+
+  initial begin
+    rst_n = 0;
+    start = 0;
+    reg_addr = 0;
+    reg_data = 0;
+    local_pix = 0;
+    count_en = 0;
+    repeat (10) @(posedge clk);
+    rst_n = 1;
+
+    $display("================================================================");
+    $display(" FPGA RTL to Camera Model Integration Test");
+    $display("================================================================");
+
+    $display(" FPGA -> I2C -> Writing ROI HSTART (0x3800)...");
+    i2c_write(16'h3800, 16'h0000);
+    $display(" FPGA -> I2C -> Writing ROI VSTART (0x3802)...");
+    i2c_write(16'h3802, 16'h0000);
+    $display(" FPGA -> I2C -> Writing ROI WIDTH (0x3804) to 128...");
+    i2c_write(16'h3804, 16'h0080); 
+    $display(" FPGA -> I2C -> Writing ROI HEIGHT (0x3806) to 720...");
+    i2c_write(16'h3806, 16'h02D0); 
+    $display(" FPGA -> I2C -> Enabling Stream (0x3008)...");
+    i2c_write(16'h3008, 16'h0001);
+
+    $display(" Waiting for camera to stream the ROI frame...");
+    
+    fork
+      begin : timeout_block
+        #50000000; // 50 ms timeout
+        $display(" Result: INTEGRATION FAIL (Timeout waiting for SOF)");
+        $finish;
+      end
+      begin : wait_sof
+        @(posedge sof);
+        $display(" Frame 1 started. Waiting for Frame 2...");
+        count_en = 1;
+        local_pix = 0;
+        @(posedge sof); 
+        count_en = 0;
+        $display(" Frame 2 received.");
+        $display(" Active pixels counted: %0d (expected %0d)", local_pix, 128 * 720);
+        if (local_pix == 128 * 720)
+          $display(" Result: INTEGRATION PASS");
+        else
+          $display(" Result: INTEGRATION FAIL (Pixel count mismatch)");
+        $finish;
+      end
+    join_any
+  end
+
+endmodule : i2c_cam_tb
+</file>
+
+<file path="tb/mipi_camera_tb.sv">
+`timescale 1ns/1ps
+
+module mipi_camera_tb;
+  import camera_regs_pkg::*;
+
+  logic clk;
+  logic rst_n;
+  logic reg_wr_en;
+  logic [15:0] reg_addr;
+  logic [15:0] reg_wdata;
+  logic reg_rd_en;
+  logic [15:0] reg_raddr;
+  logic [15:0] reg_rdata;
+
+  logic byte_clk, byte_valid, sop, eop;
+  logic [7:0] byte_data, packet_di;
+  logic frame_valid, line_valid, sof;
+  logic [7:0] pixel_data;
+
+  mipi_camera_model dut (
+    .clk(clk), .rst_n(rst_n),
+    .reg_wr_en(reg_wr_en), .reg_addr(reg_addr), .reg_wdata(reg_wdata),
+    .reg_rd_en(reg_rd_en), .reg_raddr(reg_raddr), .reg_rdata(reg_rdata),
+    .byte_clk(byte_clk), .byte_valid(byte_valid), .byte_data(byte_data),
+    .sop(sop), .eop(eop), .packet_di(packet_di),
+    .frame_valid(frame_valid), .line_valid(line_valid),
+    .pixel_data(pixel_data), .sof(sof)
+  );
+
+  initial clk = 1'b0;
+  always #5 clk = ~clk; // 100 MHz register-bus clock
+
+  task automatic reg_write(input camera_reg_addr_e a, input [15:0] d);
+    begin
+      @(posedge clk);
+      reg_wr_en = 1'b1; reg_addr = a; reg_wdata = d;
+      @(posedge clk);
+      reg_wr_en = 1'b0;
+    end
+  endtask
+
+  task automatic program_roi(input int x0, input int y0, input int w, input int h);
+    begin
+      reg_write(REG_ROI_HSTART, x0[15:0]);
+      reg_write(REG_ROI_VSTART, y0[15:0]);
+      reg_write(REG_ROI_HSIZE,  w[15:0]);
+      reg_write(REG_ROI_VSIZE,   h[15:0]);
+    end
+  endtask
+
+  task automatic run_case(
+    input string name,
+    input int x0, input int y0, input int w, input int h
+  );
+    int local_pix;
+    real t0, t1, frame_time_ns;
+    begin
+      $display("------------------------------------------------------------------");
+      $display(" Case: %s", name);
+      $display(" Window: (%0d,%0d) - (%0d,%0d) = %0dx%0d", x0, y0, x0+w-1, y0+h-1, w, h);
+      $display("------------------------------------------------------------------");
+
+      reg_write(REG_STREAM_ENABLE, 16'h0000);
+      program_roi(x0, y0, w, h);
+
+      @(posedge clk);
+      reg_write(REG_STREAM_ENABLE, 16'h0001);
+
+      @(posedge sof);
+      t0 = $realtime;
+      
+      local_pix = 0;
+      fork : count_pixels
+        begin
+          forever begin
+            @(posedge byte_clk);
+            if (line_valid) local_pix++;
+          end
+        end
+      join_none
+      
+      @(posedge sof);
+      t1 = $realtime;
+      
+      disable count_pixels;
+
+      reg_write(REG_STREAM_ENABLE, 16'h0000);
+
+      frame_time_ns = t1 - t0;
+      $display(" Measured frame time: %.1f ns (%.1f us)", frame_time_ns, frame_time_ns/1000.0);
+      $display(" Measured FPS: ~%0d", (frame_time_ns > 0.0) ? int'(1.0e9 / frame_time_ns) : 0);
+      $display(" Active pixels counted: %0d (expected %0d)", local_pix, w*h);
+
+      if (local_pix == w*h)
+        $display(" Result: PASS");
+      else
+        $display(" Result: FAIL (pixel count mismatch)");
+      $display("");
+    end
+  endtask
+
+  initial begin
+    reg_wr_en = 0; reg_addr = 0; reg_wdata = 0;
+    reg_rd_en = 0; reg_raddr = 0;
+    rst_n = 0;
+    repeat (5) @(posedge clk);
+    rst_n = 1;
+
+    $display("================================================================");
+    $display(" OV5640 MIPI Camera Model - Register-Driven ROI Regression");
+    $display("================================================================");
+
+    run_case("A: Full res (2592x1944)",   0,   0, 2592, 1944);
+    run_case("B: Half-height (2592x972)", 0, 486, 2592,  972);
+    run_case("C: Tall-narrow (128x720)",  0,   0,  128,  720);
+
+    $display("================================================================");
+    $display(" OVERALL: DONE");
+    $display("================================================================");
+    $finish;
+  end
+
+endmodule : mipi_camera_tb
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2026 Armin Mashhadi Ebrahim
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
+<file path="README.md">
+# CubeOCC
+
+**CubeOCC** is an FPGA-based optical communication project that encodes and transmits digital data using RGB / ON-OFF cube frames.
+
+The project focuses on designing and simulating the complete communication protocol in HDL, including frame generation, synchronization, payload transmission, error correction, and frame detection.
+
+## Overview
+
+CubeOCC represents data as a grid of illuminated cubes. Each cube can encode information using its state or color.
+
+The initial design uses an **8×8 frame**, giving a total of **64 cubes per frame**.
+
+Each frame contains:
+
+* **4 fixed markers** for orientation and frame detection
+* **1 clock marker** used to distinguish consecutive frames
+* **59 remaining cubes** for payload and error-correction data
+
+The clock marker is especially useful when two consecutive payload frames would otherwise appear identical.
+
+## Frame Structure
+
+```text
+8 × 8 Frame
+┌───────────────────────────────┐
+│ Fixed markers                │
+│                              │
+│        Payload / ECC         │
+│                              │
+│                    Clock     │
+└───────────────────────────────┘
+```
+
+The exact payload and error-correction layout may evolve as the protocol is developed.
+
+## Transfer Sequence
+
+A transmission consists of three main stages:
+
+```text
+START FRAME
+     ↓
+DATA FRAMES
+     ↓
+END FRAME
+```
+
+### Start Frame
+
+A dedicated bright/white frame acts as the transmission preamble.
+
+It tells the receiver that a new CubeOCC transfer is beginning.
+
+### Data Frames
+
+Data is divided into 8×8 frames containing:
+
+* orientation markers
+* clock information
+* payload
+* error-correction information
+
+### End Frame
+
+A dedicated mostly-black frame indicates that the transmission has finished.
+
+The orientation markers remain visible while the clock and designated end marker are disabled, allowing the receiver to distinguish the end frame from ordinary data.
+
+## FPGA Simulation
+
+The first version of CubeOCC is intended to be implemented and verified entirely through an FPGA testbench.
+
+The simulation will cover:
+
+* frame generation
+* start-frame detection
+* end-frame detection
+* clock handling
+* payload encoding
+* payload decoding
+* error detection/correction
+* complete transmission sequences
+
+A simulated button press will be used to start a transmission, making the design easier to adapt to physical FPGA hardware later.
+
+## Project Goals
+
+The main goals of CubeOCC are to:
+
+* Design a reliable optical frame protocol
+* Implement the protocol in HDL
+* Create an FPGA transmitter and receiver
+* Detect frame orientation automatically
+* Synchronize consecutive frames
+* Add error correction
+* Verify the entire system through simulation
+* Keep the design suitable for a future physical RGB/LED implementation
+
+## Repository Structure
+
+```text
+CubeOCC/
+├── rtl/        # HDL modules
+├── tb/         # Testbenches
+├── sim/        # Simulation files and outputs
+├── docs/       # Protocol documentation
+└── README.md
+```
+
+The directory structure may change as development progresses.
+
+## Status
+
+🚧 **CubeOCC is currently under development.**
+
+The initial phase focuses on defining the frame protocol and implementing the transmitter, receiver, and verification environment.
+
+## Team
+
+CubeOCC is being developed as a **two-person FPGA project**.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/.obsidian/workspace.json">
+{
+  "main": {
+    "id": "2a6700cd7eecc390",
+    "type": "split",
+    "children": [
+      {
+        "id": "e31f7bc5588042eb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d489b874bb0aea56",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "08_SIMULATION_CAMERA_MODEL.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "08_SIMULATION_CAMERA_MODEL"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "128df1dd290d1ab1",
+    "type": "split",
+    "children": [
+      {
+        "id": "75f39a33214856f3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b4da90099c61a22",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "7b7fa07152cd7c95",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "ceea63a3fd6d5c8b",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "56ce6b17eb0773f0",
+    "type": "split",
+    "children": [
+      {
+        "id": "12b4f26d05169913",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6d6c246894d518c8",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "00_HOME.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "46cc90019d174839",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "00_HOME.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "4e08b89be81ab7a6",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e774601090c1ed43",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "140b1c3b88447195",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "00_HOME.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "d489b874bb0aea56",
+  "lastOpenFiles": [
+    "00_HOME.md",
+    "02_OPEN_QUESTIONS.md",
+    "README.md",
+    "14_GLOSSARY.md",
+    "13_MONTH_PLAN.md",
+    "12_DECISION_LOG.md",
+    "11_VERIFICATION_CHECKLIST.md",
+    "10_ADAPTIVE_TRANSMISSION_EXPERIMENT.md",
+    "09_IMAGE_PROCESSING_EXPERIMENTS.md",
+    "08_SIMULATION_CAMERA_MODEL.md",
+    "07_ECC_AND_METRICS.md",
+    "06_OPTIONAL_PARALLEL_PIPELINES.md",
+    "05_V1_STREAMING_PIPELINE.md",
+    "04_CAMERA_ROI_AND_CALIBRATION.md",
+    "03_FRAME_AND_LINK_PROTOCOL.md",
+    "01_CONFIRMED_REQUIREMENTS.md",
+    "02_OPEN_QUESTIONS_AND_AMBIGUITIES.md",
+    "11_MONTH_PLAN.md",
+    "10_DECISION_LOG.md",
+    "09_VERIFICATION_CHECKLIST.md",
+    "08_ARCHITECTURE_RECOMMENDATIONS.md",
+    "06_SIMULATION_AND_TESTBENCH.md",
+    "05_FPGA_PROCESSING_PIPELINE.md",
+    "04_TWO_CAMERA_FEEDBACK_SYSTEM.md"
+  ]
+}
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/00_HOME.md">
+---
+project: CubeOCC
+type: hub
+status: active
+last_reviewed: 2026-08-22
+---
+
+# CubeOCC — Source of Truth
+
+This vault is the living project specification. It separates **confirmed decisions**, **V1 implementation**, **optional/V2 experiments**, **open questions**, and **superseded ideas**.
+
+> [!important]
+> If something conflicts with `01_CONFIRMED_REQUIREMENTS.md`, the confirmed-requirements note wins.
+
+## Navigation
+
+- [[01_CONFIRMED_REQUIREMENTS]]
+- [[02_OPEN_QUESTIONS]]
+- [[03_FRAME_AND_LINK_PROTOCOL]]
+- [[04_CAMERA_ROI_AND_CALIBRATION]]
+- [[05_V1_STREAMING_PIPELINE]]
+- [[06_OPTIONAL_PARALLEL_PIPELINES]]
+- [[07_ECC_AND_METRICS]]
+- [[08_SIMULATION_CAMERA_MODEL]]
+- [[09_IMAGE_PROCESSING_EXPERIMENTS]]
+- [[10_ADAPTIVE_TRANSMISSION_EXPERIMENT]]
+- [[11_VERIFICATION_CHECKLIST]]
+- [[12_DECISION_LOG]]
+- [[13_MONTH_PLAN]]
+- [[14_GLOSSARY]]
+
+## Current V1 concept
+
+```mermaid
+flowchart LR
+    BTN[Simulated button] --> TX[START / DATA / END optical frames]
+    TX --> C1[Camera 1\nGrayscale / ROI / feedback\n~60 FPS target]
+    TX --> C2[Camera 2\nRGB data camera\n~30 FPS target]
+    C1 --> CAL[ROI + marker geometry\nbrightness + confidence]
+    CAL --> REG[Camera 2 sensor ROI registers]
+    REG --> C2
+    C2 --> STREAM[ROI pixel stream only]
+    STREAM --> IP[Image processing]
+    IP --> WARP[Warp from markers]
+    WARP --> GRID[Grid extraction]
+    GRID --> AVG[Per-cell RGB averaging]
+    AVG --> CLASS[RGB threshold classifier]
+    CLASS --> LINK[START / DATA / END decoder]
+    LINK --> ECC[ECC decode]
+    ECC --> OUT[Recovered ordered bitstream + metrics]
+```
+
+## V1 philosophy
+
+1. One streaming pipeline first.
+2. No full raw-frame buffering in the baseline.
+3. Camera 2 uses sensor-level ROI windowing.
+4. Keep reduced information whenever possible: per-cell sums/averages, symbols, decoded bits.
+5. Benchmark first; add parallel workers only if one pipeline cannot keep up.
+6. Treat glare as a channel impairment to measure, not something V1 promises to correct.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/01_CONFIRMED_REQUIREMENTS.md">
+---
+project: CubeOCC
+type: requirements
+status: source-of-truth
+last_reviewed: 2026-08-22
+---
+
+# Confirmed Requirements
+
+## Project scope
+
+- Two-person GitHub project.
+- Approximate duration: one month.
+- FPGA-oriented Optical Camera Communication receiver.
+- Simulation-first because the physical FPGA/camera setup is not currently available.
+- Main initial payload is text, but the receiver should recover a generic bitstream.
+- The testbench should behave like real camera hardware as closely as practical so the FPGA-side code can later be connected to a real sensor with minimal or no redesign.
+
+## RGB symbol alphabet
+
+All **8 binary RGB combinations are legal DATA symbols**:
+
+| RGB state | Example bit mapping |
+|---|---|
+| Black | 000 |
+| Blue | 001 |
+| Green | 010 |
+| Green + Blue | 011 |
+| Red | 100 |
+| Red + Blue | 101 |
+| Red + Green | 110 |
+| White | 111 |
+
+## 8×8 DATA frame
+
+- 64 total optical cells.
+- 4 corner markers are white during normal DATA.
+- 1 dedicated CLK/toggle cell.
+- 59 remaining cells carry payload + ECC symbols.
+- Each of those 59 cells carries one of 8 RGB states = 3 bits.
+- Therefore **177 coded bits per 8×8 DATA frame** before payload/ECC packing is chosen.
+
+## CLK cell
+
+- Exact physical cell coordinate is not important.
+- It may be first row/second column, last row, or another reserved cell.
+- It should be configurable in code.
+- CLK toggles between successive transmitted DATA frames.
+- This lets identical consecutive payload layouts still represent different transmitted frames.
+
+## START frame
+
+- Exactly one transmitted optical frame in the current baseline.
+- **All 64 cells are white**, including the CLK position.
+- Carries no payload.
+
+## END frame
+
+Exactly one transmitted optical frame:
+
+- TL marker = white
+- TR marker = white
+- BL marker = white
+- BR marker = off/black
+- CLK = off/black
+- all ordinary data cells = off/black
+
+This supersedes earlier generated diagrams that showed END incorrectly.
+
+## Control-frame policy
+
+- Black and white remain legal DATA cell symbols.
+- START and END are reserved **whole-frame patterns**, not reserved individual colors.
+- No two-frame persistence requirement in V1.
+- Sequence number is **optional/V2 only**, not required in V1.
+
+## Capture/transmit-rate concept
+
+Example target relationship:
+
+- Camera 1 / tracking camera: about **60 FPS**
+- Camera 2 / RGB data camera: about **30 FPS**
+- A camera may capture the same displayed optical frame multiple times.
+- CLK distinguishes a genuinely new transmitted DATA frame from repeated camera captures of the same displayed frame.
+
+## Camera 1
+
+- grayscale
+- lower quality is acceptable
+- faster than Camera 2
+- continuously tracks ROI
+- detects marker positions
+- computes/updates geometry
+- estimates simple brightness
+- outputs tracking/frame confidence
+- sends feedback/parameters to the processing path
+
+### Explicitly removed from V1
+
+- no glare-detection algorithm
+- no glare-compensation algorithm
+
+Glare remains a test condition whose effect on BER can be measured.
+
+## Camera 2
+
+- RGB
+- slower than Camera 1
+- used for DATA recovery
+- configured using ROI information from Camera 1
+- uses sensor-level ROI/windowing
+- FPGA receives the cropped ROI stream rather than the full raw sensor frame
+
+## Camera calibration at transfer start
+
+At START:
+
+1. Both cameras observe the START/marker geometry.
+2. Detect the four corresponding corner positions in Camera 1.
+3. Detect the four corresponding corner positions in Camera 2.
+4. Compute the relationship/per-corner coordinate differences between both views.
+5. Use that mapping during the transfer to translate Camera 1 ROI information into Camera 2 sensor-window coordinates.
+
+Large residuals should be reported as mapping/calibration error rather than claimed as a specific defect such as fisheye distortion.
+
+## Warp
+
+- Marker geometry is available every frame.
+- Warp/geometric correction is updated from current marker positions every frame.
+- No V1 optimization that reuses an old warp is required.
+
+## V1 image-processing flow
+
+- sensor-cropped RGB ROI stream
+- denoise/bypass experiment
+- perspective/geometric correction
+- configurable grid extraction
+- per-cell center-region RGB accumulation/averaging
+- RGB threshold classifier
+- frame/link decode
+- ECC decode
+- recovered bitstream
+
+## Storage philosophy
+
+V1 should **not** store complete raw images merely to process them later.
+
+Instead:
+
+- stream pixels through image processing
+- use only required line/local buffers
+- accumulate per-cell RGB information
+- retain reduced results such as averages, symbols, metadata or decoded bits
+
+Full-frame FF storage is no longer a V1 requirement.
+
+## Sampling radius
+
+- configurable experiment parameter
+- test several values/fractions in the testbench
+- visualize the sampling region during validation
+- choose the V1 default using measured BER/classification results
+
+## Color decision
+
+V1: simple per-channel RGB thresholds.
+
+V2: normalized RGB/chromaticity experiment.
+
+## ECC
+
+Compare:
+
+- no-ECC baseline
+- multiple Hamming candidates
+- multiple BCH candidates
+- different correction strengths
+- payload efficiency
+- raw BER
+- post-ECC BER
+- goodput
+- latency
+- FPGA resources
+
+## Simulation
+
+- simulated start button
+- testbench emulates camera register behavior and pixel-stream behavior
+- Camera 2 ROI/windowing registers are modeled
+- DUT interacts with simulated sensor as if it were hardware
+- real phone captures from a laptop/display are used as dataset inputs
+- images are labeled by conditions
+- CSV/TXT results are generated
+
+## Parallelism policy
+
+V1:
+
+- one reusable processing pipeline
+- no scheduler required if one pipeline keeps up
+- no input FIFO required if there is only one worker and it can sustain sensor rate
+
+Optional optimization:
+
+- instantiate the same pipeline module N times
+- input scheduler chooses a free worker
+- one shared overflow buffer only if needed
+- output reorder buffer restores frame order
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/02_OPEN_QUESTIONS.md">
+---
+project: CubeOCC
+type: open-questions
+status: active
+last_reviewed: 2026-08-22
+---
+
+# Open Questions
+
+## Frame/protocol
+
+- [ ] Exact bit mapping of the 8 RGB cube symbols, if not using direct `RGB = 3-bit value`.
+- [ ] Exact optical DATA frame rate for the main experiments.
+- [ ] Whether START/END should later gain extra robustness variants for comparison.
+- [ ] Whether sequence number should be implemented in V2.
+- [ ] Exact policy if Camera 2 completely misses one or more transmitted frames.
+
+## Grid scaling
+
+- [ ] Main grid sizes to benchmark: likely 8×8, 16×16, 32×32.
+- [ ] How the receiver is told which grid size is active.
+- [ ] Whether grid size changes only between transfers or may adapt during a transfer.
+
+## Camera interface
+
+- [ ] Exact real camera/sensor model to target later.
+- [ ] Exact control bus for camera registers, e.g. I2C/SCCB/custom model.
+- [ ] Exact pixel-stream pins/protocol to emulate.
+- [ ] Confirm target sensor supports required hardware ROI/windowing behavior.
+
+## Processing
+
+- [ ] Final V1 denoise choice after measurement.
+- [ ] Best sampling-radius fraction after dataset sweeps.
+- [ ] Final RGB threshold values and whether thresholds are global or calibrated.
+
+## ECC
+
+- [ ] Final Hamming set.
+- [ ] Final BCH set.
+- [ ] Whether shortened block codes are worth implementing to use more of the 177-bit frame.
+- [ ] Exact packet/header format inside ECC-protected payload.
+- [ ] Whether CRC is included in addition to ECC.
+
+## Optional parallel architecture
+
+- [ ] Does one pipeline meet the target frame rate after synthesis?
+- [ ] If not, how many workers are needed?
+- [ ] If every worker is busy when a new frame begins, use shared overflow buffering, sensor/backpressure, or frame drop?
+
+## 2026-08-24 — Camera Output Bit-Width Benchmarking (Optional / V2)
+
+- **Idea by:** Armin
+- **Goal:** Test different camera output data formats (e.g., RAW8, RGB565, YUV422) to evaluate their impact on overall speed and throughput.
+- **Current V1 State:** V1 uses standard 8-bit DVP streaming.
+- **Future Work:** Run a benchmark matrix comparing:
+  - FPS
+  - Resource usage
+  - Image processing latency
+  - Overall throughput
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/03_FRAME_AND_LINK_PROTOCOL.md">
+---
+project: CubeOCC
+type: protocol
+status: confirmed-draft
+last_reviewed: 2026-08-22
+---
+
+# Frame and Link Protocol
+
+## DATA frame — 8×8
+
+```text
+64 cells total
+= 4 white corner markers
++ 1 CLK/toggle cell
++ 59 RGB payload/ECC cells
+```
+
+**59 × 3 = 177 coded bits.**
+
+### Normal DATA invariants
+
+- TL = white marker
+- TR = white marker
+- BL = white marker
+- BR = white marker
+- CLK = toggles on each newly transmitted DATA frame
+- 59 remaining cells = legal 8-state RGB symbols
+
+> [!note]
+> CLK location is configurable and architecturally unimportant.
+
+## START
+
+```text
+All 64 cells = WHITE
+```
+
+- one optical frame
+- no payload
+- enters active transfer state
+
+## END
+
+```text
+TL = WHITE
+TR = WHITE
+BL = WHITE
+BR = BLACK/OFF
+CLK = BLACK/OFF
+all ordinary cells = BLACK/OFF
+```
+
+- one optical frame
+- no payload
+
+## Why black and white can still be legal DATA symbols
+
+The protocol reserves **full-frame layouts**, not individual colors. Normal DATA can contain black and white cells freely.
+
+## Receiver FSM
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> ACTIVE: START detected
+    ACTIVE --> ACTIVE: DATA + new CLK state
+    ACTIVE --> ACTIVE: repeated camera capture / same CLK
+    ACTIVE --> END_SEEN: END pattern
+    END_SEEN --> DONE
+    DONE --> IDLE: reset / next transfer
+```
+
+## Multiple camera captures of one optical frame
+
+Example:
+
+```text
+Optical frame A / CLK=0 -> capture 1
+Optical frame A / CLK=0 -> capture 2
+Optical frame A / CLK=0 -> capture 3
+Optical frame B / CLK=1 -> capture 4
+```
+
+Only the transition to the new CLK state commits a new optical DATA frame.
+
+## Optional V2 sequence number
+
+Not required in V1. A small sequence field can later be placed inside the protected payload to detect missed/duplicated transmitted frames. No machine learning is involved; it is only a small counter.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/07_ECC_AND_METRICS.md">
+---
+project: CubeOCC
+type: ecc
+status: experiment
+last_reviewed: 2026-08-22
+---
+
+# ECC and Metrics
+
+## Capacity reminder
+
+8×8 DATA frame:
+
+**59 cells × 3 bits/cell = 177 coded bits.**
+
+ECC acts on the recovered binary stream after RGB-symbol classification. A wrong optical symbol may create one or more bit errors; the ECC decoder attempts to correct those bit flips.
+
+## Baseline
+
+Always include **No ECC** as the raw reliability/throughput reference.
+
+## Hamming candidates
+
+Standard Hamming codes are single-error-correcting (SEC). Extended Hamming variants add an overall parity bit and are commonly used as SECDED: correct 1 bit and detect 2-bit errors per codeword.
+
+| Scheme           | Code `(n,k)` | Data bits/codeword | Redundancy bits/codeword | Correction capability | Detection note | Whole codewords in 177 bits | Useful data bits/frame | Used coded bits | Padding |
+| ---------------- | -----------: | -----------------: | -----------------------: | --------------------- | -------------- | --------------------------: | ---------------------: | --------------: | ------: |
+| Hamming          |        (7,4) |                  4 |                        3 | 1 bit                 | dmin=3         |                          25 |                    100 |             175 |       2 |
+| Hamming          |      (15,11) |                 11 |                        4 | 1 bit                 | dmin=3         |                          11 |                    121 |             165 |      12 |
+| Hamming          |      (31,26) |                 26 |                        5 | 1 bit                 | dmin=3         |                           5 |                    130 |             155 |      22 |
+| Extended Hamming |        (8,4) |                  4 |                        4 | 1 bit                 | SECDED         |                          22 |                     88 |             176 |       1 |
+| Extended Hamming |      (16,11) |                 11 |                        5 | 1 bit                 | SECDED         |                          11 |                    121 |             176 |       1 |
+| Extended Hamming |      (32,26) |                 26 |                        6 | 1 bit                 | SECDED         |                           5 |                    130 |             160 |      17 |
+
+### Example: Hamming (15,11)
+
+- 11 information bits become a 15-bit codeword
+- 4 bits are redundancy
+- 11 complete codewords fit in 177 coded bits
+- 121 information bits/frame
+- 165 coded bits used
+- 12 bits padding unless shortened/custom packing is introduced
+
+## BCH candidates
+
+For binary BCH candidates, correction capability is `t = floor((dmin-1)/2)`.
+
+| Scheme | Code `(n,k,dmin)` | Data bits/codeword | Redundancy bits/codeword | Corrects up to | Whole codewords in 177 bits | Useful data bits/frame | Used coded bits | Padding |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BCH | (15,7,5) | 7 | 8 | 2 bits/codeword | 11 | 77 | 165 | 12 |
+| BCH | (15,5,7) | 5 | 10 | 3 bits/codeword | 11 | 55 | 165 | 12 |
+| BCH | (31,21,5) | 21 | 10 | 2 bits/codeword | 5 | 105 | 155 | 22 |
+| BCH | (31,16,7) | 16 | 15 | 3 bits/codeword | 5 | 80 | 155 | 22 |
+| BCH | (31,11,11) | 11 | 20 | 5 bits/codeword | 5 | 55 | 155 | 22 |
+
+> [!note]
+> These are candidate standard block codes. Final implementation must lock and verify the exact generator polynomial/decoder configuration in the golden model.
+
+## Possible shortened codes
+
+177 is not divisible by many standard block lengths. A later experiment may use shortened codes to improve packing efficiency. Do not add this complexity until standard candidates are working.
+
+## Experiment result table
+
+| ECC mode | Grid | Raw BER | Post-ECC BER | Uncorrectable frames | Useful payload/frame | Goodput | Decoder latency | LUT | FF | BRAM | DSP |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| None | 8×8 |  |  |  | 177* |  |  |  |  |  |  |
+| Hamming (7,4) | 8×8 |  |  |  | 100 |  |  |  |  |  |  |
+| Hamming (15,11) | 8×8 |  |  |  | 121 |  |  |  |  |  |  |
+| Hamming (31,26) | 8×8 |  |  |  | 130 |  |  |  |  |  |  |
+| BCH (15,7,5) | 8×8 |  |  |  | 77 |  |  |  |  |  |  |
+| BCH (15,5,7) | 8×8 |  |  |  | 55 |  |  |  |  |  |  |
+| BCH (31,21,5) | 8×8 |  |  |  | 105 |  |  |  |  |  |  |
+| BCH (31,16,7) | 8×8 |  |  |  | 80 |  |  |  |  |  |  |
+| BCH (31,11,11) | 8×8 |  |  |  | 55 |  |  |  |  |  |  |
+
+`*` No-ECC row assumes all 177 coded bits are available before packet/header overhead.
+
+## Metrics
+
+- Raw BER
+- Post-ECC BER
+- Symbol Error Rate
+- Uncorrectable frame rate
+- Goodput
+- Decoder latency
+- LUT / FF / BRAM / DSP usage
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/08_SIMULATION_CAMERA_MODEL.md">
+---
+project: CubeOCC
+type: testbench
+status: v1-active
+last_reviewed: 2026-08-23
+---
+
+# Simulation Camera Model
+
+## Goal
+
+The FPGA code should interact with the testbench as if the testbench were an actual camera sensor.
+Long-term goal: replace the simulated camera with a real physical camera without redesigning the core FPGA receiver.
+
+## Current Status
+
+- **DVP Model:** Active and passing regression tests. (Primary V1 target)
+- **MIPI Model:** Active and passing regression tests. (Deferred to V2 for physical hardware)
+- Both models simulate OV5640 behavior, including 16-bit SCCB register addresses (e.g., `0x3800` for HSTART) and true hardware ROI windowing (FPS increases as window shrinks).
+
+## Dual Camera Simulation Strategy
+
+The CubeOCC architecture uses two cameras (Camera 1 for Grayscale tracking, Camera 2 for RGB data). In the simulation environment, both cameras use the exact same `dvp_camera_model` module. There is no need to write a separate module for Camera 1. The distinction is handled by the testbench parameters:
+
+- **Camera 1 (Tracking):** Driven at a higher frame rate (~60 FPS target), and the testbench feeds it grayscale or down-scaled image data.
+- **Camera 2 (Data):** Driven at a lower frame rate (~30 FPS target), and the testbench feeds it the full RGB image data.
+
+## Architecture & Philosophy
+
+The camera models are **Behavioral SystemVerilog Testbenches**. They are not synthesizable and do not consume FPGA resources (LUTs/FFs/BRAMs). They run purely in the computer's memory (XSim) to emulate a physical OV5640 sensor. This allows FPGA RTL code to be developed and debugged before physical hardware is available.
+
+## DVP Camera Interface Contract (For FPGA RTL)
+
+When writing the FPGA-side RTL (I2C Master & DVP-to-AXIS), it must connect to these conceptual interfaces:
+
+### 1. Control Bus (SCCB / I2C)
+
+The FPGA I2C Master will write to 16-bit addresses to configure the sensor.
+
+- `REG_STREAM_ENABLE` (`0x3008`): Turns pixel streaming on/off.
+- `REG_ROI_HSTART` (`0x3800`): Horizontal start coordinate.
+- `REG_ROI_VSTART` (`0x3802`): Vertical start coordinate.
+- `REG_ROI_HSIZE` (`0x3804`): ROI Width.
+- `REG_ROI_VSIZE` (`0x3806`): ROI Height.
+
+### 2. Pixel Data Stream (DVP)
+
+The DVP-to-AXI4-Stream module will read these signals from the camera:
+
+- `pclk`: Pixel clock (driven by camera).
+- `vsync`: Frame start/active (Active Low during frame, High during blanking).
+- `href`: Horizontal reference (Active High when pixel data is valid).
+- `pixel_data [7:0]`: 8-bit pixel value.
+- `sof`: Start of frame marker (convenience signal for simulation).
+
+## Sensor-level crop simulation
+
+Correct conceptual flow:
+
+```text
+full source image in testbench
+  -> simulated sensor register window
+  -> only cropped ROI appears on Camera 2 pixel bus
+  -> FPGA receives cropped stream
+```
+
+_(Not: FPGA receives full image -> FPGA crops it)_
+
+## Testing & Image Loading Mechanism
+
+### Current State
+
+The testbench currently uses a mathematical test pattern (**`test_pixel(row, col)`**) to verify timing, ROI boundaries, and FPS behavior.
+
+### V1 Image Loading Plan (Real OCC Data)
+
+To test actual CubeOCC LED grids:
+
+1. **Image to Memory File:** A Python script will convert real captured photos (e.g., phone picture of an 8x8 LED grid) into a hex text file (**`.mem`** or **`.txt`**).
+2. **Testbench Loading:** The SystemVerilog testbench will use **`$readmemh`** to load this image file into a local memory array.
+3. **ROI Streaming:** When the FPGA configures the ROI registers, the camera model will read only the corresponding pixels from the memory array and output them on the DVP interface.
+
+```mermaid
+sequenceDiagram
+    participant TB as Testbench
+    participant C1 as Camera 1 model
+    participant C2 as Camera 2 model
+    participant DUT as FPGA DUT
+
+    TB->>DUT: simulated button press
+    TB->>C1: START image
+    TB->>C2: START image
+    C1->>DUT: grayscale stream
+    C2->>DUT: RGB startup stream
+    DUT->>DUT: detect both four-corner sets
+    DUT->>DUT: calculate C1-to-C2 mapping
+    DUT->>C2: write ROI/window registers
+    C2->>DUT: cropped RGB ROI stream
+```
+
+## Dataset conditions (For V1/V2 Testing)
+
+- distance
+- viewing angle
+- brightness
+- glare/reflection
+- blur
+- exposure
+- screen brightness
+- grid size
+- capture FPS
+- optical frame rate
+
+Glare is included as a condition, not a correction feature.
+
+## Faults to simulate (For V1/V2 Testing)
+
+- repeated captures of same CLK
+- new optical frame / CLK toggle
+- skipped optical frame
+- bad marker confidence
+- mapping error
+- wrong ROI
+- low brightness
+- blur
+- glare as impairment
+- START
+- END
+- all 8 legal RGB DATA symbols
+
+## System Integration Flow
+
+```mermaid
+flowchart LR
+    subgraph Testbench_Domain["Testbench Domain"]
+        IMG[Image File .mem] --> CAM[DVP Camera Model]
+    end
+
+    subgraph FPGA_Domain["FPGA Domain (DUT)"]
+        I2C[I2C Master] -->|SCCB| CAM
+        CAM -->|pclk, href, vsync| D2A[DVP to AXI-Stream]
+        D2A -->|AXI4-Stream| HLS[HLS Pixel Pipeline]
+    end
+```
+
+## Regression Test Results (2026-08-23)
+
+| **Case**   | **Resolution** | **DVP FPS** | **MIPI FPS** | **Status** |
+| ---------- | -------------- | ----------- | ------------ | ---------- |
+| A (Full)   | 2592x1944      | 16          | 78           | PASS       |
+| B (Half)   | 2592x972       | 31          | 156          | PASS       |
+| C (Narrow) | 128x720        | 168         | 3343         | PASS       |
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/README.md">
+# CubeOCC Obsidian Vault
+
+Open this directory as an Obsidian vault and begin with `00_HOME.md`.
+
+## Authority order
+
+1. `01_CONFIRMED_REQUIREMENTS.md`
+2. `12_DECISION_LOG.md`
+3. technical notes
+4. optional experiments
+
+## Major changes in this revision
+
+- START = one all-white frame.
+- END = TL/TR/BL white; BR + CLK + ordinary cells off.
+- all 8 RGB symbols legal in DATA.
+- CLK position configurable.
+- sequence number optional/V2.
+- Camera 1 ~60 FPS tracking; Camera 2 ~30 FPS RGB example.
+- Camera 1 gives ROI/brightness/confidence; glare correction removed.
+- four-point Camera 1 -> Camera 2 mapping established at START.
+- Camera 2 uses sensor-level ROI windowing.
+- testbench emulates sensor registers and pixel stream.
+- V1 uses one streaming pipeline and avoids full raw-frame storage.
+- scalable N-worker architecture is optional after benchmarking.
+- sampling radius is an experimental parameter with visualization.
+- V1 classifier = RGB thresholds; normalized RGB = V2.
+- ECC note contains multiple Hamming and BCH candidate tables.
+</file>
+
+<file path="CubeOCC_Obsidian_Vault/12_DECISION_LOG.md">
+---
+project: CubeOCC
+type: decisions
+status: active
+last_reviewed: 2026-08-22
+---
+
+# Decision Log
+
+## 2026-08-20 — Initial concept
+
+Two-camera OCC receiver, grayscale ROI/feedback camera, RGB DATA camera, image processing + grid extraction + RGB cube symbols, Hamming/BCH testing, simulation-first.
+
+## 2026-08-20 — 8×8 format
+
+64 cells, 4 corner markers, 1 CLK, 59 payload/ECC cells, 177 coded bits.
+
+## 2026-08-20 — END corrected
+
+TL/TR/BL white; BR off; CLK off; ordinary cells black.
+
+## 2026-08-22 — START clarified
+
+One optical frame, all 64 cells white, no payload.
+
+## 2026-08-22 — DATA symbol legality
+
+All 8 RGB states, including black and white, are legal DATA symbols. START/END are reserved complete-frame patterns.
+
+## 2026-08-22 — CLK
+
+Physical CLK cell location is not important; make it configurable. V1 uses CLK toggle. Sequence number is optional/V2.
+
+## 2026-08-22 — Camera rates
+
+Example target: Camera 1 ~60 FPS, Camera 2 ~30 FPS.
+
+## 2026-08-22 — Glare removed from V1
+
+Deleted glare detection, correction and glare-derived feedback. Keep glare only as a labeled impairment for BER testing.
+
+## 2026-08-22 — Camera mapping
+
+At START, detect four corners in both cameras and establish their relationship. Use Camera 1 tracking to drive Camera 2 ROI. Report mapping residual rather than claiming fisheye detection.
+
+## 2026-08-22 — Sensor-level ROI
+
+Camera 2 uses sensor/window registers. FPGA receives only cropped ROI stream. Testbench emulates camera register interface and sensor crop.
+
+## 2026-08-22 — No full raw-frame storage in V1
+
+Supersedes earlier FF-frame-buffer idea. V1 streams image data and reduces it to per-cell averages/symbols.
+
+## 2026-08-22 — Parallel workers optional
+
+V1: one worker, no scheduler/FIFO if performance is enough. If scaling is needed: same pipeline module instantiated N times, input scheduler, optional one shared overflow buffer, output reorder buffer.
+
+## 2026-08-22 — Denoising
+
+V1 experiment: bypass vs 3×3 median. Adaptive denoise using confidence/ECC behavior is optional research.
+
+## 2026-08-22 — Sampling radius
+
+Configurable testbench parameter. Sweep and visualize it; choose default from BER/SER measurements.
+
+## 2026-08-22 — Color classification
+
+V1 simple RGB thresholds. V2 normalized RGB.
+
+## 2026-08-22 — ECC table expanded
+
+Compare no ECC, multiple Hamming codes and multiple BCH codes. Document useful payload per 177-bit frame and correction capability.
+
+## 2026-08-23 — DVP First, MIPI Deferred
+
+- Decision by Armin: Focus V1 physical implementation strictly on DVP.
+- MIPI implementation on FPGA (D-PHY routing/debugging) can be complex and time-consuming.
+- MIPI behavioral model is built and passing tests but is marked optional/V2 for physical integration.
+- DVP is selected as the primary interface for the one-month V1 baseline.
+
+# 2026-08-24 — Standard I2C Master & DVP-to-AXIS Bridge RTL Verified
+
+- Rewrote i2c_master.v based on standard I2C protocols:
+  - Implemented true bidirectional inout SDA pin.
+  - Added proper ACK reading/handling after every 8-bit byte.
+  - Added OV5640 initialization sequence (Power-On Reset) to the testbench.
+- Developed dvp_to_axis.v (Synthesizable RTL) to convert raw DVP signals to standard AXI4-Stream (tvalid, tlast, tuser).
+
+- Strictly followed V1 rule: No full-frame buffering (RAM/BRAM) in the AXIS bridge. Pure streaming with 1-clock pipeline delay.
+
+- End-to-end simulation PASSED: FPGA configures ROI via I2C, camera streams ROI, AXIS bridge outputs exactly 92,160 pixels (128x720).
+</file>
+
+</files>

@@ -1,0 +1,8 @@
+INFO: [SIM 2] *************** CSIM start ***************
+INFO: [SIM 4] CSIM will launch GCC as the compiler.
+   Compiling ../../../../cubeocc_hls_tb.cpp in debug mode
+   Compiling ../../../../cubeocc_hls.cpp in debug mode
+   Generating csim.exe
+C/RTL-ready HLS test PASS
+INFO: [SIM 1] CSim done with 0 errors.
+INFO: [SIM 3] *************** CSIM finish ***************

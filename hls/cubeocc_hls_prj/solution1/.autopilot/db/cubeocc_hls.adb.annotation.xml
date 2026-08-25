@@ -1,0 +1,10 @@
+<annotationInfo>
+<annotationInfo>
+<item  id="48" filename="cubeocc_hls.cpp" linenumber="17" name="i_0_cast" contextFuncName="cubeocc_hls" moduleName="cubeocc_hls" rtlName="i_0_cast_fu_154_p1" latency="0" BRAM="-1" DSP="-1" FF="-1" LUT="-1" fileDirectory="C:\Users\arshm\Desktop\CubeOCC\hls"><\/item>
+<item  id="49" filename="cubeocc_hls.cpp" linenumber="17" name="icmp_ln17" contextFuncName="cubeocc_hls" moduleName="cubeocc_hls" rtlName="icmp_ln17_fu_158_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="18" fileDirectory="C:\Users\arshm\Desktop\CubeOCC\hls"><\/item>
+<item  id="50" filename="cubeocc_hls.cpp" linenumber="17" name="add_ln17" contextFuncName="cubeocc_hls" moduleName="cubeocc_hls" rtlName="add_ln17_fu_163_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="38" fileDirectory="C:\Users\arshm\Desktop\CubeOCC\hls"><\/item>
+<item  id="63" filename="cubeocc_hls.cpp" linenumber="22" name="icmp_ln895" contextFuncName="cubeocc_hls" moduleName="cubeocc_hls" rtlName="icmp_ln895_fu_197_p2" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="11" fileDirectory="C:\Users\arshm\Desktop\CubeOCC\hls"><\/item>
+<item  id="64" filename="cubeocc_hls.cpp" linenumber="22" name="tmp_data_V_1" contextFuncName="cubeocc_hls" moduleName="cubeocc_hls" rtlName="tmp_data_V_1_fu_202_p3" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="2" fileDirectory="C:\Users\arshm\Desktop\CubeOCC\hls"><\/item>
+<item  id="65" filename="cubeocc_hls.cpp" linenumber="8" name="tmp_data_V_2" contextFuncName="cubeocc_hls" moduleName="cubeocc_hls" rtlName="tmp_data_V_2_fu_210_p3" latency="0" BRAM="-1" DSP="-1" FF="0" LUT="8" fileDirectory="C:\Users\arshm\Desktop\CubeOCC\hls"><\/item>
+<\/annotationInfo>
+</annotationInfo>

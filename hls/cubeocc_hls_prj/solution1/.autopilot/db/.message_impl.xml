@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Messages>
+	<Message severity="INFO" prefix="[IMPL 213-8]" key="IMPL_8_1776" tag="" content="Exporting RTL as a Vivado IP."/>
+	<Message severity="ERROR" prefix="[IMPL 213-28]" key="IMPL_28_1653" tag="" content="Failed to generate IP."/>
+</Messages>
