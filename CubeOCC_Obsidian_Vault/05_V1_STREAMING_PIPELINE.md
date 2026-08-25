@@ -77,3 +77,27 @@ Possible implementations:
 ## Output ordering
 
 With one V1 pipeline, frames are inherently in order. Therefore no input scheduler, reorder buffer or waiting FIFO is needed unless benchmarking proves otherwise.
+
+---
+# RTL Implementation Status (2026-08-24)
+
+The synthesizable FPGA-side RTL modules are now implemented and verified via simulation.
+
+## 1. `rtl/i2c_master.v`
+
+**Function:** SCCB/I2C Master to configure the OV5640 sensor.
+
+**Features:**
+- Generates SCL and controls SDA.
+- True `inout` SDA pin for reading ACK from the slave.
+- Writes to 16-bit OV5640 registers (e.g., `0x3800` for HSTART, `0x3008` for Stream Enable).
+
+**Verification:** Successfully programmed the camera model via the I2C monitor in the testbench.
+
+## 2. `rtl/dvp_to_axis.v`
+
+**Function:** Converts raw DVP camera signals (`pclk`, `href`, `vsync`, `pixel_data`) into a standard AXI4-Stream video interface.
+
+**Resource Usage:** **NO RAM/BRAM used.** Strictly follows the V1 streaming philosophy. It only delays signals by 1 clock cycle to detect edges (`href` falling for `tlast`, `vsync` falling for `tuser`).
+
+**Verification:** End-to-end integration test passed. Exactly **92,160 pixels (128×720 window)** were streamed via AXI4-Stream and captured by the testbench.

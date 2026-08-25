@@ -1,0 +1,12 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  \
+"D:/occ project/CubeOCC/camera_sim/camera_regs_pkg.sv" \
+"D:/occ project/CubeOCC/camera_sim/dvp_camera_model.sv" \
+"../../../../CubeOCC_Sim.srcs/sources_1/new/i2c_master.sv" \
+"../../../../CubeOCC_Sim.srcs/sources_1/new/i2c_cam_tb.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
