@@ -2,7 +2,7 @@
 project: CubeOCC
 type: testbench
 status: v1-active
-last_reviewed: 2026-08-23
+last_reviewed: 2026-08-26
 ---
 
 # Simulation Camera Model
@@ -150,3 +150,12 @@ flowchart LR
 | A (Full)   | 2592x1944      | 16          | 78           | PASS       |
 | B (Half)   | 2592x972       | 31          | 156          | PASS       |
 | C (Narrow) | 128x720        | 168         | 3343         | PASS       |
+
+## Regression Update (2026-08-26) — Top-Level Integration
+
+| **Case** | **Chain** | **Check** | **Status** |
+| -------- | --------- | --------- | ---------- |
+| `cubeocc_top_tb` | DVP model → dvp_to_axis → cubeocc_hls_0 → AXIS | 92,160 pixels (128x720) **and** 720 lines (tlast) | PASS |
+
+- Fixed a simulation race: the DVP model used to drive `href`/`pixel_data` with blocking assigns concurrent to `posedge pclk`, which could suppress `m_axis_tlast` (end-of-line) in `dvp_to_axis`. Outputs are now driven on `negedge pclk`.
+- **Driving convention:** all camera models must drive DVP outputs on `negedge pclk` (see Decision Log 2026-08-26). The MIPI model must be audited for the same pattern before V2 use.

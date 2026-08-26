@@ -26,10 +26,12 @@ add_files -fileset sim_1 [list \
   [file join $script_dir camera_sim camera_regs_pkg.sv] \
   [file join $script_dir camera_sim dvp_camera_model.sv] \
   [file join $script_dir camera_sim mipi_camera_model.sv] \
+  [file join $script_dir tb i2c_camera_slave_model.sv] \
   [file join $script_dir tb dvp_camera_tb.sv] \
   [file join $script_dir tb mipi_camera_tb.sv] \
   [file join $script_dir tb i2c_cam_tb.sv] \
   [file join $script_dir tb axis_cam_tb.sv] \
+  [file join $script_dir tb cubeocc_top_tb.sv] \
 ]
 
 update_compile_order -fileset sources_1

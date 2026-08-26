@@ -88,27 +88,31 @@ module dvp_camera_model
   );
     int row, col;
     begin
+      // Drive DVP outputs on negedge pclk so the DUT never samples a
+      // blocking-assign change in the same time step as posedge pclk.
       frame_active = 1'b1;
+      @(negedge pclk);
       vsync = 1'b0;
-      
+
       sof = 1'b1;
-      @(posedge pclk);
+      @(negedge pclk);
       sof = 1'b0;
 
       for (row = 0; row < h; row++) begin
         line_active = 1'b1;
         href = 1'b0;
-        repeat (HBLANK) @(posedge pclk); 
+        repeat (HBLANK) @(negedge pclk);
         href = 1'b1;
         for (col = 0; col < w; col++) begin
           pixel_data = test_pixel(y0 + row, x0 + col);
-          @(posedge pclk);
+          @(negedge pclk);
         end
         href = 1'b0;
         line_active = 1'b0;
       end
 
-      vsync = 1'b1; 
+      @(negedge pclk);
+      vsync = 1'b1;
 
       repeat (VBLANK) begin
         repeat (w + HBLANK) @(posedge pclk);

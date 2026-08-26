@@ -10,7 +10,9 @@ module i2c_cam_tb;
   logic        start;
   logic [15:0] reg_addr;
   logic [15:0] reg_data;
+  logic        busy;
   logic        done;
+  logic        ack_error;
   
   // I2C physical wires (sda is now a simple logic, no inout/pullup)
   logic        scl;
@@ -27,10 +29,10 @@ module i2c_cam_tb;
   logic        pclk, vsync, href, sof;
   logic [7:0]  pixel_data;
 
-  // 1. Instantiate the I2C Master (FPGA RTL)
   i2c_master dut_master (
     .clk(clk), .rst_n(rst_n),
-    .start(start), .reg_addr(reg_addr), .reg_data(reg_data), .done(done),
+    .start(start), .reg_addr(reg_addr), .reg_data(reg_data),
+    .busy(busy), .done(done), .ack_error(ack_error),
     .scl(scl), .sda(sda)
   );
 
@@ -42,49 +44,14 @@ module i2c_cam_tb;
     .pclk(pclk), .vsync(vsync), .href(href), .pixel_data(pixel_data), .sof(sof)
   );
 
-  // 3. I2C Monitor 
-  logic [39:0] packet;
-  logic [7:0]  shift_reg_mon;
-  logic [3:0]  bit_idx;
-  logic [3:0]  byte_idx;
-  logic        is_started;
-  logic        old_sda;
-  logic        old_scl;
-
-  always_ff @(posedge clk) begin
-    old_sda <= sda;
-    old_scl <= scl;
-    reg_wr_en <= 0;
-
-    if (!rst_n) begin
-      is_started <= 0; bit_idx <= 0; byte_idx <= 0; packet <= 0; shift_reg_mon <= 0;
-    end else begin
-      if (scl == 1 && old_sda == 1 && sda == 0) begin
-        is_started <= 1; bit_idx <= 0; byte_idx <= 0;
-      end 
-      else if (is_started) begin
-        if (scl == 1 && old_sda == 0 && sda == 1) begin
-          is_started <= 0;
-          if (byte_idx == 5) begin
-            reg_wr_en   <= 1;
-            cam_reg_addr  <= {packet[31:24], packet[23:16]};
-            cam_reg_wdata <= {packet[15:8],  packet[7:0]};
-            $display(" [I2C MON] Decoded Write: Addr=0x%04X, Data=0x%04X", {packet[31:24], packet[23:16]}, {packet[15:8], packet[7:0]});
-          end
-        end 
-        else if (old_scl == 0 && scl == 1) begin
-          if (bit_idx < 8) begin
-            shift_reg_mon <= {shift_reg_mon[6:0], sda}; 
-            bit_idx <= bit_idx + 1;
-          end else begin
-            bit_idx <= 0; 
-            byte_idx <= byte_idx + 1;
-            packet <= {packet[31:0], shift_reg_mon};
-          end
-        end
-      end
-    end
-  end
+  i2c_camera_slave_model cam_i2c_slave (
+    .rst_n(rst_n),
+    .scl(scl),
+    .sda(sda),
+    .reg_wr_en(reg_wr_en),
+    .reg_addr(cam_reg_addr),
+    .reg_wdata(cam_reg_wdata)
+  );
 
   initial clk = 1'b0;
   always #5 clk = ~clk; 
@@ -98,6 +65,10 @@ module i2c_cam_tb;
       @(posedge clk);
       start <= 1'b0;
       wait (done == 1'b1);
+      if (ack_error) begin
+        $display(" I2C NACK ERROR: addr=0x%04X data=0x%04X", addr, data);
+        $finish;
+      end
       @(posedge clk);
     end
   endtask

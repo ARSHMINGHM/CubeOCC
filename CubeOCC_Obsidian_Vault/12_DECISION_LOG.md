@@ -2,7 +2,7 @@
 project: CubeOCC
 type: decisions
 status: active
-last_reviewed: 2026-08-22
+last_reviewed: 2026-08-26
 ---
 
 # Decision Log
@@ -89,3 +89,10 @@ Compare no ECC, multiple Hamming codes and multiple BCH codes. Document useful p
 - Strictly followed V1 rule: No full-frame buffering (RAM/BRAM) in the AXIS bridge. Pure streaming with 1-clock pipeline delay.
 
 - End-to-end simulation PASSED: FPGA configures ROI via I2C, camera streams ROI, AXIS bridge outputs exactly 92,160 pixels (128x720).
+
+## 2026-08-26 — Top-Level Integration PASSED (cubeocc_top_tb) & Camera Model Driving Convention
+
+- `cubeocc_top_tb` (DVP camera model → dvp_to_axis → cubeocc_hls_0 → AXIS) PASSED: 92,160 pixels (128x720) and 720 lines (tlast) counted per frame.
+- Bug found & fixed: the DVP camera model drove `href`/`pixel_data` with blocking assignments in the same time step as `posedge pclk`. When the model's update won the race, `dvp_to_axis` sampled the already-fallen `href`, so `m_axis_tlast` (end-of-line) never asserted. Pixel count was unaffected, which is why earlier regressions passed.
+- **Driving convention (rule for all camera models):** DVP outputs (`vsync`, `href`, `sof`, `pixel_data`) must be driven on `negedge pclk`, never with blocking assigns concurrent to `posedge pclk`. Applied to `camera_sim/dvp_camera_model.sv`.
+- Lesson: `axis_cam_tb` never checked the line count, so the broken tlast was invisible. Verification must check tlast/tuser (lines/frames), not just pixel totals.

@@ -10,7 +10,9 @@ module i2c_master #(
     input  logic        start,
     input  logic [15:0] reg_addr,
     input  logic [15:0] reg_data,
+    output logic        busy,
     output logic        done,
+    output logic        ack_error,
     output logic        scl,
     inout               sda
 );
@@ -42,7 +44,9 @@ module i2c_master #(
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state <= IDLE;
+            busy <= 0;
             done <= 0;
+            ack_error <= 0;
             scl <= 1;
             sda_o <= 1;
             sda_oe <= 0;
@@ -53,12 +57,15 @@ module i2c_master #(
         end else begin
             case (state)
                 IDLE: begin
+                    busy <= 0;
                     done <= 0;
                     scl <= 1;
                     sda_o <= 1;
                     sda_oe <= 0; // High-Z
                     clk_cnt <= 0;
                     if (start) begin
+                        busy <= 1;
+                        ack_error <= 0;
                         data_arr[0] <= SLAVE_ADDR;
                         data_arr[1] <= reg_addr[15:8];
                         data_arr[2] <= reg_addr[7:0];
@@ -105,13 +112,19 @@ module i2c_master #(
                 end
 
                 WAIT_HIGH: begin
+                    if (bit_cnt == 8 && clk_cnt == CLK_DIV/2) begin
+                        ack_error <= ack_error | sda;
+                    end
+
                     if (clk_cnt == CLK_DIV - 1) begin
                         clk_cnt <= 0;
                         scl <= 0; // SCL goes low
                         if (bit_cnt == 8) begin
                             // ACK bit just finished
                             bit_cnt <= 0;
-                            if (byte_idx < 4) begin
+                            if (ack_error) begin
+                                state <= STOP_LOW;
+                            end else if (byte_idx < 4) begin
                                 byte_idx <= byte_idx + 1;
                                 shift_reg <= data_arr[byte_idx + 1];
                                 state <= SEND_BIT;
@@ -155,6 +168,7 @@ module i2c_master #(
 
                 DONE_STATE: begin
                     done <= 1;
+                    busy <= 0;
                     state <= IDLE;
                 end
             endcase
