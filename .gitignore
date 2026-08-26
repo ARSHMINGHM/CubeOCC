@@ -3,6 +3,7 @@ vivado/CubeOCC/CubeOCC.sim/
 vivado/CubeOCC/CubeOCC.ip_user_files/ipstatic/
 vivado/CubeOCC/CubeOCC.cache/wt/
 vivado/CubeOCC/CubeOCC.runs/.jobs/
+sim/image_test/
 *.jou
 *.log
 *.pb

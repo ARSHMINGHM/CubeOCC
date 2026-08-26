@@ -96,3 +96,10 @@ Compare no ECC, multiple Hamming codes and multiple BCH codes. Document useful p
 - Bug found & fixed: the DVP camera model drove `href`/`pixel_data` with blocking assignments in the same time step as `posedge pclk`. When the model's update won the race, `dvp_to_axis` sampled the already-fallen `href`, so `m_axis_tlast` (end-of-line) never asserted. Pixel count was unaffected, which is why earlier regressions passed.
 - **Driving convention (rule for all camera models):** DVP outputs (`vsync`, `href`, `sof`, `pixel_data`) must be driven on `negedge pclk`, never with blocking assigns concurrent to `posedge pclk`. Applied to `camera_sim/dvp_camera_model.sv`.
 - Lesson: `axis_cam_tb` never checked the line count, so the broken tlast was invisible. Verification must check tlast/tuser (lines/frames), not just pixel totals.
+
+## 2026-08-26 — Real Image Folder Input for Camera Simulation
+
+- Direction confirmed: CubeOCC simulation should feed the FPGA from a folder of image frames, not only from random/math pixel patterns.
+- Planned flow: source image folder → `.mem` conversion → `dvp_camera_model` `$readmemh` → DVP pixel stream → FPGA DUT.
+- Purpose: make the simulated camera behave closer to physical testing, where the FPGA receives actual image content through camera timing signals instead of synthetic counter/random values.
+- The math pattern remains useful for timing and ROI regression, but protocol/image-processing validation should use folder-based CubeOCC grid images.

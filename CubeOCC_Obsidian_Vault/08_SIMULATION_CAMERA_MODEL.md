@@ -68,17 +68,52 @@ _(Not: FPGA receives full image -> FPGA crops it)_
 
 ## Testing & Image Loading Mechanism
 
-### Current State
+### Current State (updated 2026-08-26)
 
-The testbench currently uses a mathematical test pattern (**`test_pixel(row, col)`**) to verify timing, ROI boundaries, and FPS behavior.
+The testbench uses a mathematical test pattern (**`test_pixel(row, col)`**) by default to verify timing, ROI boundaries, and FPS behavior.
 
-### V1 Image Loading Plan (Real OCC Data)
+**Real-image loading is now implemented** in `camera_sim/dvp_camera_model.sv`:
 
-To test actual CubeOCC LED grids:
+1. **Image to Memory File:** `camera_sim/image_to_mem.py` converts a photo into an 8-bit grayscale hex file (one pixel per line, row-major):
+   ```bash
+   python camera_sim/image_to_mem.py led_grid.jpg sim_image.mem 128 720
+   ```
+   (requires `pip install Pillow`; the width/height arguments resize the image)
+2. **Testbench Loading:** the camera model loads it at time 0 via **`$readmemh`**. Instantiate the model with:
+   ```systemverilog
+   dvp_camera_model #(
+     .IMAGE_FILE  ("sim_image.mem"),
+     .IMAGE_WIDTH (128),
+     .IMAGE_HEIGHT(720)
+   ) cam ( ... );
+   ```
+3. **ROI Streaming:** when the FPGA configures the ROI registers, the camera model reads only the corresponding pixels from the image memory and outputs them on the DVP interface. Without `IMAGE_FILE`, the model falls back to the math test pattern.
 
-1. **Image to Memory File:** A Python script will convert real captured photos (e.g., phone picture of an 8x8 LED grid) into a hex text file (**`.mem`** or **`.txt`**).
-2. **Testbench Loading:** The SystemVerilog testbench will use **`$readmemh`** to load this image file into a local memory array.
-3. **ROI Streaming:** When the FPGA configures the ROI registers, the camera model will read only the corresponding pixels from the memory array and output them on the DVP interface.
+### Folder-Based Image Dataset Plan
+
+The next simulation direction is to feed the FPGA with real or generated CubeOCC frame images from a folder instead of relying only on random/math pixel values.
+
+Planned flow:
+
+```text
+image folder
+  -> convert each image to .mem
+  -> testbench selects one or more .mem frames
+  -> dvp_camera_model streams the image pixels like a camera sensor
+  -> FPGA DUT receives the image through DVP/AXI as if it came from hardware
+```
+
+This keeps the simulation closer to the physical system: the FPGA sees camera-style `pclk`, `vsync`, `href`, and `pixel_data`, while the source content comes from actual image files. The math pattern remains useful for timing/regression tests, but CubeOCC protocol testing should increasingly use folder-based images of LED/grid frames.
+
+Target folder convention:
+
+```text
+sim/image_inputs/       # source PNG/JPG frames
+sim/image_mem/          # generated .mem files
+sim/image_test/         # xsim output and temporary run files
+```
+
+The first V1 image tests may use grayscale `.mem` files. Later tests should extend this to RGB/channel-aware input when the receiver pipeline needs color classification.
 
 ```mermaid
 sequenceDiagram
@@ -100,6 +135,7 @@ sequenceDiagram
 
 ## Dataset conditions (For V1/V2 Testing)
 
+- source image folder / dataset id
 - distance
 - viewing angle
 - brightness

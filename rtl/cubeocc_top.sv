@@ -21,6 +21,13 @@ module cubeocc_top (
     logic       axis_cam_tlast;
     logic       axis_cam_tuser;
 
+    logic [7:0] hls_axis_tdata;
+    logic       hls_axis_tvalid;
+    logic       hls_axis_tlast;
+    logic       hls_axis_tuser;
+    logic [6:0] out_col_count;
+    logic       out_fire;
+
     logic [5:0]  hls_awaddr;
     logic        hls_awvalid;
     logic        hls_awready;
@@ -134,6 +141,24 @@ module cubeocc_top (
 
     assign hls_araddr = 6'd0;
     assign hls_arvalid = 1'b0;
+    assign out_fire = hls_axis_tvalid && m_axis_tready;
+
+    always_ff @(posedge pclk or negedge rst_n) begin
+        if (!rst_n) begin
+            out_col_count <= 7'd0;
+        end else if (out_fire) begin
+            if (out_col_count == 7'd127) begin
+                out_col_count <= 7'd0;
+            end else begin
+                out_col_count <= out_col_count + 1'b1;
+            end
+        end
+    end
+
+    assign m_axis_tdata = hls_axis_tdata;
+    assign m_axis_tvalid = hls_axis_tvalid;
+    assign m_axis_tlast = hls_axis_tvalid && (out_col_count == 7'd127);
+    assign m_axis_tuser = hls_axis_tuser;
 
     dvp_to_axis u_dvp_to_axis (
         .pclk(pclk),
@@ -178,14 +203,14 @@ module cubeocc_top (
         .s_axis_TUSER(axis_cam_tuser),
         .s_axis_TLAST(axis_cam_tlast),
         .s_axis_TID(1'b0),
-        .m_axis_TVALID(m_axis_tvalid),
+        .m_axis_TVALID(hls_axis_tvalid),
         .m_axis_TREADY(m_axis_tready),
-        .m_axis_TDATA(m_axis_tdata),
+        .m_axis_TDATA(hls_axis_tdata),
         .m_axis_TDEST(),
         .m_axis_TKEEP(),
         .m_axis_TSTRB(),
-        .m_axis_TUSER(m_axis_tuser),
-        .m_axis_TLAST(m_axis_tlast),
+        .m_axis_TUSER(hls_axis_tuser),
+        .m_axis_TLAST(hls_axis_tlast),
         .m_axis_TID()
     );
 
