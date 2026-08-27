@@ -47,7 +47,7 @@
 // DO NOT MODIFY THIS FILE.
 
 // IP VLNV: xilinx.com:hls:cubeocc_hls:1.0
-// IP Revision: 1
+// IP Revision: 1908271655
 
 // The following must be inserted into your Verilog file for this
 // core to be instantiated. Change the instance name and port connections
@@ -55,44 +55,26 @@
 
 //----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
 cubeocc_hls_0 your_instance_name (
-  .s_axi_CTRL_AWADDR(s_axi_CTRL_AWADDR),    // input wire [5 : 0] s_axi_CTRL_AWADDR
-  .s_axi_CTRL_AWVALID(s_axi_CTRL_AWVALID),  // input wire s_axi_CTRL_AWVALID
-  .s_axi_CTRL_AWREADY(s_axi_CTRL_AWREADY),  // output wire s_axi_CTRL_AWREADY
-  .s_axi_CTRL_WDATA(s_axi_CTRL_WDATA),      // input wire [31 : 0] s_axi_CTRL_WDATA
-  .s_axi_CTRL_WSTRB(s_axi_CTRL_WSTRB),      // input wire [3 : 0] s_axi_CTRL_WSTRB
-  .s_axi_CTRL_WVALID(s_axi_CTRL_WVALID),    // input wire s_axi_CTRL_WVALID
-  .s_axi_CTRL_WREADY(s_axi_CTRL_WREADY),    // output wire s_axi_CTRL_WREADY
-  .s_axi_CTRL_BRESP(s_axi_CTRL_BRESP),      // output wire [1 : 0] s_axi_CTRL_BRESP
-  .s_axi_CTRL_BVALID(s_axi_CTRL_BVALID),    // output wire s_axi_CTRL_BVALID
-  .s_axi_CTRL_BREADY(s_axi_CTRL_BREADY),    // input wire s_axi_CTRL_BREADY
-  .s_axi_CTRL_ARADDR(s_axi_CTRL_ARADDR),    // input wire [5 : 0] s_axi_CTRL_ARADDR
-  .s_axi_CTRL_ARVALID(s_axi_CTRL_ARVALID),  // input wire s_axi_CTRL_ARVALID
-  .s_axi_CTRL_ARREADY(s_axi_CTRL_ARREADY),  // output wire s_axi_CTRL_ARREADY
-  .s_axi_CTRL_RDATA(s_axi_CTRL_RDATA),      // output wire [31 : 0] s_axi_CTRL_RDATA
-  .s_axi_CTRL_RRESP(s_axi_CTRL_RRESP),      // output wire [1 : 0] s_axi_CTRL_RRESP
-  .s_axi_CTRL_RVALID(s_axi_CTRL_RVALID),    // output wire s_axi_CTRL_RVALID
-  .s_axi_CTRL_RREADY(s_axi_CTRL_RREADY),    // input wire s_axi_CTRL_RREADY
-  .ap_clk(ap_clk),                          // input wire ap_clk
-  .ap_rst_n(ap_rst_n),                      // input wire ap_rst_n
-  .interrupt(interrupt),                    // output wire interrupt
-  .s_axis_TVALID(s_axis_TVALID),            // input wire s_axis_TVALID
-  .s_axis_TREADY(s_axis_TREADY),            // output wire s_axis_TREADY
-  .s_axis_TDATA(s_axis_TDATA),              // input wire [7 : 0] s_axis_TDATA
-  .s_axis_TDEST(s_axis_TDEST),              // input wire [0 : 0] s_axis_TDEST
-  .s_axis_TKEEP(s_axis_TKEEP),              // input wire [0 : 0] s_axis_TKEEP
-  .s_axis_TSTRB(s_axis_TSTRB),              // input wire [0 : 0] s_axis_TSTRB
-  .s_axis_TUSER(s_axis_TUSER),              // input wire [0 : 0] s_axis_TUSER
-  .s_axis_TLAST(s_axis_TLAST),              // input wire [0 : 0] s_axis_TLAST
-  .s_axis_TID(s_axis_TID),                  // input wire [0 : 0] s_axis_TID
-  .m_axis_TVALID(m_axis_TVALID),            // output wire m_axis_TVALID
-  .m_axis_TREADY(m_axis_TREADY),            // input wire m_axis_TREADY
-  .m_axis_TDATA(m_axis_TDATA),              // output wire [7 : 0] m_axis_TDATA
-  .m_axis_TDEST(m_axis_TDEST),              // output wire [0 : 0] m_axis_TDEST
-  .m_axis_TKEEP(m_axis_TKEEP),              // output wire [0 : 0] m_axis_TKEEP
-  .m_axis_TSTRB(m_axis_TSTRB),              // output wire [0 : 0] m_axis_TSTRB
-  .m_axis_TUSER(m_axis_TUSER),              // output wire [0 : 0] m_axis_TUSER
-  .m_axis_TLAST(m_axis_TLAST),              // output wire [0 : 0] m_axis_TLAST
-  .m_axis_TID(m_axis_TID)                  // output wire [0 : 0] m_axis_TID
+  .ap_clk(ap_clk),                // input wire ap_clk
+  .ap_rst_n(ap_rst_n),            // input wire ap_rst_n
+  .s_axis_TVALID(s_axis_TVALID),  // input wire s_axis_TVALID
+  .s_axis_TREADY(s_axis_TREADY),  // output wire s_axis_TREADY
+  .s_axis_TDATA(s_axis_TDATA),    // input wire [7 : 0] s_axis_TDATA
+  .s_axis_TDEST(s_axis_TDEST),    // input wire [0 : 0] s_axis_TDEST
+  .s_axis_TKEEP(s_axis_TKEEP),    // input wire [0 : 0] s_axis_TKEEP
+  .s_axis_TSTRB(s_axis_TSTRB),    // input wire [0 : 0] s_axis_TSTRB
+  .s_axis_TUSER(s_axis_TUSER),    // input wire [0 : 0] s_axis_TUSER
+  .s_axis_TLAST(s_axis_TLAST),    // input wire [0 : 0] s_axis_TLAST
+  .s_axis_TID(s_axis_TID),        // input wire [0 : 0] s_axis_TID
+  .m_axis_TVALID(m_axis_TVALID),  // output wire m_axis_TVALID
+  .m_axis_TREADY(m_axis_TREADY),  // input wire m_axis_TREADY
+  .m_axis_TDATA(m_axis_TDATA),    // output wire [7 : 0] m_axis_TDATA
+  .m_axis_TDEST(m_axis_TDEST),    // output wire [0 : 0] m_axis_TDEST
+  .m_axis_TKEEP(m_axis_TKEEP),    // output wire [0 : 0] m_axis_TKEEP
+  .m_axis_TSTRB(m_axis_TSTRB),    // output wire [0 : 0] m_axis_TSTRB
+  .m_axis_TUSER(m_axis_TUSER),    // output wire [0 : 0] m_axis_TUSER
+  .m_axis_TLAST(m_axis_TLAST),    // output wire [0 : 0] m_axis_TLAST
+  .m_axis_TID(m_axis_TID)        // output wire [0 : 0] m_axis_TID
 );
 // INST_TAG_END ------ End INSTANTIATION Template ---------
 

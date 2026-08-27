@@ -5,16 +5,25 @@
       <synLog/>
       <simLog/>
       <mgLog/>
-      <packageLog>
-        <logs message="ERROR: [IMPL 213-28] Failed to generate IP.&#xD;&#xA;command 'ap_source' returned error code&#xD;&#xA;    while executing&#xD;&#xA;&quot;source C:/Users/arshm/Desktop/CubeOCC/hls/cubeocc_hls_prj/solution1/export.tcl&quot;&#xD;&#xA;    invoked from within&#xD;&#xA;&quot;hls::main C:/Users/arshm/Desktop/CubeOCC/hls/cubeocc_hls_prj/solution1/export.tcl&quot;&#xD;&#xA;    (&quot;uplevel&quot; body line 1)&#xD;&#xA;    invoked from within&#xD;&#xA;&quot;uplevel 1 hls::main {*}$args&quot;&#xD;&#xA;    (procedure &quot;hls_proc&quot; line 5)&#xD;&#xA;    invoked from within&#xD;&#xA;&quot;hls_proc $argv&quot;&#xD;&#xA;" projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-25T17:54:06.926+0330"/>
-        <logs message="ERROR: [IMPL 213-28] Failed to generate IP.&#xD;&#xA;command 'ap_source' returned error code&#xD;&#xA;    while executing&#xD;&#xA;&quot;source C:/Users/arshm/Desktop/CubeOCC/hls/cubeocc_hls_prj/solution1/export.tcl&quot;&#xD;&#xA;    invoked from within&#xD;&#xA;&quot;hls::main C:/Users/arshm/Desktop/CubeOCC/hls/cubeocc_hls_prj/solution1/export.tcl&quot;&#xD;&#xA;    (&quot;uplevel&quot; body line 1)&#xD;&#xA;    invoked from within&#xD;&#xA;&quot;uplevel 1 hls::main {*}$args&quot;&#xD;&#xA;    (procedure &quot;hls_proc&quot; line 5)&#xD;&#xA;    invoked from within&#xD;&#xA;&quot;hls_proc $argv&quot;&#xD;&#xA;" projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-25T17:50:47.844+0330"/>
-      </packageLog>
+      <packageLog/>
       <csimLog/>
     </logs>
   </errorLogs>
   <warningLogs>
     <logs>
-      <synLog/>
+      <synLog>
+        <logs message="WARNING: [RTGEN 206-101] Register 'frame_id' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:28.014+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'prev_clk_V' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:28.010+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'frame_active' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:28.004+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'grid_V_0_1' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:28.000+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'grid_V_7_7' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:27.997+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'grid_V_7_0' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:27.994+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'grid_V_0_7' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:27.991+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'grid_V_0_0' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:27.987+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'col' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:27.983+0430" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'row' is power-on initialization." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:27.980+0430" type="Warning"/>
+        <logs message="WARNING: [SYNCHK 200-23] cubeocc_hls.cpp:100: variable-indexed range selection may cause suboptimal QoR." projectName="cubeocc_hls_prj" solutionName="solution1" date="2026-08-27T18:24:25.281+0430" type="Warning"/>
+      </synLog>
       <simLog/>
       <mgLog/>
       <packageLog/>

@@ -11,9 +11,9 @@ echo "Please update the PATH and LD_LIBRARY_PATH variables below, before executi
 exit
 
 if [ -z "$PATH" ]; then
-  PATH=X:/xilinx/SDK/2019.1/bin;X:/xilinx/Vivado/2019.1/ids_lite/ISE/bin/nt64;X:/xilinx/Vivado/2019.1/ids_lite/ISE/lib/nt64:X:/xilinx/Vivado/2019.1/bin
+  PATH=D:/Xilinx/SDK/2019.1/bin;D:/Xilinx/Vivado/2019.1/ids_lite/ISE/bin/nt64;D:/Xilinx/Vivado/2019.1/ids_lite/ISE/lib/nt64:D:/Xilinx/Vivado/2019.1/bin
 else
-  PATH=X:/xilinx/SDK/2019.1/bin;X:/xilinx/Vivado/2019.1/ids_lite/ISE/bin/nt64;X:/xilinx/Vivado/2019.1/ids_lite/ISE/lib/nt64:X:/xilinx/Vivado/2019.1/bin:$PATH
+  PATH=D:/Xilinx/SDK/2019.1/bin;D:/Xilinx/Vivado/2019.1/ids_lite/ISE/bin/nt64;D:/Xilinx/Vivado/2019.1/ids_lite/ISE/lib/nt64:D:/Xilinx/Vivado/2019.1/bin:$PATH
 fi
 export PATH
 
@@ -24,7 +24,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/arshm/Desktop/CubeOCC/vivado/CubeOCC/CubeOCC.runs/cubeocc_hls_0_synth_1'
+HD_PWD='D:/occ_project/CubeOCC/vivado/CubeOCC/CubeOCC.runs/cubeocc_hls_0_synth_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

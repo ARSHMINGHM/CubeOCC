@@ -48,34 +48,16 @@
 
 
 // IP VLNV: xilinx.com:hls:cubeocc_hls:1.0
-// IP Revision: 1
+// IP Revision: 1908271655
 
 (* X_CORE_INFO = "cubeocc_hls,Vivado 2019.1" *)
 (* CHECK_LICENSE_TYPE = "cubeocc_hls_0,cubeocc_hls,{}" *)
-(* CORE_GENERATION_INFO = "cubeocc_hls_0,cubeocc_hls,{x_ipProduct=Vivado 2019.1,x_ipVendor=xilinx.com,x_ipLibrary=hls,x_ipName=cubeocc_hls,x_ipVersion=1.0,x_ipCoreRevision=1,x_ipLanguage=VERILOG,x_ipSimLanguage=MIXED,C_S_AXI_CTRL_ADDR_WIDTH=6,C_S_AXI_CTRL_DATA_WIDTH=32}" *)
+(* CORE_GENERATION_INFO = "cubeocc_hls_0,cubeocc_hls,{x_ipProduct=Vivado 2019.1,x_ipVendor=xilinx.com,x_ipLibrary=hls,x_ipName=cubeocc_hls,x_ipVersion=1.0,x_ipCoreRevision=1908271655,x_ipLanguage=VERILOG,x_ipSimLanguage=MIXED}" *)
 (* IP_DEFINITION_SOURCE = "HLS" *)
 (* DowngradeIPIdentifiedWarnings = "yes" *)
 module cubeocc_hls_0 (
-  s_axi_CTRL_AWADDR,
-  s_axi_CTRL_AWVALID,
-  s_axi_CTRL_AWREADY,
-  s_axi_CTRL_WDATA,
-  s_axi_CTRL_WSTRB,
-  s_axi_CTRL_WVALID,
-  s_axi_CTRL_WREADY,
-  s_axi_CTRL_BRESP,
-  s_axi_CTRL_BVALID,
-  s_axi_CTRL_BREADY,
-  s_axi_CTRL_ARADDR,
-  s_axi_CTRL_ARVALID,
-  s_axi_CTRL_ARREADY,
-  s_axi_CTRL_RDATA,
-  s_axi_CTRL_RRESP,
-  s_axi_CTRL_RVALID,
-  s_axi_CTRL_RREADY,
   ap_clk,
   ap_rst_n,
-  interrupt,
   s_axis_TVALID,
   s_axis_TREADY,
   s_axis_TDATA,
@@ -96,51 +78,12 @@ module cubeocc_hls_0 (
   m_axis_TID
 );
 
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL AWADDR" *)
-input wire [5 : 0] s_axi_CTRL_AWADDR;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL AWVALID" *)
-input wire s_axi_CTRL_AWVALID;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL AWREADY" *)
-output wire s_axi_CTRL_AWREADY;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL WDATA" *)
-input wire [31 : 0] s_axi_CTRL_WDATA;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL WSTRB" *)
-input wire [3 : 0] s_axi_CTRL_WSTRB;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL WVALID" *)
-input wire s_axi_CTRL_WVALID;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL WREADY" *)
-output wire s_axi_CTRL_WREADY;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL BRESP" *)
-output wire [1 : 0] s_axi_CTRL_BRESP;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL BVALID" *)
-output wire s_axi_CTRL_BVALID;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL BREADY" *)
-input wire s_axi_CTRL_BREADY;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL ARADDR" *)
-input wire [5 : 0] s_axi_CTRL_ARADDR;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL ARVALID" *)
-input wire s_axi_CTRL_ARVALID;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL ARREADY" *)
-output wire s_axi_CTRL_ARREADY;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL RDATA" *)
-output wire [31 : 0] s_axi_CTRL_RDATA;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL RRESP" *)
-output wire [1 : 0] s_axi_CTRL_RRESP;
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL RVALID" *)
-output wire s_axi_CTRL_RVALID;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME s_axi_CTRL, ADDR_WIDTH 6, DATA_WIDTH 32, PROTOCOL AXI4LITE, READ_WRITE_MODE READ_WRITE, FREQ_HZ 100000000, ID_WIDTH 0, AWUSER_WIDTH 0, ARUSER_WIDTH 0, WUSER_WIDTH 0, RUSER_WIDTH 0, BUSER_WIDTH 0, HAS_BURST 0, HAS_LOCK 0, HAS_PROT 0, HAS_CACHE 0, HAS_QOS 0, HAS_REGION 0, HAS_WSTRB 1, HAS_BRESP 1, HAS_RRESP 1, SUPPORTS_NARROW_BURST 0, NUM_READ_OUTSTANDING 1, NUM_WRITE_OUTSTANDING 1, MAX_BURST_LENGTH 1, PHASE 0.000, NUM_READ_THREADS 1, NUM_WRITE_THREADS 1, RUSER_BITS_PER_BYTE 0, W\
-USER_BITS_PER_BYTE 0, INSERT_VIP 0" *)
-(* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi_CTRL RREADY" *)
-input wire s_axi_CTRL_RREADY;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME ap_clk, ASSOCIATED_BUSIF s_axi_CTRL:s_axis:m_axis, ASSOCIATED_RESET ap_rst_n, FREQ_HZ 100000000, PHASE 0.000, INSERT_VIP 0" *)
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME ap_clk, ASSOCIATED_BUSIF s_axis:m_axis, ASSOCIATED_RESET ap_rst_n, FREQ_HZ 100000000, PHASE 0.000, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 ap_clk CLK" *)
 input wire ap_clk;
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME ap_rst_n, POLARITY ACTIVE_LOW, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 ap_rst_n RST" *)
 input wire ap_rst_n;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME interrupt, SENSITIVITY LEVEL_HIGH, PortWidth 1" *)
-(* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 interrupt INTERRUPT" *)
-output wire interrupt;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TVALID" *)
 input wire s_axis_TVALID;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TREADY" *)
@@ -180,30 +123,9 @@ output wire [0 : 0] m_axis_TLAST;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TID" *)
 output wire [0 : 0] m_axis_TID;
 
-  cubeocc_hls #(
-    .C_S_AXI_CTRL_ADDR_WIDTH(6),
-    .C_S_AXI_CTRL_DATA_WIDTH(32)
-  ) inst (
-    .s_axi_CTRL_AWADDR(s_axi_CTRL_AWADDR),
-    .s_axi_CTRL_AWVALID(s_axi_CTRL_AWVALID),
-    .s_axi_CTRL_AWREADY(s_axi_CTRL_AWREADY),
-    .s_axi_CTRL_WDATA(s_axi_CTRL_WDATA),
-    .s_axi_CTRL_WSTRB(s_axi_CTRL_WSTRB),
-    .s_axi_CTRL_WVALID(s_axi_CTRL_WVALID),
-    .s_axi_CTRL_WREADY(s_axi_CTRL_WREADY),
-    .s_axi_CTRL_BRESP(s_axi_CTRL_BRESP),
-    .s_axi_CTRL_BVALID(s_axi_CTRL_BVALID),
-    .s_axi_CTRL_BREADY(s_axi_CTRL_BREADY),
-    .s_axi_CTRL_ARADDR(s_axi_CTRL_ARADDR),
-    .s_axi_CTRL_ARVALID(s_axi_CTRL_ARVALID),
-    .s_axi_CTRL_ARREADY(s_axi_CTRL_ARREADY),
-    .s_axi_CTRL_RDATA(s_axi_CTRL_RDATA),
-    .s_axi_CTRL_RRESP(s_axi_CTRL_RRESP),
-    .s_axi_CTRL_RVALID(s_axi_CTRL_RVALID),
-    .s_axi_CTRL_RREADY(s_axi_CTRL_RREADY),
+  cubeocc_hls inst (
     .ap_clk(ap_clk),
     .ap_rst_n(ap_rst_n),
-    .interrupt(interrupt),
     .s_axis_TVALID(s_axis_TVALID),
     .s_axis_TREADY(s_axis_TREADY),
     .s_axis_TDATA(s_axis_TDATA),

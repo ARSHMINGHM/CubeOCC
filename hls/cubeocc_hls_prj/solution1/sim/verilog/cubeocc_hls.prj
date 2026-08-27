@@ -1,0 +1,7 @@
+sv work "glbl.v"
+sv xil_defaultlib "AESL_axi_s_m_axis.v"
+sv xil_defaultlib "AESL_axi_s_s_axis.v"
+sv xil_defaultlib "AESL_fifo.v"
+sv xil_defaultlib "cubeocc_hls.autotb.v"
+sv xil_defaultlib "cubeocc_hls.v"
+

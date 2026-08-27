@@ -47,33 +47,15 @@
 -- DO NOT MODIFY THIS FILE.
 
 -- IP VLNV: xilinx.com:hls:cubeocc_hls:1.0
--- IP Revision: 1
+-- IP Revision: 1908271655
 
 -- The following code must appear in the VHDL architecture header.
 
 ------------- Begin Cut here for COMPONENT Declaration ------ COMP_TAG
 COMPONENT cubeocc_hls_0
   PORT (
-    s_axi_CTRL_AWADDR : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
-    s_axi_CTRL_AWVALID : IN STD_LOGIC;
-    s_axi_CTRL_AWREADY : OUT STD_LOGIC;
-    s_axi_CTRL_WDATA : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-    s_axi_CTRL_WSTRB : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
-    s_axi_CTRL_WVALID : IN STD_LOGIC;
-    s_axi_CTRL_WREADY : OUT STD_LOGIC;
-    s_axi_CTRL_BRESP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-    s_axi_CTRL_BVALID : OUT STD_LOGIC;
-    s_axi_CTRL_BREADY : IN STD_LOGIC;
-    s_axi_CTRL_ARADDR : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
-    s_axi_CTRL_ARVALID : IN STD_LOGIC;
-    s_axi_CTRL_ARREADY : OUT STD_LOGIC;
-    s_axi_CTRL_RDATA : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-    s_axi_CTRL_RRESP : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-    s_axi_CTRL_RVALID : OUT STD_LOGIC;
-    s_axi_CTRL_RREADY : IN STD_LOGIC;
     ap_clk : IN STD_LOGIC;
     ap_rst_n : IN STD_LOGIC;
-    interrupt : OUT STD_LOGIC;
     s_axis_TVALID : IN STD_LOGIC;
     s_axis_TREADY : OUT STD_LOGIC;
     s_axis_TDATA : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -102,26 +84,8 @@ END COMPONENT;
 ------------- Begin Cut here for INSTANTIATION Template ----- INST_TAG
 your_instance_name : cubeocc_hls_0
   PORT MAP (
-    s_axi_CTRL_AWADDR => s_axi_CTRL_AWADDR,
-    s_axi_CTRL_AWVALID => s_axi_CTRL_AWVALID,
-    s_axi_CTRL_AWREADY => s_axi_CTRL_AWREADY,
-    s_axi_CTRL_WDATA => s_axi_CTRL_WDATA,
-    s_axi_CTRL_WSTRB => s_axi_CTRL_WSTRB,
-    s_axi_CTRL_WVALID => s_axi_CTRL_WVALID,
-    s_axi_CTRL_WREADY => s_axi_CTRL_WREADY,
-    s_axi_CTRL_BRESP => s_axi_CTRL_BRESP,
-    s_axi_CTRL_BVALID => s_axi_CTRL_BVALID,
-    s_axi_CTRL_BREADY => s_axi_CTRL_BREADY,
-    s_axi_CTRL_ARADDR => s_axi_CTRL_ARADDR,
-    s_axi_CTRL_ARVALID => s_axi_CTRL_ARVALID,
-    s_axi_CTRL_ARREADY => s_axi_CTRL_ARREADY,
-    s_axi_CTRL_RDATA => s_axi_CTRL_RDATA,
-    s_axi_CTRL_RRESP => s_axi_CTRL_RRESP,
-    s_axi_CTRL_RVALID => s_axi_CTRL_RVALID,
-    s_axi_CTRL_RREADY => s_axi_CTRL_RREADY,
     ap_clk => ap_clk,
     ap_rst_n => ap_rst_n,
-    interrupt => interrupt,
     s_axis_TVALID => s_axis_TVALID,
     s_axis_TREADY => s_axis_TREADY,
     s_axis_TDATA => s_axis_TDATA,

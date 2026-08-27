@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-(* CORE_GENERATION_INFO="cubeocc_hls,hls_ip_2019_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7a35t-cpg236-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=3.416000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=301,HLS_SYN_LUT=785,HLS_VERSION=2019_1}" *)
+(* CORE_GENERATION_INFO="cubeocc_hls,hls_ip_2019_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=0,HLS_INPUT_PART=xc7a35t-cpg236-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=pipeline,HLS_SYN_CLOCK=7.826750,HLS_SYN_LAT=1,HLS_SYN_TPT=1,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=253,HLS_SYN_LUT=842,HLS_VERSION=2019_1}" *)
 
 module cubeocc_hls (
         ap_clk,
@@ -29,36 +29,10 @@ module cubeocc_hls (
         m_axis_TUSER,
         m_axis_TLAST,
         m_axis_TID,
-        m_axis_TDEST,
-        s_axi_CTRL_AWVALID,
-        s_axi_CTRL_AWREADY,
-        s_axi_CTRL_AWADDR,
-        s_axi_CTRL_WVALID,
-        s_axi_CTRL_WREADY,
-        s_axi_CTRL_WDATA,
-        s_axi_CTRL_WSTRB,
-        s_axi_CTRL_ARVALID,
-        s_axi_CTRL_ARREADY,
-        s_axi_CTRL_ARADDR,
-        s_axi_CTRL_RVALID,
-        s_axi_CTRL_RREADY,
-        s_axi_CTRL_RDATA,
-        s_axi_CTRL_RRESP,
-        s_axi_CTRL_BVALID,
-        s_axi_CTRL_BREADY,
-        s_axi_CTRL_BRESP,
-        interrupt
+        m_axis_TDEST
 );
 
-parameter    ap_ST_fsm_state1 = 3'd1;
-parameter    ap_ST_fsm_pp0_stage0 = 3'd2;
-parameter    ap_ST_fsm_state5 = 3'd4;
-parameter    C_S_AXI_CTRL_DATA_WIDTH = 32;
-parameter    C_S_AXI_CTRL_ADDR_WIDTH = 6;
-parameter    C_S_AXI_DATA_WIDTH = 32;
-
-parameter C_S_AXI_CTRL_WSTRB_WIDTH = (32 / 8);
-parameter C_S_AXI_WSTRB_WIDTH = (32 / 8);
+parameter    ap_ST_fsm_pp0_stage0 = 1'd1;
 
 input   ap_clk;
 input   ap_rst_n;
@@ -80,32 +54,8 @@ output  [0:0] m_axis_TUSER;
 output  [0:0] m_axis_TLAST;
 output  [0:0] m_axis_TID;
 output  [0:0] m_axis_TDEST;
-input   s_axi_CTRL_AWVALID;
-output   s_axi_CTRL_AWREADY;
-input  [C_S_AXI_CTRL_ADDR_WIDTH - 1:0] s_axi_CTRL_AWADDR;
-input   s_axi_CTRL_WVALID;
-output   s_axi_CTRL_WREADY;
-input  [C_S_AXI_CTRL_DATA_WIDTH - 1:0] s_axi_CTRL_WDATA;
-input  [C_S_AXI_CTRL_WSTRB_WIDTH - 1:0] s_axi_CTRL_WSTRB;
-input   s_axi_CTRL_ARVALID;
-output   s_axi_CTRL_ARREADY;
-input  [C_S_AXI_CTRL_ADDR_WIDTH - 1:0] s_axi_CTRL_ARADDR;
-output   s_axi_CTRL_RVALID;
-input   s_axi_CTRL_RREADY;
-output  [C_S_AXI_CTRL_DATA_WIDTH - 1:0] s_axi_CTRL_RDATA;
-output  [1:0] s_axi_CTRL_RRESP;
-output   s_axi_CTRL_BVALID;
-input   s_axi_CTRL_BREADY;
-output  [1:0] s_axi_CTRL_BRESP;
-output   interrupt;
 
  reg    ap_rst_n_inv;
-wire    ap_start;
-reg    ap_done;
-reg    ap_idle;
-(* fsm_encoding = "none" *) reg   [2:0] ap_CS_fsm;
-wire    ap_CS_fsm_state1;
-reg    ap_ready;
 reg   [7:0] s_axis_V_data_V_0_data_out;
 wire    s_axis_V_data_V_0_vld_in;
 wire    s_axis_V_data_V_0_vld_out;
@@ -302,53 +252,71 @@ wire    m_axis_V_dest_V_1_load_A;
 wire    m_axis_V_dest_V_1_load_B;
 reg   [1:0] m_axis_V_dest_V_1_state;
 wire    m_axis_V_dest_V_1_state_cmp_full;
-wire   [31:0] pixel_count;
-wire   [7:0] threshold_V;
-wire    threshold_enable;
+reg   [31:0] row;
+reg   [31:0] col;
+reg   [7:0] grid_V_0_0;
+reg   [7:0] grid_V_0_7;
+reg   [7:0] grid_V_7_0;
+reg   [7:0] grid_V_7_7;
+reg   [7:0] grid_V_0_1;
+reg   [0:0] frame_active;
+reg   [0:0] prev_clk_V;
+reg   [31:0] frame_id;
 reg    s_axis_TDATA_blk_n;
+(* fsm_encoding = "none" *) reg   [0:0] ap_CS_fsm;
 wire    ap_CS_fsm_pp0_stage0;
-reg    ap_enable_reg_pp0_iter0;
 wire    ap_block_pp0_stage0;
-wire   [0:0] icmp_ln17_fu_158_p2;
 reg    m_axis_TDATA_blk_n;
 reg    ap_enable_reg_pp0_iter1;
-reg   [0:0] icmp_ln17_reg_232;
-reg    ap_enable_reg_pp0_iter2;
-reg   [0:0] icmp_ln17_reg_232_pp0_iter1_reg;
-reg   [30:0] i_0_reg_143;
-reg   [0:0] threshold_enable_rea_reg_217;
-reg   [7:0] threshold_V_read_reg_222;
-reg   [31:0] pixel_count_read_reg_227;
-reg    ap_block_state2_pp0_stage0_iter0;
-wire    ap_block_state3_pp0_stage0_iter1;
-reg    ap_block_state3_io;
-wire    ap_block_state4_pp0_stage0_iter2;
-reg    ap_block_state4_io;
+reg    ap_block_state1_pp0_stage0_iter0;
+reg    ap_block_state2_pp0_stage0_iter1;
 reg    ap_block_pp0_stage0_11001;
-wire   [30:0] add_ln17_fu_163_p2;
-reg   [0:0] tmp_keep_V_reg_241;
-reg   [0:0] tmp_strb_V_reg_246;
-reg   [0:0] tmp_user_V_reg_251;
-reg   [0:0] tmp_last_V_reg_256;
-reg   [0:0] tmp_id_V_reg_261;
-reg   [0:0] tmp_dest_V_reg_266;
-wire   [7:0] tmp_data_V_2_fu_210_p3;
-reg   [7:0] tmp_data_V_2_reg_271;
+wire   [0:0] tmp_user_V_fu_216_p1;
+wire   [0:0] and_ln50_fu_309_p2;
+wire   [2:0] trunc_ln321_fu_315_p1;
+wire   [0:0] and_ln55_fu_365_p2;
+reg   [0:0] and_ln55_reg_554;
 reg    ap_block_pp0_stage0_subdone;
-reg    ap_condition_pp0_exit_iter0_state2;
+reg   [31:0] ap_phi_mux_row_loc_0_phi_fu_152_p6;
+wire   [31:0] ap_phi_reg_pp0_iter0_row_loc_0_reg_149;
+wire   [31:0] add_ln42_fu_258_p2;
+wire   [0:0] tmp_last_V_fu_221_p1;
+reg   [0:0] ap_phi_mux_tmp_last_V_1_phi_fu_165_p6;
+wire   [0:0] ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161;
+reg   [31:0] ap_phi_mux_empty_4_phi_fu_180_p6;
+wire   [31:0] ap_phi_reg_pp0_iter0_empty_4_reg_177;
+wire   [31:0] add_ln46_fu_245_p2;
+wire   [2:0] trunc_ln321_1_fu_319_p1;
+wire   [0:0] tmp_4_fu_432_p3;
+wire   [0:0] or_ln68_1_fu_454_p2;
+wire   [0:0] frame_active_load_load_fu_466_p1;
+wire   [0:0] xor_ln883_fu_482_p2;
+wire   [31:0] add_ln77_fu_492_p2;
 reg    ap_block_pp0_stage0_01001;
-wire   [31:0] i_0_cast_fu_154_p1;
-wire   [0:0] icmp_ln895_fu_197_p2;
-wire   [7:0] tmp_data_V_1_fu_202_p3;
-wire    ap_CS_fsm_state5;
-reg    ap_block_state5;
-reg   [2:0] ap_NS_fsm;
+wire   [28:0] tmp_fu_277_p4;
+wire   [28:0] tmp_1_fu_293_p4;
+wire   [0:0] icmp_ln50_fu_287_p2;
+wire   [0:0] icmp_ln50_1_fu_303_p2;
+wire   [0:0] icmp_ln55_fu_353_p2;
+wire   [0:0] icmp_ln55_1_fu_359_p2;
+wire   [7:0] and_ln63_fu_400_p2;
+wire   [7:0] and_ln63_1_fu_406_p2;
+wire   [0:0] tmp_3_fu_412_p3;
+wire   [7:0] and_ln63_2_fu_426_p2;
+wire   [7:0] or_ln68_fu_440_p2;
+wire   [0:0] tmp_5_fu_446_p3;
+wire   [0:0] xor_ln63_fu_420_p2;
+wire   [0:0] tmp_6_fu_470_p3;
+reg   [0:0] ap_NS_fsm;
+wire    ap_reset_idle_pp0;
 reg    ap_idle_pp0;
 wire    ap_enable_pp0;
+reg    ap_condition_844;
+reg    ap_condition_1192;
+reg    ap_condition_915;
 
 // power-on initialization
 initial begin
-#0 ap_CS_fsm = 3'd1;
 #0 s_axis_V_data_V_0_sel_rd = 1'b0;
 #0 s_axis_V_data_V_0_sel_wr = 1'b0;
 #0 s_axis_V_data_V_0_state = 2'd0;
@@ -391,62 +359,25 @@ initial begin
 #0 m_axis_V_dest_V_1_sel_rd = 1'b0;
 #0 m_axis_V_dest_V_1_sel_wr = 1'b0;
 #0 m_axis_V_dest_V_1_state = 2'd0;
-#0 ap_enable_reg_pp0_iter0 = 1'b0;
+#0 row = 32'd0;
+#0 col = 32'd0;
+#0 grid_V_0_0 = 8'd0;
+#0 grid_V_0_7 = 8'd0;
+#0 grid_V_7_0 = 8'd0;
+#0 grid_V_7_7 = 8'd0;
+#0 grid_V_0_1 = 8'd0;
+#0 frame_active = 1'd0;
+#0 prev_clk_V = 1'd0;
+#0 frame_id = 32'd0;
+#0 ap_CS_fsm = 1'd1;
 #0 ap_enable_reg_pp0_iter1 = 1'b0;
-#0 ap_enable_reg_pp0_iter2 = 1'b0;
 end
-
-cubeocc_hls_CTRL_s_axi #(
-    .C_S_AXI_ADDR_WIDTH( C_S_AXI_CTRL_ADDR_WIDTH ),
-    .C_S_AXI_DATA_WIDTH( C_S_AXI_CTRL_DATA_WIDTH ))
-cubeocc_hls_CTRL_s_axi_U(
-    .AWVALID(s_axi_CTRL_AWVALID),
-    .AWREADY(s_axi_CTRL_AWREADY),
-    .AWADDR(s_axi_CTRL_AWADDR),
-    .WVALID(s_axi_CTRL_WVALID),
-    .WREADY(s_axi_CTRL_WREADY),
-    .WDATA(s_axi_CTRL_WDATA),
-    .WSTRB(s_axi_CTRL_WSTRB),
-    .ARVALID(s_axi_CTRL_ARVALID),
-    .ARREADY(s_axi_CTRL_ARREADY),
-    .ARADDR(s_axi_CTRL_ARADDR),
-    .RVALID(s_axi_CTRL_RVALID),
-    .RREADY(s_axi_CTRL_RREADY),
-    .RDATA(s_axi_CTRL_RDATA),
-    .RRESP(s_axi_CTRL_RRESP),
-    .BVALID(s_axi_CTRL_BVALID),
-    .BREADY(s_axi_CTRL_BREADY),
-    .BRESP(s_axi_CTRL_BRESP),
-    .ACLK(ap_clk),
-    .ARESET(ap_rst_n_inv),
-    .ACLK_EN(1'b1),
-    .ap_start(ap_start),
-    .interrupt(interrupt),
-    .ap_ready(ap_ready),
-    .ap_done(ap_done),
-    .ap_idle(ap_idle),
-    .pixel_count(pixel_count),
-    .threshold_V(threshold_V),
-    .threshold_enable(threshold_enable)
-);
 
 always @ (posedge ap_clk) begin
     if (ap_rst_n_inv == 1'b1) begin
-        ap_CS_fsm <= ap_ST_fsm_state1;
+        ap_CS_fsm <= ap_ST_fsm_pp0_stage0;
     end else begin
         ap_CS_fsm <= ap_NS_fsm;
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (ap_rst_n_inv == 1'b1) begin
-        ap_enable_reg_pp0_iter0 <= 1'b0;
-    end else begin
-        if (((1'b0 == ap_block_pp0_stage0_subdone) & (1'b1 == ap_condition_pp0_exit_iter0_state2) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-            ap_enable_reg_pp0_iter0 <= 1'b0;
-        end else if (((1'b1 == ap_CS_fsm_state1) & (ap_start == 1'b1))) begin
-            ap_enable_reg_pp0_iter0 <= 1'b1;
-        end
     end
 end
 
@@ -455,23 +386,7 @@ always @ (posedge ap_clk) begin
         ap_enable_reg_pp0_iter1 <= 1'b0;
     end else begin
         if ((1'b0 == ap_block_pp0_stage0_subdone)) begin
-            if ((1'b1 == ap_condition_pp0_exit_iter0_state2)) begin
-                ap_enable_reg_pp0_iter1 <= (1'b1 ^ ap_condition_pp0_exit_iter0_state2);
-            end else if ((1'b1 == 1'b1)) begin
-                ap_enable_reg_pp0_iter1 <= ap_enable_reg_pp0_iter0;
-            end
-        end
-    end
-end
-
-always @ (posedge ap_clk) begin
-    if (ap_rst_n_inv == 1'b1) begin
-        ap_enable_reg_pp0_iter2 <= 1'b0;
-    end else begin
-        if ((1'b0 == ap_block_pp0_stage0_subdone)) begin
-            ap_enable_reg_pp0_iter2 <= ap_enable_reg_pp0_iter1;
-        end else if (((1'b1 == ap_CS_fsm_state1) & (ap_start == 1'b1))) begin
-            ap_enable_reg_pp0_iter2 <= 1'b0;
+            ap_enable_reg_pp0_iter1 <= 1'b1;
         end
     end
 end
@@ -752,9 +667,9 @@ always @ (posedge ap_clk) begin
     if (ap_rst_n_inv == 1'b1) begin
         s_axis_V_data_V_0_state <= 2'd0;
     end else begin
-        if ((((s_axis_V_data_V_0_state == 2'd2) & (s_axis_V_data_V_0_vld_in == 1'b0)) | ((s_axis_V_data_V_0_state == 2'd3) & (s_axis_V_data_V_0_vld_in == 1'b0) & (s_axis_V_data_V_0_ack_out == 1'b1)))) begin
+        if ((((s_axis_V_data_V_0_vld_in == 1'b0) & (s_axis_V_data_V_0_state == 2'd2)) | ((s_axis_V_data_V_0_vld_in == 1'b0) & (s_axis_V_data_V_0_state == 2'd3) & (s_axis_V_data_V_0_ack_out == 1'b1)))) begin
             s_axis_V_data_V_0_state <= 2'd2;
-        end else if ((((s_axis_V_data_V_0_state == 2'd1) & (s_axis_V_data_V_0_ack_out == 1'b0)) | ((s_axis_V_data_V_0_state == 2'd3) & (s_axis_V_data_V_0_ack_out == 1'b0) & (s_axis_V_data_V_0_vld_in == 1'b1)))) begin
+        end else if ((((s_axis_V_data_V_0_ack_out == 1'b0) & (s_axis_V_data_V_0_state == 2'd1)) | ((s_axis_V_data_V_0_ack_out == 1'b0) & (s_axis_V_data_V_0_state == 2'd3) & (s_axis_V_data_V_0_vld_in == 1'b1)))) begin
             s_axis_V_data_V_0_state <= 2'd1;
         end else if (((~((s_axis_V_data_V_0_vld_in == 1'b0) & (s_axis_V_data_V_0_ack_out == 1'b1)) & ~((s_axis_V_data_V_0_ack_out == 1'b0) & (s_axis_V_data_V_0_vld_in == 1'b1)) & (s_axis_V_data_V_0_state == 2'd3)) | ((s_axis_V_data_V_0_state == 2'd1) & (s_axis_V_data_V_0_ack_out == 1'b1)) | ((s_axis_V_data_V_0_state == 2'd2) & (s_axis_V_data_V_0_vld_in == 1'b1)))) begin
             s_axis_V_data_V_0_state <= 2'd3;
@@ -860,11 +775,11 @@ always @ (posedge ap_clk) begin
     if (ap_rst_n_inv == 1'b1) begin
         s_axis_V_keep_V_0_state <= 2'd0;
     end else begin
-        if ((((s_axis_V_keep_V_0_state == 2'd2) & (s_axis_V_keep_V_0_vld_in == 1'b0)) | ((s_axis_V_keep_V_0_state == 2'd3) & (s_axis_V_keep_V_0_vld_in == 1'b0) & (s_axis_V_keep_V_0_ack_out == 1'b1)))) begin
+        if ((((s_axis_V_keep_V_0_state == 2'd3) & (s_axis_V_keep_V_0_vld_in == 1'b0) & (s_axis_V_keep_V_0_ack_out == 1'b1)) | ((s_axis_V_keep_V_0_state == 2'd2) & (s_axis_V_keep_V_0_vld_in == 1'b0)))) begin
             s_axis_V_keep_V_0_state <= 2'd2;
         end else if ((((s_axis_V_keep_V_0_state == 2'd1) & (s_axis_V_keep_V_0_ack_out == 1'b0)) | ((s_axis_V_keep_V_0_state == 2'd3) & (s_axis_V_keep_V_0_ack_out == 1'b0) & (s_axis_V_keep_V_0_vld_in == 1'b1)))) begin
             s_axis_V_keep_V_0_state <= 2'd1;
-        end else if (((~((s_axis_V_keep_V_0_vld_in == 1'b0) & (s_axis_V_keep_V_0_ack_out == 1'b1)) & ~((s_axis_V_keep_V_0_ack_out == 1'b0) & (s_axis_V_keep_V_0_vld_in == 1'b1)) & (s_axis_V_keep_V_0_state == 2'd3)) | ((s_axis_V_keep_V_0_state == 2'd1) & (s_axis_V_keep_V_0_ack_out == 1'b1)) | ((s_axis_V_keep_V_0_state == 2'd2) & (s_axis_V_keep_V_0_vld_in == 1'b1)))) begin
+        end else if ((((s_axis_V_keep_V_0_state == 2'd1) & (s_axis_V_keep_V_0_ack_out == 1'b1)) | ((s_axis_V_keep_V_0_state == 2'd2) & (s_axis_V_keep_V_0_vld_in == 1'b1)) | (~((s_axis_V_keep_V_0_vld_in == 1'b0) & (s_axis_V_keep_V_0_ack_out == 1'b1)) & ~((s_axis_V_keep_V_0_ack_out == 1'b0) & (s_axis_V_keep_V_0_vld_in == 1'b1)) & (s_axis_V_keep_V_0_state == 2'd3)))) begin
             s_axis_V_keep_V_0_state <= 2'd3;
         end else begin
             s_axis_V_keep_V_0_state <= 2'd2;
@@ -981,109 +896,162 @@ always @ (posedge ap_clk) begin
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-        i_0_reg_143 <= add_ln17_fu_163_p2;
-    end else if (((1'b1 == ap_CS_fsm_state1) & (ap_start == 1'b1))) begin
-        i_0_reg_143 <= 31'd0;
+    if ((((1'b0 == ap_block_pp0_stage0_11001) & (tmp_last_V_fu_221_p1 == 1'd1) & (tmp_user_V_fu_216_p1 == 1'd0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)) | ((1'b0 == ap_block_pp0_stage0_11001) & (tmp_user_V_fu_216_p1 == 1'd1) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)))) begin
+        col <= 32'd0;
+    end else if (((1'b0 == ap_block_pp0_stage0_11001) & (tmp_last_V_fu_221_p1 == 1'd0) & (tmp_user_V_fu_216_p1 == 1'd0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        col <= add_ln46_fu_245_p2;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_condition_1192)) begin
+        if ((tmp_4_fu_432_p3 == 1'd1)) begin
+            frame_active <= 1'd1;
+        end else if (((or_ln68_1_fu_454_p2 == 1'd0) & (tmp_4_fu_432_p3 == 1'd0))) begin
+            frame_active <= 1'd0;
+        end
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if ((1'b1 == ap_condition_915)) begin
+        if ((tmp_user_V_fu_216_p1 == 1'd1)) begin
+            row <= 32'd0;
+        end else if (((tmp_last_V_fu_221_p1 == 1'd1) & (tmp_user_V_fu_216_p1 == 1'd0))) begin
+            row <= add_ln42_fu_258_p2;
+        end
     end
 end
 
 always @ (posedge ap_clk) begin
     if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-        icmp_ln17_reg_232 <= icmp_ln17_fu_158_p2;
-        icmp_ln17_reg_232_pp0_iter1_reg <= icmp_ln17_reg_232;
+        and_ln55_reg_554 <= and_ln55_fu_365_p2;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (xor_ln883_fu_482_p2 == 1'd1) & (frame_active_load_load_fu_466_p1 == 1'd1) & (or_ln68_1_fu_454_p2 == 1'd1) & (1'd1 == and_ln55_reg_554) & (tmp_4_fu_432_p3 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        frame_id <= add_ln77_fu_492_p2;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((trunc_ln321_1_fu_319_p1 == 3'd0) & (trunc_ln321_fu_315_p1 == 3'd0) & (1'b0 == ap_block_pp0_stage0_11001) & (1'd1 == and_ln50_fu_309_p2) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        grid_V_0_0 <= s_axis_V_data_V_0_data_out;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((trunc_ln321_1_fu_319_p1 == 3'd1) & (trunc_ln321_fu_315_p1 == 3'd0) & (1'b0 == ap_block_pp0_stage0_11001) & (1'd1 == and_ln50_fu_309_p2) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        grid_V_0_1 <= s_axis_V_data_V_0_data_out;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((trunc_ln321_1_fu_319_p1 == 3'd7) & (trunc_ln321_fu_315_p1 == 3'd0) & (1'b0 == ap_block_pp0_stage0_11001) & (1'd1 == and_ln50_fu_309_p2) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        grid_V_0_7 <= s_axis_V_data_V_0_data_out;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((trunc_ln321_1_fu_319_p1 == 3'd0) & (trunc_ln321_fu_315_p1 == 3'd7) & (1'b0 == ap_block_pp0_stage0_11001) & (1'd1 == and_ln50_fu_309_p2) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        grid_V_7_0 <= s_axis_V_data_V_0_data_out;
+    end
+end
+
+always @ (posedge ap_clk) begin
+    if (((trunc_ln321_1_fu_319_p1 == 3'd7) & (trunc_ln321_fu_315_p1 == 3'd7) & (1'b0 == ap_block_pp0_stage0_11001) & (1'd1 == and_ln50_fu_309_p2) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        grid_V_7_7 <= s_axis_V_data_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_data_V_1_load_A == 1'b1)) begin
-        m_axis_V_data_V_1_payload_A <= tmp_data_V_2_reg_271;
+        m_axis_V_data_V_1_payload_A <= s_axis_V_data_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_data_V_1_load_B == 1'b1)) begin
-        m_axis_V_data_V_1_payload_B <= tmp_data_V_2_reg_271;
+        m_axis_V_data_V_1_payload_B <= s_axis_V_data_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_dest_V_1_load_A == 1'b1)) begin
-        m_axis_V_dest_V_1_payload_A <= tmp_dest_V_reg_266;
+        m_axis_V_dest_V_1_payload_A <= s_axis_V_dest_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_dest_V_1_load_B == 1'b1)) begin
-        m_axis_V_dest_V_1_payload_B <= tmp_dest_V_reg_266;
+        m_axis_V_dest_V_1_payload_B <= s_axis_V_dest_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_id_V_1_load_A == 1'b1)) begin
-        m_axis_V_id_V_1_payload_A <= tmp_id_V_reg_261;
+        m_axis_V_id_V_1_payload_A <= s_axis_V_id_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_id_V_1_load_B == 1'b1)) begin
-        m_axis_V_id_V_1_payload_B <= tmp_id_V_reg_261;
+        m_axis_V_id_V_1_payload_B <= s_axis_V_id_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_keep_V_1_load_A == 1'b1)) begin
-        m_axis_V_keep_V_1_payload_A <= tmp_keep_V_reg_241;
+        m_axis_V_keep_V_1_payload_A <= s_axis_V_keep_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_keep_V_1_load_B == 1'b1)) begin
-        m_axis_V_keep_V_1_payload_B <= tmp_keep_V_reg_241;
+        m_axis_V_keep_V_1_payload_B <= s_axis_V_keep_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_last_V_1_load_A == 1'b1)) begin
-        m_axis_V_last_V_1_payload_A <= tmp_last_V_reg_256;
+        m_axis_V_last_V_1_payload_A <= ap_phi_mux_tmp_last_V_1_phi_fu_165_p6;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_last_V_1_load_B == 1'b1)) begin
-        m_axis_V_last_V_1_payload_B <= tmp_last_V_reg_256;
+        m_axis_V_last_V_1_payload_B <= ap_phi_mux_tmp_last_V_1_phi_fu_165_p6;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_strb_V_1_load_A == 1'b1)) begin
-        m_axis_V_strb_V_1_payload_A <= tmp_strb_V_reg_246;
+        m_axis_V_strb_V_1_payload_A <= s_axis_V_strb_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_strb_V_1_load_B == 1'b1)) begin
-        m_axis_V_strb_V_1_payload_B <= tmp_strb_V_reg_246;
+        m_axis_V_strb_V_1_payload_B <= s_axis_V_strb_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_user_V_1_load_A == 1'b1)) begin
-        m_axis_V_user_V_1_payload_A <= tmp_user_V_reg_251;
+        m_axis_V_user_V_1_payload_A <= s_axis_V_user_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
     if ((m_axis_V_user_V_1_load_B == 1'b1)) begin
-        m_axis_V_user_V_1_payload_B <= tmp_user_V_reg_251;
+        m_axis_V_user_V_1_payload_B <= s_axis_V_user_V_0_data_out;
     end
 end
 
 always @ (posedge ap_clk) begin
-    if (((1'b1 == ap_CS_fsm_state1) & (ap_start == 1'b1))) begin
-        pixel_count_read_reg_227 <= pixel_count;
-        threshold_V_read_reg_222 <= threshold_V;
-        threshold_enable_rea_reg_217 <= threshold_enable;
+    if ((((1'b0 == ap_block_pp0_stage0_11001) & (tmp_4_fu_432_p3 == 1'd1) & (1'd1 == and_ln55_reg_554) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)) | ((1'b0 == ap_block_pp0_stage0_11001) & (xor_ln883_fu_482_p2 == 1'd1) & (frame_active_load_load_fu_466_p1 == 1'd1) & (or_ln68_1_fu_454_p2 == 1'd1) & (1'd1 == and_ln55_reg_554) & (tmp_4_fu_432_p3 == 1'd0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)))) begin
+        prev_clk_V <= grid_V_0_1[32'd7];
     end
 end
 
@@ -1171,44 +1139,8 @@ always @ (posedge ap_clk) begin
     end
 end
 
-always @ (posedge ap_clk) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
-        tmp_data_V_2_reg_271 <= tmp_data_V_2_fu_210_p3;
-        tmp_dest_V_reg_266 <= s_axis_V_dest_V_0_data_out;
-        tmp_id_V_reg_261 <= s_axis_V_id_V_0_data_out;
-        tmp_keep_V_reg_241 <= s_axis_V_keep_V_0_data_out;
-        tmp_last_V_reg_256 <= s_axis_V_last_V_0_data_out;
-        tmp_strb_V_reg_246 <= s_axis_V_strb_V_0_data_out;
-        tmp_user_V_reg_251 <= s_axis_V_user_V_0_data_out;
-    end
-end
-
 always @ (*) begin
-    if ((icmp_ln17_fu_158_p2 == 1'd0)) begin
-        ap_condition_pp0_exit_iter0_state2 = 1'b1;
-    end else begin
-        ap_condition_pp0_exit_iter0_state2 = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if ((~((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0))) & (1'b1 == ap_CS_fsm_state5))) begin
-        ap_done = 1'b1;
-    end else begin
-        ap_done = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((ap_start == 1'b0) & (1'b1 == ap_CS_fsm_state1))) begin
-        ap_idle = 1'b1;
-    end else begin
-        ap_idle = 1'b0;
-    end
-end
-
-always @ (*) begin
-    if (((ap_enable_reg_pp0_iter2 == 1'b0) & (ap_enable_reg_pp0_iter1 == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b0))) begin
+    if (((ap_enable_reg_pp0_iter1 == 1'b0) & (1'b1 == 1'b0))) begin
         ap_idle_pp0 = 1'b1;
     end else begin
         ap_idle_pp0 = 1'b0;
@@ -1216,15 +1148,51 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if ((~((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0))) & (1'b1 == ap_CS_fsm_state5))) begin
-        ap_ready = 1'b1;
+    if (((1'b0 == ap_block_pp0_stage0) & (tmp_last_V_fu_221_p1 == 1'd0) & (tmp_user_V_fu_216_p1 == 1'd0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+        ap_phi_mux_empty_4_phi_fu_180_p6 = add_ln46_fu_245_p2;
+    end else if ((((1'b0 == ap_block_pp0_stage0) & (tmp_last_V_fu_221_p1 == 1'd1) & (tmp_user_V_fu_216_p1 == 1'd0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)) | ((1'b0 == ap_block_pp0_stage0) & (tmp_user_V_fu_216_p1 == 1'd1) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)))) begin
+        ap_phi_mux_empty_4_phi_fu_180_p6 = 32'd0;
     end else begin
-        ap_ready = 1'b0;
+        ap_phi_mux_empty_4_phi_fu_180_p6 = ap_phi_reg_pp0_iter0_empty_4_reg_177;
     end
 end
 
 always @ (*) begin
-    if ((((1'b0 == ap_block_pp0_stage0) & (icmp_ln17_reg_232_pp0_iter1_reg == 1'd1) & (ap_enable_reg_pp0_iter2 == 1'b1)) | ((1'b0 == ap_block_pp0_stage0) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)))) begin
+    if ((1'b1 == ap_condition_844)) begin
+        if (((tmp_last_V_fu_221_p1 == 1'd0) & (tmp_user_V_fu_216_p1 == 1'd0))) begin
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = row;
+        end else if (((tmp_last_V_fu_221_p1 == 1'd1) & (tmp_user_V_fu_216_p1 == 1'd0))) begin
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = add_ln42_fu_258_p2;
+        end else if ((tmp_user_V_fu_216_p1 == 1'd1)) begin
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = 32'd0;
+        end else begin
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = ap_phi_reg_pp0_iter0_row_loc_0_reg_149;
+        end
+    end else begin
+        ap_phi_mux_row_loc_0_phi_fu_152_p6 = ap_phi_reg_pp0_iter0_row_loc_0_reg_149;
+    end
+end
+
+always @ (*) begin
+    if ((1'b1 == ap_condition_844)) begin
+        if (((tmp_last_V_fu_221_p1 == 1'd0) & (tmp_user_V_fu_216_p1 == 1'd0))) begin
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = 1'd0;
+        end else if (((tmp_last_V_fu_221_p1 == 1'd1) & (tmp_user_V_fu_216_p1 == 1'd0))) begin
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = 1'd1;
+        end else if ((tmp_user_V_fu_216_p1 == 1'd1)) begin
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = s_axis_V_last_V_0_data_out;
+        end else begin
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161;
+        end
+    end else begin
+        ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161;
+    end
+end
+
+assign ap_reset_idle_pp0 = 1'b0;
+
+always @ (*) begin
+    if ((((1'b0 == ap_block_pp0_stage0) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)) | ((1'b0 == ap_block_pp0_stage0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0)))) begin
         m_axis_TDATA_blk_n = m_axis_V_data_V_1_state[1'd1];
     end else begin
         m_axis_TDATA_blk_n = 1'b1;
@@ -1240,7 +1208,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_data_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_data_V_1_vld_in = 1'b0;
@@ -1256,7 +1224,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_dest_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_dest_V_1_vld_in = 1'b0;
@@ -1272,7 +1240,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_id_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_id_V_1_vld_in = 1'b0;
@@ -1288,7 +1256,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_keep_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_keep_V_1_vld_in = 1'b0;
@@ -1304,7 +1272,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_last_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_last_V_1_vld_in = 1'b0;
@@ -1320,7 +1288,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_strb_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_strb_V_1_vld_in = 1'b0;
@@ -1336,7 +1304,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_reg_232 == 1'd1) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         m_axis_V_user_V_1_vld_in = 1'b1;
     end else begin
         m_axis_V_user_V_1_vld_in = 1'b0;
@@ -1344,7 +1312,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_TDATA_blk_n = s_axis_V_data_V_0_state[1'd0];
     end else begin
         s_axis_TDATA_blk_n = 1'b1;
@@ -1352,7 +1320,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_data_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_data_V_0_ack_out = 1'b0;
@@ -1368,7 +1336,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_dest_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_dest_V_0_ack_out = 1'b0;
@@ -1384,7 +1352,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_id_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_id_V_0_ack_out = 1'b0;
@@ -1400,7 +1368,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_keep_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_keep_V_0_ack_out = 1'b0;
@@ -1416,7 +1384,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_last_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_last_V_0_ack_out = 1'b0;
@@ -1432,7 +1400,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_strb_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_strb_V_0_ack_out = 1'b0;
@@ -1448,7 +1416,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if (((1'b0 == ap_block_pp0_stage0_11001) & (icmp_ln17_fu_158_p2 == 1'd1) & (ap_enable_reg_pp0_iter0 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
+    if (((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0))) begin
         s_axis_V_user_V_0_ack_out = 1'b1;
     end else begin
         s_axis_V_user_V_0_ack_out = 1'b0;
@@ -1465,28 +1433,8 @@ end
 
 always @ (*) begin
     case (ap_CS_fsm)
-        ap_ST_fsm_state1 : begin
-            if (((1'b1 == ap_CS_fsm_state1) & (ap_start == 1'b1))) begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            end else begin
-                ap_NS_fsm = ap_ST_fsm_state1;
-            end
-        end
         ap_ST_fsm_pp0_stage0 : begin
-            if ((~((1'b0 == ap_block_pp0_stage0_subdone) & (ap_enable_reg_pp0_iter1 == 1'b0) & (icmp_ln17_fu_158_p2 == 1'd0) & (ap_enable_reg_pp0_iter0 == 1'b1)) & ~((1'b0 == ap_block_pp0_stage0_subdone) & (ap_enable_reg_pp0_iter1 == 1'b0) & (ap_enable_reg_pp0_iter2 == 1'b1)))) begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            end else if ((((1'b0 == ap_block_pp0_stage0_subdone) & (ap_enable_reg_pp0_iter1 == 1'b0) & (ap_enable_reg_pp0_iter2 == 1'b1)) | ((1'b0 == ap_block_pp0_stage0_subdone) & (ap_enable_reg_pp0_iter1 == 1'b0) & (icmp_ln17_fu_158_p2 == 1'd0) & (ap_enable_reg_pp0_iter0 == 1'b1)))) begin
-                ap_NS_fsm = ap_ST_fsm_state5;
-            end else begin
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            end
-        end
-        ap_ST_fsm_state5 : begin
-            if ((~((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0))) & (1'b1 == ap_CS_fsm_state5))) begin
-                ap_NS_fsm = ap_ST_fsm_state1;
-            end else begin
-                ap_NS_fsm = ap_ST_fsm_state5;
-            end
+            ap_NS_fsm = ap_ST_fsm_pp0_stage0;
         end
         default : begin
             ap_NS_fsm = 'bx;
@@ -1494,59 +1442,79 @@ always @ (*) begin
     endcase
 end
 
-assign add_ln17_fu_163_p2 = (i_0_reg_143 + 31'd1);
+assign add_ln42_fu_258_p2 = (row + 32'd1);
 
-assign ap_CS_fsm_pp0_stage0 = ap_CS_fsm[32'd1];
+assign add_ln46_fu_245_p2 = (col + 32'd1);
 
-assign ap_CS_fsm_state1 = ap_CS_fsm[32'd0];
+assign add_ln77_fu_492_p2 = (frame_id + 32'd1);
 
-assign ap_CS_fsm_state5 = ap_CS_fsm[32'd2];
+assign and_ln50_fu_309_p2 = (icmp_ln50_fu_287_p2 & icmp_ln50_1_fu_303_p2);
+
+assign and_ln55_fu_365_p2 = (icmp_ln55_fu_353_p2 & icmp_ln55_1_fu_359_p2);
+
+assign and_ln63_1_fu_406_p2 = (grid_V_0_7 & and_ln63_fu_400_p2);
+
+assign and_ln63_2_fu_426_p2 = (grid_V_7_7 & and_ln63_1_fu_406_p2);
+
+assign and_ln63_fu_400_p2 = (grid_V_7_0 & grid_V_0_0);
+
+assign ap_CS_fsm_pp0_stage0 = ap_CS_fsm[32'd0];
 
 assign ap_block_pp0_stage0 = ~(1'b1 == 1'b1);
 
 always @ (*) begin
-    ap_block_pp0_stage0_01001 = ((icmp_ln17_fu_158_p2 == 1'd1) & (s_axis_V_data_V_0_vld_out == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b1));
+    ap_block_pp0_stage0_01001 = (((ap_enable_reg_pp0_iter1 == 1'b1) & ((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)))) | ((s_axis_V_data_V_0_vld_out == 1'b0) & (1'b1 == 1'b1)));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage0_11001 = (((1'b1 == ap_block_state4_io) & (ap_enable_reg_pp0_iter2 == 1'b1)) | ((1'b1 == ap_block_state3_io) & (ap_enable_reg_pp0_iter1 == 1'b1)) | ((icmp_ln17_fu_158_p2 == 1'd1) & (s_axis_V_data_V_0_vld_out == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b1)));
+    ap_block_pp0_stage0_11001 = (((ap_enable_reg_pp0_iter1 == 1'b1) & ((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | (m_axis_V_data_V_1_ack_in == 1'b0) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)))) | ((1'b1 == 1'b1) & ((m_axis_V_data_V_1_ack_in == 1'b0) | (s_axis_V_data_V_0_vld_out == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_pp0_stage0_subdone = (((1'b1 == ap_block_state4_io) & (ap_enable_reg_pp0_iter2 == 1'b1)) | ((1'b1 == ap_block_state3_io) & (ap_enable_reg_pp0_iter1 == 1'b1)) | ((icmp_ln17_fu_158_p2 == 1'd1) & (s_axis_V_data_V_0_vld_out == 1'b0) & (ap_enable_reg_pp0_iter0 == 1'b1)));
+    ap_block_pp0_stage0_subdone = (((ap_enable_reg_pp0_iter1 == 1'b1) & ((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | (m_axis_V_data_V_1_ack_in == 1'b0) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)))) | ((1'b1 == 1'b1) & ((m_axis_V_data_V_1_ack_in == 1'b0) | (s_axis_V_data_V_0_vld_out == 1'b0))));
 end
 
 always @ (*) begin
-    ap_block_state2_pp0_stage0_iter0 = ((icmp_ln17_fu_158_p2 == 1'd1) & (s_axis_V_data_V_0_vld_out == 1'b0));
+    ap_block_state1_pp0_stage0_iter0 = (s_axis_V_data_V_0_vld_out == 1'b0);
 end
 
 always @ (*) begin
-    ap_block_state3_io = ((icmp_ln17_reg_232 == 1'd1) & (m_axis_V_data_V_1_ack_in == 1'b0));
+    ap_block_state2_pp0_stage0_iter1 = ((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)));
 end
 
-assign ap_block_state3_pp0_stage0_iter1 = ~(1'b1 == 1'b1);
-
 always @ (*) begin
-    ap_block_state4_io = ((icmp_ln17_reg_232_pp0_iter1_reg == 1'd1) & (m_axis_V_data_V_1_ack_in == 1'b0));
+    ap_condition_1192 = ((1'b0 == ap_block_pp0_stage0_11001) & (1'd1 == and_ln55_reg_554) & (ap_enable_reg_pp0_iter1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0));
 end
 
-assign ap_block_state4_pp0_stage0_iter2 = ~(1'b1 == 1'b1);
+always @ (*) begin
+    ap_condition_844 = ((1'b0 == ap_block_pp0_stage0) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0));
+end
 
 always @ (*) begin
-    ap_block_state5 = ((m_axis_V_dest_V_1_state == 2'd1) | (m_axis_V_id_V_1_state == 2'd1) | (m_axis_V_last_V_1_state == 2'd1) | (m_axis_V_user_V_1_state == 2'd1) | (m_axis_V_strb_V_1_state == 2'd1) | (m_axis_V_keep_V_1_state == 2'd1) | (m_axis_V_data_V_1_state == 2'd1) | ((m_axis_V_dest_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_id_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_last_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_user_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_strb_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_keep_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)) | ((m_axis_V_data_V_1_state == 2'd3) & (m_axis_TREADY == 1'b0)));
+    ap_condition_915 = ((1'b0 == ap_block_pp0_stage0_11001) & (1'b1 == 1'b1) & (1'b1 == ap_CS_fsm_pp0_stage0));
 end
 
 assign ap_enable_pp0 = (ap_idle_pp0 ^ 1'b1);
+
+assign ap_phi_reg_pp0_iter0_empty_4_reg_177 = 'bx;
+
+assign ap_phi_reg_pp0_iter0_row_loc_0_reg_149 = 'bx;
+
+assign ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161 = 'bx;
 
 always @ (*) begin
     ap_rst_n_inv = ~ap_rst_n;
 end
 
-assign i_0_cast_fu_154_p1 = i_0_reg_143;
+assign frame_active_load_load_fu_466_p1 = frame_active;
 
-assign icmp_ln17_fu_158_p2 = (($signed(i_0_cast_fu_154_p1) < $signed(pixel_count_read_reg_227)) ? 1'b1 : 1'b0);
+assign icmp_ln50_1_fu_303_p2 = (($signed(tmp_1_fu_293_p4) < $signed(29'd1)) ? 1'b1 : 1'b0);
 
-assign icmp_ln895_fu_197_p2 = ((s_axis_V_data_V_0_data_out > threshold_V_read_reg_222) ? 1'b1 : 1'b0);
+assign icmp_ln50_fu_287_p2 = (($signed(tmp_fu_277_p4) < $signed(29'd1)) ? 1'b1 : 1'b0);
+
+assign icmp_ln55_1_fu_359_p2 = ((ap_phi_mux_empty_4_phi_fu_180_p6 == 32'd0) ? 1'b1 : 1'b0);
+
+assign icmp_ln55_fu_353_p2 = ((ap_phi_mux_row_loc_0_phi_fu_152_p6 == 32'd8) ? 1'b1 : 1'b0);
 
 assign m_axis_TDATA = m_axis_V_data_V_1_data_out;
 
@@ -1662,6 +1630,10 @@ assign m_axis_V_user_V_1_state_cmp_full = ((m_axis_V_user_V_1_state != 2'd1) ? 1
 
 assign m_axis_V_user_V_1_vld_out = m_axis_V_user_V_1_state[1'd0];
 
+assign or_ln68_1_fu_454_p2 = (xor_ln63_fu_420_p2 | tmp_5_fu_446_p3);
+
+assign or_ln68_fu_440_p2 = (grid_V_7_7 | grid_V_0_1);
+
 assign s_axis_TREADY = s_axis_V_dest_V_0_state[1'd1];
 
 assign s_axis_V_data_V_0_ack_in = s_axis_V_data_V_0_state[1'd1];
@@ -1762,8 +1734,28 @@ assign s_axis_V_user_V_0_vld_in = s_axis_TVALID;
 
 assign s_axis_V_user_V_0_vld_out = s_axis_V_user_V_0_state[1'd0];
 
-assign tmp_data_V_1_fu_202_p3 = ((icmp_ln895_fu_197_p2[0:0] === 1'b1) ? 8'd255 : 8'd0);
+assign tmp_1_fu_293_p4 = {{ap_phi_mux_empty_4_phi_fu_180_p6[31:3]}};
 
-assign tmp_data_V_2_fu_210_p3 = ((threshold_enable_rea_reg_217[0:0] === 1'b1) ? tmp_data_V_1_fu_202_p3 : s_axis_V_data_V_0_data_out);
+assign tmp_3_fu_412_p3 = and_ln63_1_fu_406_p2[32'd7];
+
+assign tmp_4_fu_432_p3 = and_ln63_2_fu_426_p2[32'd7];
+
+assign tmp_5_fu_446_p3 = or_ln68_fu_440_p2[32'd7];
+
+assign tmp_6_fu_470_p3 = grid_V_0_1[32'd7];
+
+assign tmp_fu_277_p4 = {{ap_phi_mux_row_loc_0_phi_fu_152_p6[31:3]}};
+
+assign tmp_last_V_fu_221_p1 = s_axis_V_last_V_0_data_out;
+
+assign tmp_user_V_fu_216_p1 = s_axis_V_user_V_0_data_out;
+
+assign trunc_ln321_1_fu_319_p1 = ap_phi_mux_empty_4_phi_fu_180_p6[2:0];
+
+assign trunc_ln321_fu_315_p1 = ap_phi_mux_row_loc_0_phi_fu_152_p6[2:0];
+
+assign xor_ln63_fu_420_p2 = (tmp_3_fu_412_p3 ^ 1'd1);
+
+assign xor_ln883_fu_482_p2 = (tmp_6_fu_470_p3 ^ prev_clk_V);
 
 endmodule //cubeocc_hls

@@ -1,2 +1,1 @@
-cubeocc_hls_CTRL_s_axi
 cubeocc_hls

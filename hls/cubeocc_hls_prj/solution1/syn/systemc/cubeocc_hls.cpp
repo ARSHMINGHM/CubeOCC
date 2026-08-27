@@ -14,10 +14,7 @@ namespace ap_rtl {
 
 const sc_logic cubeocc_hls::ap_const_logic_1 = sc_dt::Log_1;
 const sc_logic cubeocc_hls::ap_const_logic_0 = sc_dt::Log_0;
-const sc_lv<3> cubeocc_hls::ap_ST_fsm_state1 = "1";
-const sc_lv<3> cubeocc_hls::ap_ST_fsm_pp0_stage0 = "10";
-const sc_lv<3> cubeocc_hls::ap_ST_fsm_state5 = "100";
-const sc_lv<32> cubeocc_hls::ap_const_lv32_0 = "00000000000000000000000000000000";
+const sc_lv<1> cubeocc_hls::ap_ST_fsm_pp0_stage0 = "1";
 const bool cubeocc_hls::ap_const_boolean_1 = true;
 const sc_lv<1> cubeocc_hls::ap_const_lv1_0 = "0";
 const sc_lv<1> cubeocc_hls::ap_const_lv1_1 = "1";
@@ -25,104 +22,100 @@ const sc_lv<2> cubeocc_hls::ap_const_lv2_0 = "00";
 const sc_lv<2> cubeocc_hls::ap_const_lv2_2 = "10";
 const sc_lv<2> cubeocc_hls::ap_const_lv2_3 = "11";
 const sc_lv<2> cubeocc_hls::ap_const_lv2_1 = "1";
-const sc_lv<32> cubeocc_hls::ap_const_lv32_1 = "1";
+const sc_lv<32> cubeocc_hls::ap_const_lv32_0 = "00000000000000000000000000000000";
 const bool cubeocc_hls::ap_const_boolean_0 = false;
-const int cubeocc_hls::C_S_AXI_DATA_WIDTH = "100000";
-const sc_lv<31> cubeocc_hls::ap_const_lv31_0 = "0000000000000000000000000000000";
-const sc_lv<31> cubeocc_hls::ap_const_lv31_1 = "1";
-const sc_lv<8> cubeocc_hls::ap_const_lv8_FF = "11111111";
-const sc_lv<8> cubeocc_hls::ap_const_lv8_0 = "00000000";
-const sc_lv<32> cubeocc_hls::ap_const_lv32_2 = "10";
+const sc_lv<3> cubeocc_hls::ap_const_lv3_0 = "000";
+const sc_lv<3> cubeocc_hls::ap_const_lv3_7 = "111";
+const sc_lv<3> cubeocc_hls::ap_const_lv3_1 = "1";
+const sc_lv<32> cubeocc_hls::ap_const_lv32_1 = "1";
+const sc_lv<32> cubeocc_hls::ap_const_lv32_3 = "11";
+const sc_lv<32> cubeocc_hls::ap_const_lv32_1F = "11111";
+const sc_lv<29> cubeocc_hls::ap_const_lv29_1 = "1";
+const sc_lv<32> cubeocc_hls::ap_const_lv32_8 = "1000";
+const sc_lv<32> cubeocc_hls::ap_const_lv32_7 = "111";
 
 cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
-    cubeocc_hls_CTRL_s_axi_U = new cubeocc_hls_CTRL_s_axi<C_S_AXI_CTRL_ADDR_WIDTH,C_S_AXI_CTRL_DATA_WIDTH>("cubeocc_hls_CTRL_s_axi_U");
-    cubeocc_hls_CTRL_s_axi_U->AWVALID(s_axi_CTRL_AWVALID);
-    cubeocc_hls_CTRL_s_axi_U->AWREADY(s_axi_CTRL_AWREADY);
-    cubeocc_hls_CTRL_s_axi_U->AWADDR(s_axi_CTRL_AWADDR);
-    cubeocc_hls_CTRL_s_axi_U->WVALID(s_axi_CTRL_WVALID);
-    cubeocc_hls_CTRL_s_axi_U->WREADY(s_axi_CTRL_WREADY);
-    cubeocc_hls_CTRL_s_axi_U->WDATA(s_axi_CTRL_WDATA);
-    cubeocc_hls_CTRL_s_axi_U->WSTRB(s_axi_CTRL_WSTRB);
-    cubeocc_hls_CTRL_s_axi_U->ARVALID(s_axi_CTRL_ARVALID);
-    cubeocc_hls_CTRL_s_axi_U->ARREADY(s_axi_CTRL_ARREADY);
-    cubeocc_hls_CTRL_s_axi_U->ARADDR(s_axi_CTRL_ARADDR);
-    cubeocc_hls_CTRL_s_axi_U->RVALID(s_axi_CTRL_RVALID);
-    cubeocc_hls_CTRL_s_axi_U->RREADY(s_axi_CTRL_RREADY);
-    cubeocc_hls_CTRL_s_axi_U->RDATA(s_axi_CTRL_RDATA);
-    cubeocc_hls_CTRL_s_axi_U->RRESP(s_axi_CTRL_RRESP);
-    cubeocc_hls_CTRL_s_axi_U->BVALID(s_axi_CTRL_BVALID);
-    cubeocc_hls_CTRL_s_axi_U->BREADY(s_axi_CTRL_BREADY);
-    cubeocc_hls_CTRL_s_axi_U->BRESP(s_axi_CTRL_BRESP);
-    cubeocc_hls_CTRL_s_axi_U->ACLK(ap_clk);
-    cubeocc_hls_CTRL_s_axi_U->ARESET(ap_rst_n_inv);
-    cubeocc_hls_CTRL_s_axi_U->ACLK_EN(ap_var_for_const0);
-    cubeocc_hls_CTRL_s_axi_U->ap_start(ap_start);
-    cubeocc_hls_CTRL_s_axi_U->interrupt(interrupt);
-    cubeocc_hls_CTRL_s_axi_U->ap_ready(ap_ready);
-    cubeocc_hls_CTRL_s_axi_U->ap_done(ap_done);
-    cubeocc_hls_CTRL_s_axi_U->ap_idle(ap_idle);
-    cubeocc_hls_CTRL_s_axi_U->pixel_count(pixel_count);
-    cubeocc_hls_CTRL_s_axi_U->threshold_V(threshold_V);
-    cubeocc_hls_CTRL_s_axi_U->threshold_enable(threshold_enable);
 
     SC_METHOD(thread_ap_clk_no_reset_);
     dont_initialize();
     sensitive << ( ap_clk.pos() );
 
-    SC_METHOD(thread_add_ln17_fu_163_p2);
-    sensitive << ( i_0_reg_143 );
+    SC_METHOD(thread_add_ln42_fu_258_p2);
+    sensitive << ( row );
+
+    SC_METHOD(thread_add_ln46_fu_245_p2);
+    sensitive << ( col );
+
+    SC_METHOD(thread_add_ln77_fu_492_p2);
+    sensitive << ( frame_id );
+
+    SC_METHOD(thread_and_ln50_fu_309_p2);
+    sensitive << ( icmp_ln50_fu_287_p2 );
+    sensitive << ( icmp_ln50_1_fu_303_p2 );
+
+    SC_METHOD(thread_and_ln55_fu_365_p2);
+    sensitive << ( icmp_ln55_fu_353_p2 );
+    sensitive << ( icmp_ln55_1_fu_359_p2 );
+
+    SC_METHOD(thread_and_ln63_1_fu_406_p2);
+    sensitive << ( grid_V_0_7 );
+    sensitive << ( and_ln63_fu_400_p2 );
+
+    SC_METHOD(thread_and_ln63_2_fu_426_p2);
+    sensitive << ( grid_V_7_7 );
+    sensitive << ( and_ln63_1_fu_406_p2 );
+
+    SC_METHOD(thread_and_ln63_fu_400_p2);
+    sensitive << ( grid_V_0_0 );
+    sensitive << ( grid_V_7_0 );
 
     SC_METHOD(thread_ap_CS_fsm_pp0_stage0);
-    sensitive << ( ap_CS_fsm );
-
-    SC_METHOD(thread_ap_CS_fsm_state1);
-    sensitive << ( ap_CS_fsm );
-
-    SC_METHOD(thread_ap_CS_fsm_state5);
     sensitive << ( ap_CS_fsm );
 
     SC_METHOD(thread_ap_block_pp0_stage0);
 
     SC_METHOD(thread_ap_block_pp0_stage0_01001);
     sensitive << ( s_axis_V_data_V_0_vld_out );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
+    sensitive << ( m_axis_TREADY );
+    sensitive << ( m_axis_V_data_V_1_state );
+    sensitive << ( m_axis_V_keep_V_1_state );
+    sensitive << ( m_axis_V_strb_V_1_state );
+    sensitive << ( m_axis_V_user_V_1_state );
+    sensitive << ( m_axis_V_last_V_1_state );
+    sensitive << ( m_axis_V_id_V_1_state );
+    sensitive << ( m_axis_V_dest_V_1_state );
+    sensitive << ( ap_enable_reg_pp0_iter1 );
 
     SC_METHOD(thread_ap_block_pp0_stage0_11001);
     sensitive << ( s_axis_V_data_V_0_vld_out );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
+    sensitive << ( m_axis_TREADY );
+    sensitive << ( m_axis_V_data_V_1_ack_in );
+    sensitive << ( m_axis_V_data_V_1_state );
+    sensitive << ( m_axis_V_keep_V_1_state );
+    sensitive << ( m_axis_V_strb_V_1_state );
+    sensitive << ( m_axis_V_user_V_1_state );
+    sensitive << ( m_axis_V_last_V_1_state );
+    sensitive << ( m_axis_V_id_V_1_state );
+    sensitive << ( m_axis_V_dest_V_1_state );
     sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( ap_enable_reg_pp0_iter2 );
-    sensitive << ( ap_block_state3_io );
-    sensitive << ( ap_block_state4_io );
 
     SC_METHOD(thread_ap_block_pp0_stage0_subdone);
     sensitive << ( s_axis_V_data_V_0_vld_out );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
+    sensitive << ( m_axis_TREADY );
+    sensitive << ( m_axis_V_data_V_1_ack_in );
+    sensitive << ( m_axis_V_data_V_1_state );
+    sensitive << ( m_axis_V_keep_V_1_state );
+    sensitive << ( m_axis_V_strb_V_1_state );
+    sensitive << ( m_axis_V_user_V_1_state );
+    sensitive << ( m_axis_V_last_V_1_state );
+    sensitive << ( m_axis_V_id_V_1_state );
+    sensitive << ( m_axis_V_dest_V_1_state );
     sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( ap_enable_reg_pp0_iter2 );
-    sensitive << ( ap_block_state3_io );
-    sensitive << ( ap_block_state4_io );
 
-    SC_METHOD(thread_ap_block_state2_pp0_stage0_iter0);
+    SC_METHOD(thread_ap_block_state1_pp0_stage0_iter0);
     sensitive << ( s_axis_V_data_V_0_vld_out );
-    sensitive << ( icmp_ln17_fu_158_p2 );
 
-    SC_METHOD(thread_ap_block_state3_io);
-    sensitive << ( m_axis_V_data_V_1_ack_in );
-    sensitive << ( icmp_ln17_reg_232 );
-
-    SC_METHOD(thread_ap_block_state3_pp0_stage0_iter1);
-
-    SC_METHOD(thread_ap_block_state4_io);
-    sensitive << ( m_axis_V_data_V_1_ack_in );
-    sensitive << ( icmp_ln17_reg_232_pp0_iter1_reg );
-
-    SC_METHOD(thread_ap_block_state4_pp0_stage0_iter2);
-
-    SC_METHOD(thread_ap_block_state5);
+    SC_METHOD(thread_ap_block_state2_pp0_stage0_iter1);
     sensitive << ( m_axis_TREADY );
     sensitive << ( m_axis_V_data_V_1_state );
     sensitive << ( m_axis_V_keep_V_1_state );
@@ -132,64 +125,88 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
     sensitive << ( m_axis_V_id_V_1_state );
     sensitive << ( m_axis_V_dest_V_1_state );
 
-    SC_METHOD(thread_ap_condition_pp0_exit_iter0_state2);
-    sensitive << ( icmp_ln17_fu_158_p2 );
+    SC_METHOD(thread_ap_condition_1192);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_enable_reg_pp0_iter1 );
+    sensitive << ( ap_block_pp0_stage0_11001 );
+    sensitive << ( and_ln55_reg_554 );
 
-    SC_METHOD(thread_ap_done);
-    sensitive << ( m_axis_TREADY );
-    sensitive << ( m_axis_V_data_V_1_state );
-    sensitive << ( m_axis_V_keep_V_1_state );
-    sensitive << ( m_axis_V_strb_V_1_state );
-    sensitive << ( m_axis_V_user_V_1_state );
-    sensitive << ( m_axis_V_last_V_1_state );
-    sensitive << ( m_axis_V_id_V_1_state );
-    sensitive << ( m_axis_V_dest_V_1_state );
-    sensitive << ( ap_CS_fsm_state5 );
+    SC_METHOD(thread_ap_condition_844);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_block_pp0_stage0 );
+
+    SC_METHOD(thread_ap_condition_915);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_ap_enable_pp0);
     sensitive << ( ap_idle_pp0 );
 
-    SC_METHOD(thread_ap_idle);
-    sensitive << ( ap_start );
-    sensitive << ( ap_CS_fsm_state1 );
-
     SC_METHOD(thread_ap_idle_pp0);
-    sensitive << ( ap_enable_reg_pp0_iter0 );
     sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( ap_enable_reg_pp0_iter2 );
 
-    SC_METHOD(thread_ap_ready);
-    sensitive << ( m_axis_TREADY );
-    sensitive << ( m_axis_V_data_V_1_state );
-    sensitive << ( m_axis_V_keep_V_1_state );
-    sensitive << ( m_axis_V_strb_V_1_state );
-    sensitive << ( m_axis_V_user_V_1_state );
-    sensitive << ( m_axis_V_last_V_1_state );
-    sensitive << ( m_axis_V_id_V_1_state );
-    sensitive << ( m_axis_V_dest_V_1_state );
-    sensitive << ( ap_CS_fsm_state5 );
+    SC_METHOD(thread_ap_phi_mux_empty_4_phi_fu_180_p6);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_block_pp0_stage0 );
+    sensitive << ( tmp_user_V_fu_216_p1 );
+    sensitive << ( tmp_last_V_fu_221_p1 );
+    sensitive << ( ap_phi_reg_pp0_iter0_empty_4_reg_177 );
+    sensitive << ( add_ln46_fu_245_p2 );
+
+    SC_METHOD(thread_ap_phi_mux_row_loc_0_phi_fu_152_p6);
+    sensitive << ( row );
+    sensitive << ( tmp_user_V_fu_216_p1 );
+    sensitive << ( ap_phi_reg_pp0_iter0_row_loc_0_reg_149 );
+    sensitive << ( add_ln42_fu_258_p2 );
+    sensitive << ( tmp_last_V_fu_221_p1 );
+    sensitive << ( ap_condition_844 );
+
+    SC_METHOD(thread_ap_phi_mux_tmp_last_V_1_phi_fu_165_p6);
+    sensitive << ( s_axis_V_last_V_0_data_out );
+    sensitive << ( tmp_user_V_fu_216_p1 );
+    sensitive << ( tmp_last_V_fu_221_p1 );
+    sensitive << ( ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161 );
+    sensitive << ( ap_condition_844 );
+
+    SC_METHOD(thread_ap_phi_reg_pp0_iter0_empty_4_reg_177);
+
+    SC_METHOD(thread_ap_phi_reg_pp0_iter0_row_loc_0_reg_149);
+
+    SC_METHOD(thread_ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161);
+
+    SC_METHOD(thread_ap_reset_idle_pp0);
 
     SC_METHOD(thread_ap_rst_n_inv);
     sensitive << ( ap_rst_n );
 
-    SC_METHOD(thread_i_0_cast_fu_154_p1);
-    sensitive << ( i_0_reg_143 );
-
-    SC_METHOD(thread_icmp_ln17_fu_158_p2);
+    SC_METHOD(thread_frame_active_load_load_fu_466_p1);
+    sensitive << ( frame_active );
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( pixel_count_read_reg_227 );
-    sensitive << ( ap_block_pp0_stage0_11001 );
-    sensitive << ( i_0_cast_fu_154_p1 );
+    sensitive << ( ap_block_pp0_stage0 );
+    sensitive << ( ap_enable_reg_pp0_iter1 );
+    sensitive << ( and_ln55_reg_554 );
+    sensitive << ( tmp_4_fu_432_p3 );
+    sensitive << ( or_ln68_1_fu_454_p2 );
 
-    SC_METHOD(thread_icmp_ln895_fu_197_p2);
-    sensitive << ( s_axis_V_data_V_0_data_out );
+    SC_METHOD(thread_icmp_ln50_1_fu_303_p2);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
-    sensitive << ( threshold_enable_rea_reg_217 );
-    sensitive << ( threshold_V_read_reg_222 );
     sensitive << ( ap_block_pp0_stage0_11001 );
+    sensitive << ( tmp_1_fu_293_p4 );
+
+    SC_METHOD(thread_icmp_ln50_fu_287_p2);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_block_pp0_stage0_11001 );
+    sensitive << ( tmp_fu_277_p4 );
+
+    SC_METHOD(thread_icmp_ln55_1_fu_359_p2);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_block_pp0_stage0_11001 );
+    sensitive << ( ap_phi_mux_empty_4_phi_fu_180_p6 );
+
+    SC_METHOD(thread_icmp_ln55_fu_353_p2);
+    sensitive << ( ap_CS_fsm_pp0_stage0 );
+    sensitive << ( ap_block_pp0_stage0_11001 );
+    sensitive << ( ap_phi_mux_row_loc_0_phi_fu_152_p6 );
 
     SC_METHOD(thread_m_axis_TDATA);
     sensitive << ( m_axis_V_data_V_1_data_out );
@@ -199,9 +216,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
     sensitive << ( ap_CS_fsm_pp0_stage0 );
     sensitive << ( ap_block_pp0_stage0 );
     sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
-    sensitive << ( ap_enable_reg_pp0_iter2 );
-    sensitive << ( icmp_ln17_reg_232_pp0_iter1_reg );
 
     SC_METHOD(thread_m_axis_TDEST);
     sensitive << ( m_axis_V_dest_V_1_data_out );
@@ -251,8 +265,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_data_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_data_V_1_vld_out);
@@ -285,8 +297,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_dest_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_dest_V_1_vld_out);
@@ -319,8 +329,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_id_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_id_V_1_vld_out);
@@ -353,8 +361,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_keep_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_keep_V_1_vld_out);
@@ -387,8 +393,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_last_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_last_V_1_vld_out);
@@ -421,8 +425,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_strb_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_strb_V_1_vld_out);
@@ -455,19 +457,23 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_m_axis_V_user_V_1_vld_in);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( icmp_ln17_reg_232 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_m_axis_V_user_V_1_vld_out);
     sensitive << ( m_axis_V_user_V_1_state );
 
+    SC_METHOD(thread_or_ln68_1_fu_454_p2);
+    sensitive << ( tmp_5_fu_446_p3 );
+    sensitive << ( xor_ln63_fu_420_p2 );
+
+    SC_METHOD(thread_or_ln68_fu_440_p2);
+    sensitive << ( grid_V_7_7 );
+    sensitive << ( grid_V_0_1 );
+
     SC_METHOD(thread_s_axis_TDATA_blk_n);
     sensitive << ( s_axis_V_data_V_0_state );
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
     sensitive << ( ap_block_pp0_stage0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
 
     SC_METHOD(thread_s_axis_TREADY);
     sensitive << ( s_axis_V_dest_V_0_state );
@@ -477,8 +483,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_data_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_data_V_0_data_out);
@@ -511,8 +515,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_dest_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_dest_V_0_data_out);
@@ -545,8 +547,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_id_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_id_V_0_data_out);
@@ -579,8 +579,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_keep_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_keep_V_0_data_out);
@@ -613,8 +611,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_last_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_last_V_0_data_out);
@@ -647,8 +643,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_strb_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_strb_V_0_data_out);
@@ -681,8 +675,6 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
 
     SC_METHOD(thread_s_axis_V_user_V_0_ack_out);
     sensitive << ( ap_CS_fsm_pp0_stage0 );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
     sensitive << ( ap_block_pp0_stage0_11001 );
 
     SC_METHOD(thread_s_axis_V_user_V_0_data_out);
@@ -710,39 +702,51 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
     SC_METHOD(thread_s_axis_V_user_V_0_vld_out);
     sensitive << ( s_axis_V_user_V_0_state );
 
-    SC_METHOD(thread_tmp_data_V_1_fu_202_p3);
-    sensitive << ( icmp_ln895_fu_197_p2 );
+    SC_METHOD(thread_tmp_1_fu_293_p4);
+    sensitive << ( ap_phi_mux_empty_4_phi_fu_180_p6 );
 
-    SC_METHOD(thread_tmp_data_V_2_fu_210_p3);
-    sensitive << ( s_axis_V_data_V_0_data_out );
-    sensitive << ( threshold_enable_rea_reg_217 );
-    sensitive << ( tmp_data_V_1_fu_202_p3 );
+    SC_METHOD(thread_tmp_3_fu_412_p3);
+    sensitive << ( and_ln63_1_fu_406_p2 );
+
+    SC_METHOD(thread_tmp_4_fu_432_p3);
+    sensitive << ( and_ln63_2_fu_426_p2 );
+
+    SC_METHOD(thread_tmp_5_fu_446_p3);
+    sensitive << ( or_ln68_fu_440_p2 );
+
+    SC_METHOD(thread_tmp_6_fu_470_p3);
+    sensitive << ( grid_V_0_1 );
+
+    SC_METHOD(thread_tmp_fu_277_p4);
+    sensitive << ( ap_phi_mux_row_loc_0_phi_fu_152_p6 );
+
+    SC_METHOD(thread_tmp_last_V_fu_221_p1);
+    sensitive << ( s_axis_V_last_V_0_data_out );
+
+    SC_METHOD(thread_tmp_user_V_fu_216_p1);
+    sensitive << ( s_axis_V_user_V_0_data_out );
+
+    SC_METHOD(thread_trunc_ln321_1_fu_319_p1);
+    sensitive << ( ap_phi_mux_empty_4_phi_fu_180_p6 );
+
+    SC_METHOD(thread_trunc_ln321_fu_315_p1);
+    sensitive << ( ap_phi_mux_row_loc_0_phi_fu_152_p6 );
+
+    SC_METHOD(thread_xor_ln63_fu_420_p2);
+    sensitive << ( tmp_3_fu_412_p3 );
+
+    SC_METHOD(thread_xor_ln883_fu_482_p2);
+    sensitive << ( prev_clk_V );
+    sensitive << ( tmp_6_fu_470_p3 );
 
     SC_METHOD(thread_ap_NS_fsm);
-    sensitive << ( ap_start );
     sensitive << ( ap_CS_fsm );
-    sensitive << ( ap_CS_fsm_state1 );
-    sensitive << ( m_axis_TREADY );
-    sensitive << ( m_axis_V_data_V_1_state );
-    sensitive << ( m_axis_V_keep_V_1_state );
-    sensitive << ( m_axis_V_strb_V_1_state );
-    sensitive << ( m_axis_V_user_V_1_state );
-    sensitive << ( m_axis_V_last_V_1_state );
-    sensitive << ( m_axis_V_id_V_1_state );
-    sensitive << ( m_axis_V_dest_V_1_state );
-    sensitive << ( ap_enable_reg_pp0_iter0 );
-    sensitive << ( icmp_ln17_fu_158_p2 );
-    sensitive << ( ap_enable_reg_pp0_iter1 );
-    sensitive << ( ap_enable_reg_pp0_iter2 );
     sensitive << ( ap_block_pp0_stage0_subdone );
-    sensitive << ( ap_CS_fsm_state5 );
+    sensitive << ( ap_reset_idle_pp0 );
 
     SC_THREAD(thread_hdltv_gen);
     sensitive << ( ap_clk.pos() );
 
-    SC_THREAD(thread_ap_var_for_const0);
-
-    ap_CS_fsm = "001";
     s_axis_V_data_V_0_sel_rd = SC_LOGIC_0;
     s_axis_V_data_V_0_sel_wr = SC_LOGIC_0;
     s_axis_V_data_V_0_state = "00";
@@ -785,9 +789,18 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
     m_axis_V_dest_V_1_sel_rd = SC_LOGIC_0;
     m_axis_V_dest_V_1_sel_wr = SC_LOGIC_0;
     m_axis_V_dest_V_1_state = "00";
-    ap_enable_reg_pp0_iter0 = SC_LOGIC_0;
+    row = "00000000000000000000000000000000";
+    col = "00000000000000000000000000000000";
+    grid_V_0_0 = "00000000";
+    grid_V_0_7 = "00000000";
+    grid_V_7_0 = "00000000";
+    grid_V_7_7 = "00000000";
+    grid_V_0_1 = "00000000";
+    frame_active = "0";
+    prev_clk_V = "0";
+    frame_id = "00000000000000000000000000000000";
+    ap_CS_fsm = "1";
     ap_enable_reg_pp0_iter1 = SC_LOGIC_0;
-    ap_enable_reg_pp0_iter2 = SC_LOGIC_0;
     static int apTFileNum = 0;
     stringstream apTFilenSS;
     apTFilenSS << "cubeocc_hls_sc_trace_" << apTFileNum ++;
@@ -816,33 +829,9 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
     sc_trace(mVcdFile, m_axis_TLAST, "(port)m_axis_TLAST");
     sc_trace(mVcdFile, m_axis_TID, "(port)m_axis_TID");
     sc_trace(mVcdFile, m_axis_TDEST, "(port)m_axis_TDEST");
-    sc_trace(mVcdFile, s_axi_CTRL_AWVALID, "(port)s_axi_CTRL_AWVALID");
-    sc_trace(mVcdFile, s_axi_CTRL_AWREADY, "(port)s_axi_CTRL_AWREADY");
-    sc_trace(mVcdFile, s_axi_CTRL_AWADDR, "(port)s_axi_CTRL_AWADDR");
-    sc_trace(mVcdFile, s_axi_CTRL_WVALID, "(port)s_axi_CTRL_WVALID");
-    sc_trace(mVcdFile, s_axi_CTRL_WREADY, "(port)s_axi_CTRL_WREADY");
-    sc_trace(mVcdFile, s_axi_CTRL_WDATA, "(port)s_axi_CTRL_WDATA");
-    sc_trace(mVcdFile, s_axi_CTRL_WSTRB, "(port)s_axi_CTRL_WSTRB");
-    sc_trace(mVcdFile, s_axi_CTRL_ARVALID, "(port)s_axi_CTRL_ARVALID");
-    sc_trace(mVcdFile, s_axi_CTRL_ARREADY, "(port)s_axi_CTRL_ARREADY");
-    sc_trace(mVcdFile, s_axi_CTRL_ARADDR, "(port)s_axi_CTRL_ARADDR");
-    sc_trace(mVcdFile, s_axi_CTRL_RVALID, "(port)s_axi_CTRL_RVALID");
-    sc_trace(mVcdFile, s_axi_CTRL_RREADY, "(port)s_axi_CTRL_RREADY");
-    sc_trace(mVcdFile, s_axi_CTRL_RDATA, "(port)s_axi_CTRL_RDATA");
-    sc_trace(mVcdFile, s_axi_CTRL_RRESP, "(port)s_axi_CTRL_RRESP");
-    sc_trace(mVcdFile, s_axi_CTRL_BVALID, "(port)s_axi_CTRL_BVALID");
-    sc_trace(mVcdFile, s_axi_CTRL_BREADY, "(port)s_axi_CTRL_BREADY");
-    sc_trace(mVcdFile, s_axi_CTRL_BRESP, "(port)s_axi_CTRL_BRESP");
-    sc_trace(mVcdFile, interrupt, "(port)interrupt");
 #endif
 #ifdef __HLS_TRACE_LEVEL_INT__
     sc_trace(mVcdFile, ap_rst_n_inv, "ap_rst_n_inv");
-    sc_trace(mVcdFile, ap_start, "ap_start");
-    sc_trace(mVcdFile, ap_done, "ap_done");
-    sc_trace(mVcdFile, ap_idle, "ap_idle");
-    sc_trace(mVcdFile, ap_CS_fsm, "ap_CS_fsm");
-    sc_trace(mVcdFile, ap_CS_fsm_state1, "ap_CS_fsm_state1");
-    sc_trace(mVcdFile, ap_ready, "ap_ready");
     sc_trace(mVcdFile, s_axis_V_data_V_0_data_out, "s_axis_V_data_V_0_data_out");
     sc_trace(mVcdFile, s_axis_V_data_V_0_vld_in, "s_axis_V_data_V_0_vld_in");
     sc_trace(mVcdFile, s_axis_V_data_V_0_vld_out, "s_axis_V_data_V_0_vld_out");
@@ -1039,49 +1028,68 @@ cubeocc_hls::cubeocc_hls(sc_module_name name) : sc_module(name), mVcdFile(0) {
     sc_trace(mVcdFile, m_axis_V_dest_V_1_load_B, "m_axis_V_dest_V_1_load_B");
     sc_trace(mVcdFile, m_axis_V_dest_V_1_state, "m_axis_V_dest_V_1_state");
     sc_trace(mVcdFile, m_axis_V_dest_V_1_state_cmp_full, "m_axis_V_dest_V_1_state_cmp_full");
-    sc_trace(mVcdFile, pixel_count, "pixel_count");
-    sc_trace(mVcdFile, threshold_V, "threshold_V");
-    sc_trace(mVcdFile, threshold_enable, "threshold_enable");
+    sc_trace(mVcdFile, row, "row");
+    sc_trace(mVcdFile, col, "col");
+    sc_trace(mVcdFile, grid_V_0_0, "grid_V_0_0");
+    sc_trace(mVcdFile, grid_V_0_7, "grid_V_0_7");
+    sc_trace(mVcdFile, grid_V_7_0, "grid_V_7_0");
+    sc_trace(mVcdFile, grid_V_7_7, "grid_V_7_7");
+    sc_trace(mVcdFile, grid_V_0_1, "grid_V_0_1");
+    sc_trace(mVcdFile, frame_active, "frame_active");
+    sc_trace(mVcdFile, prev_clk_V, "prev_clk_V");
+    sc_trace(mVcdFile, frame_id, "frame_id");
     sc_trace(mVcdFile, s_axis_TDATA_blk_n, "s_axis_TDATA_blk_n");
+    sc_trace(mVcdFile, ap_CS_fsm, "ap_CS_fsm");
     sc_trace(mVcdFile, ap_CS_fsm_pp0_stage0, "ap_CS_fsm_pp0_stage0");
-    sc_trace(mVcdFile, ap_enable_reg_pp0_iter0, "ap_enable_reg_pp0_iter0");
     sc_trace(mVcdFile, ap_block_pp0_stage0, "ap_block_pp0_stage0");
-    sc_trace(mVcdFile, icmp_ln17_fu_158_p2, "icmp_ln17_fu_158_p2");
     sc_trace(mVcdFile, m_axis_TDATA_blk_n, "m_axis_TDATA_blk_n");
     sc_trace(mVcdFile, ap_enable_reg_pp0_iter1, "ap_enable_reg_pp0_iter1");
-    sc_trace(mVcdFile, icmp_ln17_reg_232, "icmp_ln17_reg_232");
-    sc_trace(mVcdFile, ap_enable_reg_pp0_iter2, "ap_enable_reg_pp0_iter2");
-    sc_trace(mVcdFile, icmp_ln17_reg_232_pp0_iter1_reg, "icmp_ln17_reg_232_pp0_iter1_reg");
-    sc_trace(mVcdFile, i_0_reg_143, "i_0_reg_143");
-    sc_trace(mVcdFile, threshold_enable_rea_reg_217, "threshold_enable_rea_reg_217");
-    sc_trace(mVcdFile, threshold_V_read_reg_222, "threshold_V_read_reg_222");
-    sc_trace(mVcdFile, pixel_count_read_reg_227, "pixel_count_read_reg_227");
-    sc_trace(mVcdFile, ap_block_state2_pp0_stage0_iter0, "ap_block_state2_pp0_stage0_iter0");
-    sc_trace(mVcdFile, ap_block_state3_pp0_stage0_iter1, "ap_block_state3_pp0_stage0_iter1");
-    sc_trace(mVcdFile, ap_block_state3_io, "ap_block_state3_io");
-    sc_trace(mVcdFile, ap_block_state4_pp0_stage0_iter2, "ap_block_state4_pp0_stage0_iter2");
-    sc_trace(mVcdFile, ap_block_state4_io, "ap_block_state4_io");
+    sc_trace(mVcdFile, ap_block_state1_pp0_stage0_iter0, "ap_block_state1_pp0_stage0_iter0");
+    sc_trace(mVcdFile, ap_block_state2_pp0_stage0_iter1, "ap_block_state2_pp0_stage0_iter1");
     sc_trace(mVcdFile, ap_block_pp0_stage0_11001, "ap_block_pp0_stage0_11001");
-    sc_trace(mVcdFile, add_ln17_fu_163_p2, "add_ln17_fu_163_p2");
-    sc_trace(mVcdFile, tmp_keep_V_reg_241, "tmp_keep_V_reg_241");
-    sc_trace(mVcdFile, tmp_strb_V_reg_246, "tmp_strb_V_reg_246");
-    sc_trace(mVcdFile, tmp_user_V_reg_251, "tmp_user_V_reg_251");
-    sc_trace(mVcdFile, tmp_last_V_reg_256, "tmp_last_V_reg_256");
-    sc_trace(mVcdFile, tmp_id_V_reg_261, "tmp_id_V_reg_261");
-    sc_trace(mVcdFile, tmp_dest_V_reg_266, "tmp_dest_V_reg_266");
-    sc_trace(mVcdFile, tmp_data_V_2_fu_210_p3, "tmp_data_V_2_fu_210_p3");
-    sc_trace(mVcdFile, tmp_data_V_2_reg_271, "tmp_data_V_2_reg_271");
+    sc_trace(mVcdFile, tmp_user_V_fu_216_p1, "tmp_user_V_fu_216_p1");
+    sc_trace(mVcdFile, and_ln50_fu_309_p2, "and_ln50_fu_309_p2");
+    sc_trace(mVcdFile, trunc_ln321_fu_315_p1, "trunc_ln321_fu_315_p1");
+    sc_trace(mVcdFile, and_ln55_fu_365_p2, "and_ln55_fu_365_p2");
+    sc_trace(mVcdFile, and_ln55_reg_554, "and_ln55_reg_554");
     sc_trace(mVcdFile, ap_block_pp0_stage0_subdone, "ap_block_pp0_stage0_subdone");
-    sc_trace(mVcdFile, ap_condition_pp0_exit_iter0_state2, "ap_condition_pp0_exit_iter0_state2");
+    sc_trace(mVcdFile, ap_phi_mux_row_loc_0_phi_fu_152_p6, "ap_phi_mux_row_loc_0_phi_fu_152_p6");
+    sc_trace(mVcdFile, ap_phi_reg_pp0_iter0_row_loc_0_reg_149, "ap_phi_reg_pp0_iter0_row_loc_0_reg_149");
+    sc_trace(mVcdFile, add_ln42_fu_258_p2, "add_ln42_fu_258_p2");
+    sc_trace(mVcdFile, tmp_last_V_fu_221_p1, "tmp_last_V_fu_221_p1");
+    sc_trace(mVcdFile, ap_phi_mux_tmp_last_V_1_phi_fu_165_p6, "ap_phi_mux_tmp_last_V_1_phi_fu_165_p6");
+    sc_trace(mVcdFile, ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161, "ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161");
+    sc_trace(mVcdFile, ap_phi_mux_empty_4_phi_fu_180_p6, "ap_phi_mux_empty_4_phi_fu_180_p6");
+    sc_trace(mVcdFile, ap_phi_reg_pp0_iter0_empty_4_reg_177, "ap_phi_reg_pp0_iter0_empty_4_reg_177");
+    sc_trace(mVcdFile, add_ln46_fu_245_p2, "add_ln46_fu_245_p2");
+    sc_trace(mVcdFile, trunc_ln321_1_fu_319_p1, "trunc_ln321_1_fu_319_p1");
+    sc_trace(mVcdFile, tmp_4_fu_432_p3, "tmp_4_fu_432_p3");
+    sc_trace(mVcdFile, or_ln68_1_fu_454_p2, "or_ln68_1_fu_454_p2");
+    sc_trace(mVcdFile, frame_active_load_load_fu_466_p1, "frame_active_load_load_fu_466_p1");
+    sc_trace(mVcdFile, xor_ln883_fu_482_p2, "xor_ln883_fu_482_p2");
+    sc_trace(mVcdFile, add_ln77_fu_492_p2, "add_ln77_fu_492_p2");
     sc_trace(mVcdFile, ap_block_pp0_stage0_01001, "ap_block_pp0_stage0_01001");
-    sc_trace(mVcdFile, i_0_cast_fu_154_p1, "i_0_cast_fu_154_p1");
-    sc_trace(mVcdFile, icmp_ln895_fu_197_p2, "icmp_ln895_fu_197_p2");
-    sc_trace(mVcdFile, tmp_data_V_1_fu_202_p3, "tmp_data_V_1_fu_202_p3");
-    sc_trace(mVcdFile, ap_CS_fsm_state5, "ap_CS_fsm_state5");
-    sc_trace(mVcdFile, ap_block_state5, "ap_block_state5");
+    sc_trace(mVcdFile, tmp_fu_277_p4, "tmp_fu_277_p4");
+    sc_trace(mVcdFile, tmp_1_fu_293_p4, "tmp_1_fu_293_p4");
+    sc_trace(mVcdFile, icmp_ln50_fu_287_p2, "icmp_ln50_fu_287_p2");
+    sc_trace(mVcdFile, icmp_ln50_1_fu_303_p2, "icmp_ln50_1_fu_303_p2");
+    sc_trace(mVcdFile, icmp_ln55_fu_353_p2, "icmp_ln55_fu_353_p2");
+    sc_trace(mVcdFile, icmp_ln55_1_fu_359_p2, "icmp_ln55_1_fu_359_p2");
+    sc_trace(mVcdFile, and_ln63_fu_400_p2, "and_ln63_fu_400_p2");
+    sc_trace(mVcdFile, and_ln63_1_fu_406_p2, "and_ln63_1_fu_406_p2");
+    sc_trace(mVcdFile, tmp_3_fu_412_p3, "tmp_3_fu_412_p3");
+    sc_trace(mVcdFile, and_ln63_2_fu_426_p2, "and_ln63_2_fu_426_p2");
+    sc_trace(mVcdFile, or_ln68_fu_440_p2, "or_ln68_fu_440_p2");
+    sc_trace(mVcdFile, tmp_5_fu_446_p3, "tmp_5_fu_446_p3");
+    sc_trace(mVcdFile, xor_ln63_fu_420_p2, "xor_ln63_fu_420_p2");
+    sc_trace(mVcdFile, tmp_6_fu_470_p3, "tmp_6_fu_470_p3");
     sc_trace(mVcdFile, ap_NS_fsm, "ap_NS_fsm");
+    sc_trace(mVcdFile, ap_reset_idle_pp0, "ap_reset_idle_pp0");
     sc_trace(mVcdFile, ap_idle_pp0, "ap_idle_pp0");
     sc_trace(mVcdFile, ap_enable_pp0, "ap_enable_pp0");
+    sc_trace(mVcdFile, ap_condition_844, "ap_condition_844");
+    sc_trace(mVcdFile, ap_condition_1192, "ap_condition_1192");
+    sc_trace(mVcdFile, ap_condition_915, "ap_condition_915");
 #endif
 
     }
@@ -1097,60 +1105,45 @@ cubeocc_hls::~cubeocc_hls() {
     mHdltvoutHandle << "] " << endl;
     mHdltvinHandle.close();
     mHdltvoutHandle.close();
-    delete cubeocc_hls_CTRL_s_axi_U;
-}
-
-void cubeocc_hls::thread_ap_var_for_const0() {
-    ap_var_for_const0 = ap_const_logic_1;
 }
 
 void cubeocc_hls::thread_ap_clk_no_reset_() {
     if ( ap_rst_n_inv.read() == ap_const_logic_1) {
-        ap_CS_fsm = ap_ST_fsm_state1;
+        ap_CS_fsm = ap_ST_fsm_pp0_stage0;
     } else {
         ap_CS_fsm = ap_NS_fsm.read();
-    }
-    if ( ap_rst_n_inv.read() == ap_const_logic_1) {
-        ap_enable_reg_pp0_iter0 = ap_const_logic_0;
-    } else {
-        if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-             esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0) && 
-             esl_seteq<1,1,1>(ap_const_logic_1, ap_condition_pp0_exit_iter0_state2.read()))) {
-            ap_enable_reg_pp0_iter0 = ap_const_logic_0;
-        } else if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state1.read()) && 
-                    esl_seteq<1,1,1>(ap_start.read(), ap_const_logic_1))) {
-            ap_enable_reg_pp0_iter0 = ap_const_logic_1;
-        }
     }
     if ( ap_rst_n_inv.read() == ap_const_logic_1) {
         ap_enable_reg_pp0_iter1 = ap_const_logic_0;
     } else {
         if (esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0)) {
-            if (esl_seteq<1,1,1>(ap_const_logic_1, ap_condition_pp0_exit_iter0_state2.read())) {
-                ap_enable_reg_pp0_iter1 = (ap_condition_pp0_exit_iter0_state2.read() ^ ap_const_logic_1);
-            } else if (esl_seteq<1,1,1>(ap_const_boolean_1, ap_const_boolean_1)) {
-                ap_enable_reg_pp0_iter1 = ap_enable_reg_pp0_iter0.read();
-            }
+            ap_enable_reg_pp0_iter1 = ap_const_logic_1;
         }
     }
-    if ( ap_rst_n_inv.read() == ap_const_logic_1) {
-        ap_enable_reg_pp0_iter2 = ap_const_logic_0;
-    } else {
-        if (esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0)) {
-            ap_enable_reg_pp0_iter2 = ap_enable_reg_pp0_iter1.read();
-        } else if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state1.read()) && 
-                    esl_seteq<1,1,1>(ap_start.read(), ap_const_logic_1))) {
-            ap_enable_reg_pp0_iter2 = ap_const_logic_0;
-        }
+    if (((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+          esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && 
+          esl_seteq<1,1,1>(ap_const_lv1_1, tmp_user_V_fu_216_p1.read())) || 
+         (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+          esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && 
+          esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+          esl_seteq<1,1,1>(ap_const_lv1_1, tmp_last_V_fu_221_p1.read())))) {
+        col = ap_const_lv32_0;
+    } else if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+                esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+                esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && 
+                esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+                esl_seteq<1,1,1>(ap_const_lv1_0, tmp_last_V_fu_221_p1.read()))) {
+        col = add_ln46_fu_245_p2.read();
     }
-    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
-         esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
-        i_0_reg_143 = add_ln17_fu_163_p2.read();
-    } else if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state1.read()) && 
-                esl_seteq<1,1,1>(ap_start.read(), ap_const_logic_1))) {
-        i_0_reg_143 = ap_const_lv31_0;
+    if (esl_seteq<1,1,1>(ap_condition_1192.read(), ap_const_boolean_1)) {
+        if (esl_seteq<1,1,1>(ap_const_lv1_1, tmp_4_fu_432_p3.read())) {
+            frame_active = ap_const_lv1_1;
+        } else if ((esl_seteq<1,1,1>(ap_const_lv1_0, tmp_4_fu_432_p3.read()) && 
+                    esl_seteq<1,1,1>(ap_const_lv1_0, or_ln68_1_fu_454_p2.read()))) {
+            frame_active = ap_const_lv1_0;
+        }
     }
     if ( ap_rst_n_inv.read() == ap_const_logic_1) {
         m_axis_V_data_V_1_sel_rd = ap_const_logic_0;
@@ -1451,6 +1444,14 @@ void cubeocc_hls::thread_ap_clk_no_reset_() {
             m_axis_V_user_V_1_state = ap_const_lv2_3;
         } else {
             m_axis_V_user_V_1_state = ap_const_lv2_2;
+        }
+    }
+    if (esl_seteq<1,1,1>(ap_condition_915.read(), ap_const_boolean_1)) {
+        if (esl_seteq<1,1,1>(ap_const_lv1_1, tmp_user_V_fu_216_p1.read())) {
+            row = ap_const_lv32_0;
+        } else if ((esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+                    esl_seteq<1,1,1>(ap_const_lv1_1, tmp_last_V_fu_221_p1.read()))) {
+            row = add_ln42_fu_258_p2.read();
         }
     }
     if ( ap_rst_n_inv.read() == ap_const_logic_1) {
@@ -1755,55 +1756,81 @@ void cubeocc_hls::thread_ap_clk_no_reset_() {
         }
     }
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
-        icmp_ln17_reg_232 = icmp_ln17_fu_158_p2.read();
-        icmp_ln17_reg_232_pp0_iter1_reg = icmp_ln17_reg_232.read();
+        and_ln55_reg_554 = and_ln55_fu_365_p2.read();
+    }
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln55_reg_554.read()) && esl_seteq<1,1,1>(ap_const_lv1_0, tmp_4_fu_432_p3.read()) && esl_seteq<1,1,1>(ap_const_lv1_1, or_ln68_1_fu_454_p2.read()) && esl_seteq<1,1,1>(ap_const_lv1_1, frame_active_load_load_fu_466_p1.read()) && esl_seteq<1,1,1>(ap_const_lv1_1, xor_ln883_fu_482_p2.read()))) {
+        frame_id = add_ln77_fu_492_p2.read();
+    }
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln50_fu_309_p2.read()) && esl_seteq<1,3,3>(trunc_ln321_fu_315_p1.read(), ap_const_lv3_0) && esl_seteq<1,3,3>(ap_const_lv3_0, trunc_ln321_1_fu_319_p1.read()))) {
+        grid_V_0_0 = s_axis_V_data_V_0_data_out.read();
+    }
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln50_fu_309_p2.read()) && esl_seteq<1,3,3>(trunc_ln321_fu_315_p1.read(), ap_const_lv3_0) && esl_seteq<1,3,3>(trunc_ln321_1_fu_319_p1.read(), ap_const_lv3_1))) {
+        grid_V_0_1 = s_axis_V_data_V_0_data_out.read();
+    }
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln50_fu_309_p2.read()) && esl_seteq<1,3,3>(trunc_ln321_fu_315_p1.read(), ap_const_lv3_0) && esl_seteq<1,3,3>(trunc_ln321_1_fu_319_p1.read(), ap_const_lv3_7))) {
+        grid_V_0_7 = s_axis_V_data_V_0_data_out.read();
+    }
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln50_fu_309_p2.read()) && esl_seteq<1,3,3>(ap_const_lv3_0, trunc_ln321_1_fu_319_p1.read()) && esl_seteq<1,3,3>(trunc_ln321_fu_315_p1.read(), ap_const_lv3_7))) {
+        grid_V_7_0 = s_axis_V_data_V_0_data_out.read();
+    }
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln50_fu_309_p2.read()) && esl_seteq<1,3,3>(trunc_ln321_1_fu_319_p1.read(), ap_const_lv3_7) && esl_seteq<1,3,3>(trunc_ln321_fu_315_p1.read(), ap_const_lv3_7))) {
+        grid_V_7_7 = s_axis_V_data_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_data_V_1_load_A.read())) {
-        m_axis_V_data_V_1_payload_A = tmp_data_V_2_reg_271.read();
+        m_axis_V_data_V_1_payload_A = s_axis_V_data_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_data_V_1_load_B.read())) {
-        m_axis_V_data_V_1_payload_B = tmp_data_V_2_reg_271.read();
+        m_axis_V_data_V_1_payload_B = s_axis_V_data_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_dest_V_1_load_A.read())) {
-        m_axis_V_dest_V_1_payload_A = tmp_dest_V_reg_266.read();
+        m_axis_V_dest_V_1_payload_A = s_axis_V_dest_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_dest_V_1_load_B.read())) {
-        m_axis_V_dest_V_1_payload_B = tmp_dest_V_reg_266.read();
+        m_axis_V_dest_V_1_payload_B = s_axis_V_dest_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_id_V_1_load_A.read())) {
-        m_axis_V_id_V_1_payload_A = tmp_id_V_reg_261.read();
+        m_axis_V_id_V_1_payload_A = s_axis_V_id_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_id_V_1_load_B.read())) {
-        m_axis_V_id_V_1_payload_B = tmp_id_V_reg_261.read();
+        m_axis_V_id_V_1_payload_B = s_axis_V_id_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_keep_V_1_load_A.read())) {
-        m_axis_V_keep_V_1_payload_A = tmp_keep_V_reg_241.read();
+        m_axis_V_keep_V_1_payload_A = s_axis_V_keep_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_keep_V_1_load_B.read())) {
-        m_axis_V_keep_V_1_payload_B = tmp_keep_V_reg_241.read();
+        m_axis_V_keep_V_1_payload_B = s_axis_V_keep_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_last_V_1_load_A.read())) {
-        m_axis_V_last_V_1_payload_A = tmp_last_V_reg_256.read();
+        m_axis_V_last_V_1_payload_A = ap_phi_mux_tmp_last_V_1_phi_fu_165_p6.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_last_V_1_load_B.read())) {
-        m_axis_V_last_V_1_payload_B = tmp_last_V_reg_256.read();
+        m_axis_V_last_V_1_payload_B = ap_phi_mux_tmp_last_V_1_phi_fu_165_p6.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_strb_V_1_load_A.read())) {
-        m_axis_V_strb_V_1_payload_A = tmp_strb_V_reg_246.read();
+        m_axis_V_strb_V_1_payload_A = s_axis_V_strb_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_strb_V_1_load_B.read())) {
-        m_axis_V_strb_V_1_payload_B = tmp_strb_V_reg_246.read();
+        m_axis_V_strb_V_1_payload_B = s_axis_V_strb_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_user_V_1_load_A.read())) {
-        m_axis_V_user_V_1_payload_A = tmp_user_V_reg_251.read();
+        m_axis_V_user_V_1_payload_A = s_axis_V_user_V_0_data_out.read();
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, m_axis_V_user_V_1_load_B.read())) {
-        m_axis_V_user_V_1_payload_B = tmp_user_V_reg_251.read();
+        m_axis_V_user_V_1_payload_B = s_axis_V_user_V_0_data_out.read();
     }
-    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state1.read()) && esl_seteq<1,1,1>(ap_start.read(), ap_const_logic_1))) {
-        pixel_count_read_reg_227 = pixel_count.read();
-        threshold_V_read_reg_222 = threshold_V.read();
-        threshold_enable_rea_reg_217 =  (sc_lv<1>) (threshold_enable.read());
+    if (((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+  esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
+  esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && 
+  esl_seteq<1,1,1>(ap_const_lv1_1, and_ln55_reg_554.read()) && 
+  esl_seteq<1,1,1>(ap_const_lv1_1, tmp_4_fu_432_p3.read())) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+  esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
+  esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && 
+  esl_seteq<1,1,1>(ap_const_lv1_1, and_ln55_reg_554.read()) && 
+  esl_seteq<1,1,1>(ap_const_lv1_0, tmp_4_fu_432_p3.read()) && 
+  esl_seteq<1,1,1>(ap_const_lv1_1, or_ln68_1_fu_454_p2.read()) && 
+  esl_seteq<1,1,1>(ap_const_lv1_1, frame_active_load_load_fu_466_p1.read()) && 
+  esl_seteq<1,1,1>(ap_const_lv1_1, xor_ln883_fu_482_p2.read())))) {
+        prev_clk_V = grid_V_0_1.read().range(7, 7);
     }
     if (esl_seteq<1,1,1>(ap_const_logic_1, s_axis_V_data_V_0_load_A.read())) {
         s_axis_V_data_V_0_payload_A = s_axis_TDATA.read();
@@ -1847,31 +1874,42 @@ void cubeocc_hls::thread_ap_clk_no_reset_() {
     if (esl_seteq<1,1,1>(ap_const_logic_1, s_axis_V_user_V_0_load_B.read())) {
         s_axis_V_user_V_0_payload_B = s_axis_TUSER.read();
     }
-    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
-        tmp_data_V_2_reg_271 = tmp_data_V_2_fu_210_p3.read();
-        tmp_dest_V_reg_266 = s_axis_V_dest_V_0_data_out.read();
-        tmp_id_V_reg_261 = s_axis_V_id_V_0_data_out.read();
-        tmp_keep_V_reg_241 = s_axis_V_keep_V_0_data_out.read();
-        tmp_last_V_reg_256 = s_axis_V_last_V_0_data_out.read();
-        tmp_strb_V_reg_246 = s_axis_V_strb_V_0_data_out.read();
-        tmp_user_V_reg_251 = s_axis_V_user_V_0_data_out.read();
-    }
 }
 
-void cubeocc_hls::thread_add_ln17_fu_163_p2() {
-    add_ln17_fu_163_p2 = (!i_0_reg_143.read().is_01() || !ap_const_lv31_1.is_01())? sc_lv<31>(): (sc_biguint<31>(i_0_reg_143.read()) + sc_biguint<31>(ap_const_lv31_1));
+void cubeocc_hls::thread_add_ln42_fu_258_p2() {
+    add_ln42_fu_258_p2 = (!row.read().is_01() || !ap_const_lv32_1.is_01())? sc_lv<32>(): (sc_biguint<32>(row.read()) + sc_biguint<32>(ap_const_lv32_1));
+}
+
+void cubeocc_hls::thread_add_ln46_fu_245_p2() {
+    add_ln46_fu_245_p2 = (!col.read().is_01() || !ap_const_lv32_1.is_01())? sc_lv<32>(): (sc_biguint<32>(col.read()) + sc_biguint<32>(ap_const_lv32_1));
+}
+
+void cubeocc_hls::thread_add_ln77_fu_492_p2() {
+    add_ln77_fu_492_p2 = (!frame_id.read().is_01() || !ap_const_lv32_1.is_01())? sc_lv<32>(): (sc_biguint<32>(frame_id.read()) + sc_biguint<32>(ap_const_lv32_1));
+}
+
+void cubeocc_hls::thread_and_ln50_fu_309_p2() {
+    and_ln50_fu_309_p2 = (icmp_ln50_fu_287_p2.read() & icmp_ln50_1_fu_303_p2.read());
+}
+
+void cubeocc_hls::thread_and_ln55_fu_365_p2() {
+    and_ln55_fu_365_p2 = (icmp_ln55_fu_353_p2.read() & icmp_ln55_1_fu_359_p2.read());
+}
+
+void cubeocc_hls::thread_and_ln63_1_fu_406_p2() {
+    and_ln63_1_fu_406_p2 = (and_ln63_fu_400_p2.read() & grid_V_0_7.read());
+}
+
+void cubeocc_hls::thread_and_ln63_2_fu_426_p2() {
+    and_ln63_2_fu_426_p2 = (and_ln63_1_fu_406_p2.read() & grid_V_7_7.read());
+}
+
+void cubeocc_hls::thread_and_ln63_fu_400_p2() {
+    and_ln63_fu_400_p2 = (grid_V_0_0.read() & grid_V_7_0.read());
 }
 
 void cubeocc_hls::thread_ap_CS_fsm_pp0_stage0() {
-    ap_CS_fsm_pp0_stage0 = ap_CS_fsm.read()[1];
-}
-
-void cubeocc_hls::thread_ap_CS_fsm_state1() {
-    ap_CS_fsm_state1 = ap_CS_fsm.read()[0];
-}
-
-void cubeocc_hls::thread_ap_CS_fsm_state5() {
-    ap_CS_fsm_state5 = ap_CS_fsm.read()[2];
+    ap_CS_fsm_pp0_stage0 = ap_CS_fsm.read()[0];
 }
 
 void cubeocc_hls::thread_ap_block_pp0_stage0() {
@@ -1879,47 +1917,93 @@ void cubeocc_hls::thread_ap_block_pp0_stage0() {
 }
 
 void cubeocc_hls::thread_ap_block_pp0_stage0_01001() {
-    ap_block_pp0_stage0_01001 = (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read()));
+    ap_block_pp0_stage0_01001 = ((esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+  esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read())) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
+  (esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_user_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_last_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_id_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read())))));
 }
 
 void cubeocc_hls::thread_ap_block_pp0_stage0_11001() {
-    ap_block_pp0_stage0_11001 = ((esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-  esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
-  esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read())) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-  esl_seteq<1,1,1>(ap_const_boolean_1, ap_block_state3_io.read())) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter2.read()) && 
-  esl_seteq<1,1,1>(ap_const_boolean_1, ap_block_state4_io.read())));
+    ap_block_pp0_stage0_11001 = ((esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+  (esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read()) || 
+   esl_seteq<1,1,1>(ap_const_logic_0, m_axis_V_data_V_1_ack_in.read()))) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
+  (esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || 
+   esl_seteq<1,1,1>(ap_const_logic_0, m_axis_V_data_V_1_ack_in.read()) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_user_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_last_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_id_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read())))));
 }
 
 void cubeocc_hls::thread_ap_block_pp0_stage0_subdone() {
-    ap_block_pp0_stage0_subdone = ((esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-  esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
-  esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read())) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-  esl_seteq<1,1,1>(ap_const_boolean_1, ap_block_state3_io.read())) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter2.read()) && 
-  esl_seteq<1,1,1>(ap_const_boolean_1, ap_block_state4_io.read())));
+    ap_block_pp0_stage0_subdone = ((esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+  (esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read()) || 
+   esl_seteq<1,1,1>(ap_const_logic_0, m_axis_V_data_V_1_ack_in.read()))) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
+  (esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || 
+   esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || 
+   esl_seteq<1,1,1>(ap_const_logic_0, m_axis_V_data_V_1_ack_in.read()) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_user_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_last_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_id_V_1_state.read())) || 
+   (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+    esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read())))));
 }
 
-void cubeocc_hls::thread_ap_block_state2_pp0_stage0_iter0() {
-    ap_block_state2_pp0_stage0_iter0 = (esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read()));
+void cubeocc_hls::thread_ap_block_state1_pp0_stage0_iter0() {
+    ap_block_state1_pp0_stage0_iter0 = esl_seteq<1,1,1>(ap_const_logic_0, s_axis_V_data_V_0_vld_out.read());
 }
 
-void cubeocc_hls::thread_ap_block_state3_io() {
-    ap_block_state3_io = (esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && esl_seteq<1,1,1>(ap_const_logic_0, m_axis_V_data_V_1_ack_in.read()));
-}
-
-void cubeocc_hls::thread_ap_block_state3_pp0_stage0_iter1() {
-    ap_block_state3_pp0_stage0_iter1 = !esl_seteq<1,1,1>(ap_const_boolean_1, ap_const_boolean_1);
-}
-
-void cubeocc_hls::thread_ap_block_state4_io() {
-    ap_block_state4_io = (esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232_pp0_iter1_reg.read()) && esl_seteq<1,1,1>(ap_const_logic_0, m_axis_V_data_V_1_ack_in.read()));
-}
-
-void cubeocc_hls::thread_ap_block_state4_pp0_stage0_iter2() {
-    ap_block_state4_pp0_stage0_iter2 = !esl_seteq<1,1,1>(ap_const_boolean_1, ap_const_boolean_1);
-}
-
-void cubeocc_hls::thread_ap_block_state5() {
-    ap_block_state5 = (esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
+void cubeocc_hls::thread_ap_block_state2_pp0_stage0_iter1() {
+    ap_block_state2_pp0_stage0_iter1 = (esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
   esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
   esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
   esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
@@ -1929,66 +2013,106 @@ void cubeocc_hls::thread_ap_block_state5() {
   esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read())));
 }
 
-void cubeocc_hls::thread_ap_condition_pp0_exit_iter0_state2() {
-    if (esl_seteq<1,1,1>(ap_const_lv1_0, icmp_ln17_fu_158_p2.read())) {
-        ap_condition_pp0_exit_iter0_state2 = ap_const_logic_1;
-    } else {
-        ap_condition_pp0_exit_iter0_state2 = ap_const_logic_0;
-    }
+void cubeocc_hls::thread_ap_condition_1192() {
+    ap_condition_1192 = (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_1, and_ln55_reg_554.read()));
 }
 
-void cubeocc_hls::thread_ap_done() {
-    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state5.read()) && 
-         !(esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_user_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_last_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_id_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read()))))) {
-        ap_done = ap_const_logic_1;
-    } else {
-        ap_done = ap_const_logic_0;
-    }
+void cubeocc_hls::thread_ap_condition_844() {
+    ap_condition_844 = (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0));
+}
+
+void cubeocc_hls::thread_ap_condition_915() {
+    ap_condition_915 = (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0));
 }
 
 void cubeocc_hls::thread_ap_enable_pp0() {
     ap_enable_pp0 = (ap_idle_pp0.read() ^ ap_const_logic_1);
 }
 
-void cubeocc_hls::thread_ap_idle() {
-    if ((esl_seteq<1,1,1>(ap_const_logic_0, ap_start.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state1.read()))) {
-        ap_idle = ap_const_logic_1;
-    } else {
-        ap_idle = ap_const_logic_0;
-    }
-}
-
 void cubeocc_hls::thread_ap_idle_pp0() {
-    if ((esl_seteq<1,1,1>(ap_const_logic_0, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_0, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_0, ap_enable_reg_pp0_iter2.read()))) {
+    if ((esl_seteq<1,1,1>(ap_const_logic_0, ap_const_logic_1) && 
+         esl_seteq<1,1,1>(ap_const_logic_0, ap_enable_reg_pp0_iter1.read()))) {
         ap_idle_pp0 = ap_const_logic_1;
     } else {
         ap_idle_pp0 = ap_const_logic_0;
     }
 }
 
-void cubeocc_hls::thread_ap_ready() {
-    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state5.read()) && 
-         !(esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_user_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_last_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_id_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read()))))) {
-        ap_ready = ap_const_logic_1;
+void cubeocc_hls::thread_ap_phi_mux_empty_4_phi_fu_180_p6() {
+    if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+         esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0) && 
+         esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+         esl_seteq<1,1,1>(ap_const_lv1_0, tmp_last_V_fu_221_p1.read()))) {
+        ap_phi_mux_empty_4_phi_fu_180_p6 = add_ln46_fu_245_p2.read();
+    } else if (((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+                 esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+                 esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0) && 
+                 esl_seteq<1,1,1>(ap_const_lv1_1, tmp_user_V_fu_216_p1.read())) || 
+                (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+                 esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+                 esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0) && 
+                 esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+                 esl_seteq<1,1,1>(ap_const_lv1_1, tmp_last_V_fu_221_p1.read())))) {
+        ap_phi_mux_empty_4_phi_fu_180_p6 = ap_const_lv32_0;
     } else {
-        ap_ready = ap_const_logic_0;
+        ap_phi_mux_empty_4_phi_fu_180_p6 = ap_phi_reg_pp0_iter0_empty_4_reg_177.read();
+    }
+}
+
+void cubeocc_hls::thread_ap_phi_mux_row_loc_0_phi_fu_152_p6() {
+    if (esl_seteq<1,1,1>(ap_condition_844.read(), ap_const_boolean_1)) {
+        if ((esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+             esl_seteq<1,1,1>(ap_const_lv1_0, tmp_last_V_fu_221_p1.read()))) {
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = row.read();
+        } else if ((esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+                    esl_seteq<1,1,1>(ap_const_lv1_1, tmp_last_V_fu_221_p1.read()))) {
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = add_ln42_fu_258_p2.read();
+        } else if (esl_seteq<1,1,1>(ap_const_lv1_1, tmp_user_V_fu_216_p1.read())) {
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = ap_const_lv32_0;
+        } else {
+            ap_phi_mux_row_loc_0_phi_fu_152_p6 = ap_phi_reg_pp0_iter0_row_loc_0_reg_149.read();
+        }
+    } else {
+        ap_phi_mux_row_loc_0_phi_fu_152_p6 = ap_phi_reg_pp0_iter0_row_loc_0_reg_149.read();
+    }
+}
+
+void cubeocc_hls::thread_ap_phi_mux_tmp_last_V_1_phi_fu_165_p6() {
+    if (esl_seteq<1,1,1>(ap_condition_844.read(), ap_const_boolean_1)) {
+        if ((esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+             esl_seteq<1,1,1>(ap_const_lv1_0, tmp_last_V_fu_221_p1.read()))) {
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = ap_const_lv1_0;
+        } else if ((esl_seteq<1,1,1>(ap_const_lv1_0, tmp_user_V_fu_216_p1.read()) && 
+                    esl_seteq<1,1,1>(ap_const_lv1_1, tmp_last_V_fu_221_p1.read()))) {
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = ap_const_lv1_1;
+        } else if (esl_seteq<1,1,1>(ap_const_lv1_1, tmp_user_V_fu_216_p1.read())) {
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = s_axis_V_last_V_0_data_out.read();
+        } else {
+            ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161.read();
+        }
+    } else {
+        ap_phi_mux_tmp_last_V_1_phi_fu_165_p6 = ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161.read();
+    }
+}
+
+void cubeocc_hls::thread_ap_phi_reg_pp0_iter0_empty_4_reg_177() {
+    ap_phi_reg_pp0_iter0_empty_4_reg_177 =  (sc_lv<32>) ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+}
+
+void cubeocc_hls::thread_ap_phi_reg_pp0_iter0_row_loc_0_reg_149() {
+    ap_phi_reg_pp0_iter0_row_loc_0_reg_149 =  (sc_lv<32>) ("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+}
+
+void cubeocc_hls::thread_ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161() {
+    ap_phi_reg_pp0_iter0_tmp_last_V_1_reg_161 = "X";
+}
+
+void cubeocc_hls::thread_ap_reset_idle_pp0() {
+    if (!esl_seteq<1,1,1>(ap_const_boolean_1, ap_const_boolean_1)) {
+        ap_reset_idle_pp0 = ap_const_logic_1;
+    } else {
+        ap_reset_idle_pp0 = ap_const_logic_0;
     }
 }
 
@@ -1996,16 +2120,24 @@ void cubeocc_hls::thread_ap_rst_n_inv() {
     ap_rst_n_inv =  (sc_logic) (~ap_rst_n.read());
 }
 
-void cubeocc_hls::thread_i_0_cast_fu_154_p1() {
-    i_0_cast_fu_154_p1 = esl_zext<32,31>(i_0_reg_143.read());
+void cubeocc_hls::thread_frame_active_load_load_fu_466_p1() {
+    frame_active_load_load_fu_466_p1 = frame_active.read();
 }
 
-void cubeocc_hls::thread_icmp_ln17_fu_158_p2() {
-    icmp_ln17_fu_158_p2 = (!i_0_cast_fu_154_p1.read().is_01() || !pixel_count_read_reg_227.read().is_01())? sc_lv<1>(): (sc_bigint<32>(i_0_cast_fu_154_p1.read()) < sc_bigint<32>(pixel_count_read_reg_227.read()));
+void cubeocc_hls::thread_icmp_ln50_1_fu_303_p2() {
+    icmp_ln50_1_fu_303_p2 = (!tmp_1_fu_293_p4.read().is_01() || !ap_const_lv29_1.is_01())? sc_lv<1>(): (sc_bigint<29>(tmp_1_fu_293_p4.read()) < sc_bigint<29>(ap_const_lv29_1));
 }
 
-void cubeocc_hls::thread_icmp_ln895_fu_197_p2() {
-    icmp_ln895_fu_197_p2 = (!s_axis_V_data_V_0_data_out.read().is_01() || !threshold_V_read_reg_222.read().is_01())? sc_lv<1>(): (sc_biguint<8>(s_axis_V_data_V_0_data_out.read()) > sc_biguint<8>(threshold_V_read_reg_222.read()));
+void cubeocc_hls::thread_icmp_ln50_fu_287_p2() {
+    icmp_ln50_fu_287_p2 = (!tmp_fu_277_p4.read().is_01() || !ap_const_lv29_1.is_01())? sc_lv<1>(): (sc_bigint<29>(tmp_fu_277_p4.read()) < sc_bigint<29>(ap_const_lv29_1));
+}
+
+void cubeocc_hls::thread_icmp_ln55_1_fu_359_p2() {
+    icmp_ln55_1_fu_359_p2 = (!ap_phi_mux_empty_4_phi_fu_180_p6.read().is_01() || !ap_const_lv32_0.is_01())? sc_lv<1>(): sc_lv<1>(ap_phi_mux_empty_4_phi_fu_180_p6.read() == ap_const_lv32_0);
+}
+
+void cubeocc_hls::thread_icmp_ln55_fu_353_p2() {
+    icmp_ln55_fu_353_p2 = (!ap_phi_mux_row_loc_0_phi_fu_152_p6.read().is_01() || !ap_const_lv32_8.is_01())? sc_lv<1>(): sc_lv<1>(ap_phi_mux_row_loc_0_phi_fu_152_p6.read() == ap_const_lv32_8);
 }
 
 void cubeocc_hls::thread_m_axis_TDATA() {
@@ -2014,12 +2146,11 @@ void cubeocc_hls::thread_m_axis_TDATA() {
 
 void cubeocc_hls::thread_m_axis_TDATA_blk_n() {
     if (((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
+          esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+          esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0)) || 
+         (esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
           esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0) && 
-          esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-          esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read())) || 
-         (esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0) && 
-          esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter2.read()) && 
-          esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232_pp0_iter1_reg.read())))) {
+          esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read())))) {
         m_axis_TDATA_blk_n = m_axis_V_data_V_1_state.read()[1];
     } else {
         m_axis_TDATA_blk_n = ap_const_logic_1;
@@ -2088,8 +2219,7 @@ void cubeocc_hls::thread_m_axis_V_data_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_data_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_data_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2135,8 +2265,7 @@ void cubeocc_hls::thread_m_axis_V_dest_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_dest_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_dest_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2182,8 +2311,7 @@ void cubeocc_hls::thread_m_axis_V_id_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_id_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_id_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2229,8 +2357,7 @@ void cubeocc_hls::thread_m_axis_V_keep_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_keep_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_keep_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2276,8 +2403,7 @@ void cubeocc_hls::thread_m_axis_V_last_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_last_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_last_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2323,8 +2449,7 @@ void cubeocc_hls::thread_m_axis_V_strb_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_strb_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_strb_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2370,8 +2495,7 @@ void cubeocc_hls::thread_m_axis_V_user_V_1_state_cmp_full() {
 
 void cubeocc_hls::thread_m_axis_V_user_V_1_vld_in() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter1.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_reg_232.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         m_axis_V_user_V_1_vld_in = ap_const_logic_1;
     } else {
@@ -2383,11 +2507,18 @@ void cubeocc_hls::thread_m_axis_V_user_V_1_vld_out() {
     m_axis_V_user_V_1_vld_out = m_axis_V_user_V_1_state.read()[0];
 }
 
+void cubeocc_hls::thread_or_ln68_1_fu_454_p2() {
+    or_ln68_1_fu_454_p2 = (tmp_5_fu_446_p3.read() | xor_ln63_fu_420_p2.read());
+}
+
+void cubeocc_hls::thread_or_ln68_fu_440_p2() {
+    or_ln68_fu_440_p2 = (grid_V_7_7.read() | grid_V_0_1.read());
+}
+
 void cubeocc_hls::thread_s_axis_TDATA_blk_n() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()))) {
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
+         esl_seteq<1,1,1>(ap_block_pp0_stage0.read(), ap_const_boolean_0))) {
         s_axis_TDATA_blk_n = s_axis_V_data_V_0_state.read()[0];
     } else {
         s_axis_TDATA_blk_n = ap_const_logic_1;
@@ -2404,8 +2535,7 @@ void cubeocc_hls::thread_s_axis_V_data_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_data_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_data_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2451,8 +2581,7 @@ void cubeocc_hls::thread_s_axis_V_dest_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_dest_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_dest_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2498,8 +2627,7 @@ void cubeocc_hls::thread_s_axis_V_id_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_id_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_id_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2545,8 +2673,7 @@ void cubeocc_hls::thread_s_axis_V_keep_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_keep_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_keep_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2592,8 +2719,7 @@ void cubeocc_hls::thread_s_axis_V_last_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_last_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_last_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2639,8 +2765,7 @@ void cubeocc_hls::thread_s_axis_V_strb_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_strb_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_strb_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2686,8 +2811,7 @@ void cubeocc_hls::thread_s_axis_V_user_V_0_ack_in() {
 
 void cubeocc_hls::thread_s_axis_V_user_V_0_ack_out() {
     if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_pp0_stage0.read()) && 
-         esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-         esl_seteq<1,1,1>(ap_const_lv1_1, icmp_ln17_fu_158_p2.read()) && 
+         esl_seteq<1,1,1>(ap_const_logic_1, ap_const_logic_1) && 
          esl_seteq<1,1,1>(ap_block_pp0_stage0_11001.read(), ap_const_boolean_0))) {
         s_axis_V_user_V_0_ack_out = ap_const_logic_1;
     } else {
@@ -2727,53 +2851,61 @@ void cubeocc_hls::thread_s_axis_V_user_V_0_vld_out() {
     s_axis_V_user_V_0_vld_out = s_axis_V_user_V_0_state.read()[0];
 }
 
-void cubeocc_hls::thread_tmp_data_V_1_fu_202_p3() {
-    tmp_data_V_1_fu_202_p3 = (!icmp_ln895_fu_197_p2.read()[0].is_01())? sc_lv<8>(): ((icmp_ln895_fu_197_p2.read()[0].to_bool())? ap_const_lv8_FF: ap_const_lv8_0);
+void cubeocc_hls::thread_tmp_1_fu_293_p4() {
+    tmp_1_fu_293_p4 = ap_phi_mux_empty_4_phi_fu_180_p6.read().range(31, 3);
 }
 
-void cubeocc_hls::thread_tmp_data_V_2_fu_210_p3() {
-    tmp_data_V_2_fu_210_p3 = (!threshold_enable_rea_reg_217.read()[0].is_01())? sc_lv<8>(): ((threshold_enable_rea_reg_217.read()[0].to_bool())? tmp_data_V_1_fu_202_p3.read(): s_axis_V_data_V_0_data_out.read());
+void cubeocc_hls::thread_tmp_3_fu_412_p3() {
+    tmp_3_fu_412_p3 = and_ln63_1_fu_406_p2.read().range(7, 7);
+}
+
+void cubeocc_hls::thread_tmp_4_fu_432_p3() {
+    tmp_4_fu_432_p3 = and_ln63_2_fu_426_p2.read().range(7, 7);
+}
+
+void cubeocc_hls::thread_tmp_5_fu_446_p3() {
+    tmp_5_fu_446_p3 = or_ln68_fu_440_p2.read().range(7, 7);
+}
+
+void cubeocc_hls::thread_tmp_6_fu_470_p3() {
+    tmp_6_fu_470_p3 = grid_V_0_1.read().range(7, 7);
+}
+
+void cubeocc_hls::thread_tmp_fu_277_p4() {
+    tmp_fu_277_p4 = ap_phi_mux_row_loc_0_phi_fu_152_p6.read().range(31, 3);
+}
+
+void cubeocc_hls::thread_tmp_last_V_fu_221_p1() {
+    tmp_last_V_fu_221_p1 = s_axis_V_last_V_0_data_out.read();
+}
+
+void cubeocc_hls::thread_tmp_user_V_fu_216_p1() {
+    tmp_user_V_fu_216_p1 = s_axis_V_user_V_0_data_out.read();
+}
+
+void cubeocc_hls::thread_trunc_ln321_1_fu_319_p1() {
+    trunc_ln321_1_fu_319_p1 = ap_phi_mux_empty_4_phi_fu_180_p6.read().range(3-1, 0);
+}
+
+void cubeocc_hls::thread_trunc_ln321_fu_315_p1() {
+    trunc_ln321_fu_315_p1 = ap_phi_mux_row_loc_0_phi_fu_152_p6.read().range(3-1, 0);
+}
+
+void cubeocc_hls::thread_xor_ln63_fu_420_p2() {
+    xor_ln63_fu_420_p2 = (tmp_3_fu_412_p3.read() ^ ap_const_lv1_1);
+}
+
+void cubeocc_hls::thread_xor_ln883_fu_482_p2() {
+    xor_ln883_fu_482_p2 = (tmp_6_fu_470_p3.read() ^ prev_clk_V.read());
 }
 
 void cubeocc_hls::thread_ap_NS_fsm() {
     switch (ap_CS_fsm.read().to_uint64()) {
         case 1 : 
-            if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state1.read()) && esl_seteq<1,1,1>(ap_start.read(), ap_const_logic_1))) {
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            } else {
-                ap_NS_fsm = ap_ST_fsm_state1;
-            }
-            break;
-        case 2 : 
-            if ((!(esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter2.read()) && esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_enable_reg_pp0_iter1.read(), ap_const_logic_0)) && !(esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0) && esl_seteq<1,1,1>(ap_const_lv1_0, icmp_ln17_fu_158_p2.read()) && esl_seteq<1,1,1>(ap_enable_reg_pp0_iter1.read(), ap_const_logic_0)))) {
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            } else if (((esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter2.read()) && 
-  esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0) && 
-  esl_seteq<1,1,1>(ap_enable_reg_pp0_iter1.read(), ap_const_logic_0)) || (esl_seteq<1,1,1>(ap_const_logic_1, ap_enable_reg_pp0_iter0.read()) && 
-  esl_seteq<1,1,1>(ap_block_pp0_stage0_subdone.read(), ap_const_boolean_0) && 
-  esl_seteq<1,1,1>(ap_const_lv1_0, icmp_ln17_fu_158_p2.read()) && 
-  esl_seteq<1,1,1>(ap_enable_reg_pp0_iter1.read(), ap_const_logic_0)))) {
-                ap_NS_fsm = ap_ST_fsm_state5;
-            } else {
-                ap_NS_fsm = ap_ST_fsm_pp0_stage0;
-            }
-            break;
-        case 4 : 
-            if ((esl_seteq<1,1,1>(ap_const_logic_1, ap_CS_fsm_state5.read()) && !(esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_data_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_keep_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_strb_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_user_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_last_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_id_V_1_state.read()) || esl_seteq<1,2,2>(ap_const_lv2_1, m_axis_V_dest_V_1_state.read()) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_data_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_keep_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_strb_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_user_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_last_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_id_V_1_state.read())) || (esl_seteq<1,1,1>(ap_const_logic_0, m_axis_TREADY.read()) && 
-  esl_seteq<1,2,2>(ap_const_lv2_3, m_axis_V_dest_V_1_state.read()))))) {
-                ap_NS_fsm = ap_ST_fsm_state1;
-            } else {
-                ap_NS_fsm = ap_ST_fsm_state5;
-            }
-            break;
+            ap_NS_fsm = ap_ST_fsm_pp0_stage0;
+break;
         default : 
-            ap_NS_fsm = "XXX";
+            ap_NS_fsm = "X";
             break;
     }
 }
@@ -2809,24 +2941,6 @@ void cubeocc_hls::thread_hdltv_gen() {
         mHdltvoutHandle << " , " <<  " \"m_axis_TLAST\" :  \"" << m_axis_TLAST.read() << "\" ";
         mHdltvoutHandle << " , " <<  " \"m_axis_TID\" :  \"" << m_axis_TID.read() << "\" ";
         mHdltvoutHandle << " , " <<  " \"m_axis_TDEST\" :  \"" << m_axis_TDEST.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_AWVALID\" :  \"" << s_axi_CTRL_AWVALID.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_AWREADY\" :  \"" << s_axi_CTRL_AWREADY.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_AWADDR\" :  \"" << s_axi_CTRL_AWADDR.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_WVALID\" :  \"" << s_axi_CTRL_WVALID.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_WREADY\" :  \"" << s_axi_CTRL_WREADY.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_WDATA\" :  \"" << s_axi_CTRL_WDATA.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_WSTRB\" :  \"" << s_axi_CTRL_WSTRB.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_ARVALID\" :  \"" << s_axi_CTRL_ARVALID.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_ARREADY\" :  \"" << s_axi_CTRL_ARREADY.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_ARADDR\" :  \"" << s_axi_CTRL_ARADDR.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_RVALID\" :  \"" << s_axi_CTRL_RVALID.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_RREADY\" :  \"" << s_axi_CTRL_RREADY.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_RDATA\" :  \"" << s_axi_CTRL_RDATA.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_RRESP\" :  \"" << s_axi_CTRL_RRESP.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_BVALID\" :  \"" << s_axi_CTRL_BVALID.read() << "\" ";
-        mHdltvinHandle << " , " <<  " \"s_axi_CTRL_BREADY\" :  \"" << s_axi_CTRL_BREADY.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"s_axi_CTRL_BRESP\" :  \"" << s_axi_CTRL_BRESP.read() << "\" ";
-        mHdltvoutHandle << " , " <<  " \"interrupt\" :  \"" << interrupt.read() << "\" ";
         mHdltvinHandle << "}" << std::endl;
         mHdltvoutHandle << "}" << std::endl;
         ap_cycleNo++;

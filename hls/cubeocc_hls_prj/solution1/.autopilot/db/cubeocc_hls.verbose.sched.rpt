@@ -3,7 +3,7 @@
 ================================================================
 == Vivado HLS Report for 'cubeocc_hls'
 ================================================================
-* Date:           Tue Aug 25 17:48:39 2026
+* Date:           Thu Aug 27 17:24:27 2026
 
 * Version:        2019.1 (Build 2552052 on Fri May 24 15:28:33 MDT 2019)
 * Project:        cubeocc_hls_prj
@@ -20,29 +20,24 @@
     +--------+-------+----------+------------+
     |  Clock | Target| Estimated| Uncertainty|
     +--------+-------+----------+------------+
-    |ap_clk  |  10.00|     3.416|        1.25|
+    |ap_clk  |  10.00|     7.827|        1.25|
     +--------+-------+----------+------------+
 
 + Latency (clock cycles): 
     * Summary: 
-    +-----+-----+-----+-----+---------+
-    |  Latency  |  Interval | Pipeline|
-    | min | max | min | max |   Type  |
-    +-----+-----+-----+-----+---------+
-    |    ?|    ?|    ?|    ?|   none  |
-    +-----+-----+-----+-----+---------+
+    +-----+-----+-----+-----+----------+
+    |  Latency  |  Interval | Pipeline |
+    | min | max | min | max |   Type   |
+    +-----+-----+-----+-----+----------+
+    |    1|    1|    1|    1| function |
+    +-----+-----+-----+-----+----------+
 
     + Detail: 
         * Instance: 
         N/A
 
         * Loop: 
-        +----------+-----+-----+----------+-----------+-----------+------+----------+
-        |          |  Latency  | Iteration|  Initiation Interval  | Trip |          |
-        | Loop Name| min | max |  Latency |  achieved |   target  | Count| Pipelined|
-        +----------+-----+-----+----------+-----------+-----------+------+----------+
-        |- Loop 1  |    ?|    ?|         3|          1|          1|     ?|    yes   |
-        +----------+-----+-----+----------+-----------+-----------+------+----------+
+        N/A
 
 ============================================================
 + Verbose Summary: Synthesis Manager
@@ -57,96 +52,172 @@ ResetActiveHigh: 1
 IsCombinational: 0
 IsDatapathOnly: 0
 HasWiredReturn: 1
-HasMFsm: 0
-HasVarLatency: 1
-IsPipeline: 0
-IsRtlPipelined: 0
+HasMFsm: 2
+HasVarLatency: 0
+IsPipeline: 1
+IsRtlPipelined: 1
 IsInstanceOverlapped: 0
 IsDontTouch: 0
 HasImplIP: 0
 IsGatedGlobalClock: 0
 
 + Individual pipeline summary: 
-  * Pipeline-0: initiation interval (II) = 1, depth = 3
+  * Pipeline-0: initiation interval (II) = 1, depth = 2
 
 
 ============================================================
 + Verbose Summary: Schedule
 ============================================================
-* Number of FSM states : 5
+* Number of FSM states : 2
 * Pipeline : 1
-  Pipeline-0 : II = 1, D = 3, States = { 2 3 4 }
+  Pipeline-0 : II = 1, D = 2, States = { 1 2 }
 * Dataflow Pipeline: 0
 
 * FSM state transitions: 
 1 --> 2 
-2 --> 5 3 
-3 --> 4 
-4 --> 2 
-5 --> 
+2 --> 
 
 * FSM state operations: 
 
-State 1 <SV = 0> <Delay = 1.66>
-ST_1 : Operation 6 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i8* %s_axis_V_data_V), !map !34"   --->   Operation 6 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 7 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_keep_V), !map !40"   --->   Operation 7 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 8 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_strb_V), !map !44"   --->   Operation 8 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 9 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_user_V), !map !48"   --->   Operation 9 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 10 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_last_V), !map !52"   --->   Operation 10 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 11 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_id_V), !map !56"   --->   Operation 11 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 12 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_dest_V), !map !60"   --->   Operation 12 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 13 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i8* %m_axis_V_data_V), !map !64"   --->   Operation 13 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 14 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_keep_V), !map !68"   --->   Operation 14 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 15 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_strb_V), !map !72"   --->   Operation 15 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 16 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_user_V), !map !76"   --->   Operation 16 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 17 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_last_V), !map !80"   --->   Operation 17 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 18 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_id_V), !map !84"   --->   Operation 18 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 19 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_dest_V), !map !88"   --->   Operation 19 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 20 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i32 %pixel_count), !map !92"   --->   Operation 20 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 21 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i8 %threshold_V), !map !98"   --->   Operation 21 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 22 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1 %threshold_enable), !map !102"   --->   Operation 22 'specbitsmap' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 23 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([12 x i8]* @cubeocc_hls_str) nounwind"   --->   Operation 23 'spectopmodule' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 24 [1/1] (1.00ns)   --->   "%threshold_enable_rea = call i1 @_ssdm_op_Read.s_axilite.i1(i1 %threshold_enable)"   --->   Operation 24 'read' 'threshold_enable_rea' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
-ST_1 : Operation 25 [1/1] (1.00ns)   --->   "%threshold_V_read = call i8 @_ssdm_op_Read.s_axilite.i8(i8 %threshold_V)"   --->   Operation 25 'read' 'threshold_V_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
-ST_1 : Operation 26 [1/1] (1.00ns)   --->   "%pixel_count_read = call i32 @_ssdm_op_Read.s_axilite.i32(i32 %pixel_count)"   --->   Operation 26 'read' 'pixel_count_read' <Predicate = true> <Delay = 1.00> <Core = "s_axilite">   --->   Core 10 's_axilite' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : 'read' 'write'>
-ST_1 : Operation 27 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i8* %s_axis_V_data_V, i1* %s_axis_V_keep_V, i1* %s_axis_V_strb_V, i1* %s_axis_V_user_V, i1* %s_axis_V_last_V, i1* %s_axis_V_id_V, i1* %s_axis_V_dest_V, [5 x i8]* @p_str, i32 1, i32 1, [5 x i8]* @p_str1, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:10]   --->   Operation 27 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 28 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i8* %m_axis_V_data_V, i1* %m_axis_V_keep_V, i1* %m_axis_V_strb_V, i1* %m_axis_V_user_V, i1* %m_axis_V_last_V, i1* %m_axis_V_id_V, i1* %m_axis_V_dest_V, [5 x i8]* @p_str, i32 1, i32 1, [5 x i8]* @p_str1, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:11]   --->   Operation 28 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 29 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i32 %pixel_count, [10 x i8]* @p_str3, i32 0, i32 0, [1 x i8]* @p_str2, i32 0, i32 0, [5 x i8]* @p_str4, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:12]   --->   Operation 29 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 30 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i8 %threshold_V, [10 x i8]* @p_str3, i32 0, i32 0, [1 x i8]* @p_str2, i32 0, i32 0, [5 x i8]* @p_str4, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:13]   --->   Operation 30 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 31 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i1 %threshold_enable, [10 x i8]* @p_str3, i32 0, i32 0, [1 x i8]* @p_str2, i32 0, i32 0, [5 x i8]* @p_str4, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:14]   --->   Operation 31 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 32 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i32 0, [10 x i8]* @p_str3, i32 0, i32 0, [1 x i8]* @p_str2, i32 0, i32 0, [5 x i8]* @p_str4, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:15]   --->   Operation 32 'specinterface' <Predicate = true> <Delay = 0.00>
-ST_1 : Operation 33 [1/1] (1.66ns)   --->   "br label %1" [cubeocc_hls.cpp:17]   --->   Operation 33 'br' <Predicate = true> <Delay = 1.66>
+State 1 <SV = 0> <Delay = 7.82>
+ST_1 : Operation 3 [1/1] (0.00ns)   --->   "%empty = call { i8, i1, i1, i1, i1, i1, i1 } @_ssdm_op_Read.axis.volatile.i8P.i1P.i1P.i1P.i1P.i1P.i1P(i8* %s_axis_V_data_V, i1* %s_axis_V_keep_V, i1* %s_axis_V_strb_V, i1* %s_axis_V_user_V, i1* %s_axis_V_last_V, i1* %s_axis_V_id_V, i1* %s_axis_V_dest_V)" [cubeocc_hls.cpp:30]   --->   Operation 3 'read' 'empty' <Predicate = true> <Delay = 0.00> <Core = "AXI4Stream">   --->   Core 5 'AXI4Stream' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : >
+ST_1 : Operation 4 [1/1] (0.00ns)   --->   "%tmp_data_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 0" [cubeocc_hls.cpp:30]   --->   Operation 4 'extractvalue' 'tmp_data_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 5 [1/1] (0.00ns)   --->   "%tmp_keep_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 1" [cubeocc_hls.cpp:30]   --->   Operation 5 'extractvalue' 'tmp_keep_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 6 [1/1] (0.00ns)   --->   "%tmp_strb_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 2" [cubeocc_hls.cpp:30]   --->   Operation 6 'extractvalue' 'tmp_strb_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 7 [1/1] (0.00ns)   --->   "%tmp_user_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 3" [cubeocc_hls.cpp:30]   --->   Operation 7 'extractvalue' 'tmp_user_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 8 [1/1] (0.00ns)   --->   "%tmp_last_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 4" [cubeocc_hls.cpp:30]   --->   Operation 8 'extractvalue' 'tmp_last_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 9 [1/1] (0.00ns)   --->   "%tmp_id_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 5" [cubeocc_hls.cpp:30]   --->   Operation 9 'extractvalue' 'tmp_id_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 10 [1/1] (0.00ns)   --->   "%tmp_dest_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 6" [cubeocc_hls.cpp:30]   --->   Operation 10 'extractvalue' 'tmp_dest_V' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 11 [1/1] (0.00ns)   --->   "%row_load = load i32* @row, align 4" [cubeocc_hls.cpp:42]   --->   Operation 11 'load' 'row_load' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 12 [1/1] (0.00ns)   --->   "br i1 %tmp_user_V, label %0, label %1" [cubeocc_hls.cpp:32]   --->   Operation 12 'br' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 13 [1/1] (0.00ns)   --->   "br i1 %tmp_last_V, label %2, label %3" [cubeocc_hls.cpp:39]   --->   Operation 13 'br' <Predicate = (!tmp_user_V)> <Delay = 0.00>
+ST_1 : Operation 14 [1/1] (0.00ns)   --->   "%col_load = load i32* @col, align 4" [cubeocc_hls.cpp:46]   --->   Operation 14 'load' 'col_load' <Predicate = (!tmp_user_V & !tmp_last_V)> <Delay = 0.00>
+ST_1 : Operation 15 [1/1] (2.70ns)   --->   "%add_ln46 = add nsw i32 %col_load, 1" [cubeocc_hls.cpp:46]   --->   Operation 15 'add' 'add_ln46' <Predicate = (!tmp_user_V & !tmp_last_V)> <Delay = 2.70> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 2.70> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 16 [1/1] (1.66ns)   --->   "store i32 %add_ln46, i32* @col, align 4" [cubeocc_hls.cpp:46]   --->   Operation 16 'store' <Predicate = (!tmp_user_V & !tmp_last_V)> <Delay = 1.66>
+ST_1 : Operation 17 [1/1] (1.70ns)   --->   "br label %4"   --->   Operation 17 'br' <Predicate = (!tmp_user_V & !tmp_last_V)> <Delay = 1.70>
+ST_1 : Operation 18 [1/1] (1.66ns)   --->   "store i32 0, i32* @col, align 4" [cubeocc_hls.cpp:41]   --->   Operation 18 'store' <Predicate = (!tmp_user_V & tmp_last_V)> <Delay = 1.66>
+ST_1 : Operation 19 [1/1] (2.70ns)   --->   "%add_ln42 = add nsw i32 %row_load, 1" [cubeocc_hls.cpp:42]   --->   Operation 19 'add' 'add_ln42' <Predicate = (!tmp_user_V & tmp_last_V)> <Delay = 2.70> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 2.70> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 20 [1/1] (1.66ns)   --->   "store i32 %add_ln42, i32* @row, align 4" [cubeocc_hls.cpp:42]   --->   Operation 20 'store' <Predicate = (!tmp_user_V & tmp_last_V)> <Delay = 1.66>
+ST_1 : Operation 21 [1/1] (1.70ns)   --->   "br label %4" [cubeocc_hls.cpp:43]   --->   Operation 21 'br' <Predicate = (!tmp_user_V & tmp_last_V)> <Delay = 1.70>
+ST_1 : Operation 22 [1/1] (1.66ns)   --->   "store i32 0, i32* @row, align 4" [cubeocc_hls.cpp:34]   --->   Operation 22 'store' <Predicate = (tmp_user_V)> <Delay = 1.66>
+ST_1 : Operation 23 [1/1] (1.66ns)   --->   "store i32 0, i32* @col, align 4" [cubeocc_hls.cpp:35]   --->   Operation 23 'store' <Predicate = (tmp_user_V)> <Delay = 1.66>
+ST_1 : Operation 24 [1/1] (1.70ns)   --->   "br label %4" [cubeocc_hls.cpp:36]   --->   Operation 24 'br' <Predicate = (tmp_user_V)> <Delay = 1.70>
+ST_1 : Operation 25 [1/1] (0.00ns)   --->   "%row_loc_0 = phi i32 [ 0, %0 ], [ %add_ln42, %2 ], [ %row_load, %3 ]" [cubeocc_hls.cpp:42]   --->   Operation 25 'phi' 'row_loc_0' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 26 [1/1] (0.00ns)   --->   "%tmp_last_V_1 = phi i1 [ %tmp_last_V, %0 ], [ true, %2 ], [ false, %3 ]"   --->   Operation 26 'phi' 'tmp_last_V_1' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 27 [1/1] (0.00ns)   --->   "%empty_4 = phi i32 [ 0, %0 ], [ 0, %2 ], [ %add_ln46, %3 ]" [cubeocc_hls.cpp:46]   --->   Operation 27 'phi' 'empty_4' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 28 [1/1] (0.00ns)   --->   "%tmp = call i29 @_ssdm_op_PartSelect.i29.i32.i32.i32(i32 %row_loc_0, i32 3, i32 31)" [cubeocc_hls.cpp:50]   --->   Operation 28 'partselect' 'tmp' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 29 [1/1] (2.42ns)   --->   "%icmp_ln50 = icmp slt i29 %tmp, 1" [cubeocc_hls.cpp:50]   --->   Operation 29 'icmp' 'icmp_ln50' <Predicate = true> <Delay = 2.42> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 2.43> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 30 [1/1] (0.00ns)   --->   "%tmp_1 = call i29 @_ssdm_op_PartSelect.i29.i32.i32.i32(i32 %empty_4, i32 3, i32 31)" [cubeocc_hls.cpp:50]   --->   Operation 30 'partselect' 'tmp_1' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 31 [1/1] (2.42ns)   --->   "%icmp_ln50_1 = icmp slt i29 %tmp_1, 1" [cubeocc_hls.cpp:50]   --->   Operation 31 'icmp' 'icmp_ln50_1' <Predicate = true> <Delay = 2.42> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 2.43> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 32 [1/1] (0.97ns)   --->   "%and_ln50 = and i1 %icmp_ln50, %icmp_ln50_1" [cubeocc_hls.cpp:50]   --->   Operation 32 'and' 'and_ln50' <Predicate = true> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 33 [1/1] (0.00ns)   --->   "br i1 %and_ln50, label %5, label %._crit_edge132" [cubeocc_hls.cpp:50]   --->   Operation 33 'br' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 34 [1/1] (0.00ns)   --->   "%trunc_ln321 = trunc i32 %row_loc_0 to i3" [cubeocc_hls.cpp:52]   --->   Operation 34 'trunc' 'trunc_ln321' <Predicate = (and_ln50)> <Delay = 0.00>
+ST_1 : Operation 35 [1/1] (0.00ns)   --->   "%trunc_ln321_1 = trunc i32 %empty_4 to i3" [cubeocc_hls.cpp:52]   --->   Operation 35 'trunc' 'trunc_ln321_1' <Predicate = (and_ln50)> <Delay = 0.00>
+ST_1 : Operation 36 [1/1] (1.44ns)   --->   "switch i3 %trunc_ln321, label %branch7 [
+    i3 0, label %branch0
+    i3 1, label %branch132
+    i3 2, label %branch132
+    i3 3, label %branch132
+    i3 -4, label %branch132
+    i3 -3, label %branch132
+    i3 -2, label %branch132
+  ]" [cubeocc_hls.cpp:52]   --->   Operation 36 'switch' <Predicate = (and_ln50)> <Delay = 1.44>
+ST_1 : Operation 37 [1/1] (1.44ns)   --->   "switch i3 %trunc_ln321_1, label %branch15 [
+    i3 0, label %branch8
+    i3 1, label %branch9
+    i3 2, label %branch023
+    i3 3, label %branch023
+    i3 -4, label %branch023
+    i3 -3, label %branch023
+    i3 -2, label %branch023
+  ]" [cubeocc_hls.cpp:52]   --->   Operation 37 'switch' <Predicate = (and_ln50 & trunc_ln321 == 0)> <Delay = 1.44>
+ST_1 : Operation 38 [1/1] (0.00ns)   --->   "store i8 %tmp_data_V, i8* @grid_V_0_1, align 1" [cubeocc_hls.cpp:52]   --->   Operation 38 'store' <Predicate = (and_ln50 & trunc_ln321 == 0 & trunc_ln321_1 == 1)> <Delay = 0.00>
+ST_1 : Operation 39 [1/1] (0.00ns)   --->   "br label %branch023" [cubeocc_hls.cpp:52]   --->   Operation 39 'br' <Predicate = (and_ln50 & trunc_ln321 == 0 & trunc_ln321_1 == 1)> <Delay = 0.00>
+ST_1 : Operation 40 [1/1] (0.00ns)   --->   "store i8 %tmp_data_V, i8* @grid_V_0_0, align 1" [cubeocc_hls.cpp:52]   --->   Operation 40 'store' <Predicate = (and_ln50 & trunc_ln321 == 0 & trunc_ln321_1 == 0)> <Delay = 0.00>
+ST_1 : Operation 41 [1/1] (0.00ns)   --->   "br label %branch023" [cubeocc_hls.cpp:52]   --->   Operation 41 'br' <Predicate = (and_ln50 & trunc_ln321 == 0 & trunc_ln321_1 == 0)> <Delay = 0.00>
+ST_1 : Operation 42 [1/1] (0.00ns)   --->   "store i8 %tmp_data_V, i8* @grid_V_0_7, align 1" [cubeocc_hls.cpp:52]   --->   Operation 42 'store' <Predicate = (and_ln50 & trunc_ln321 == 0 & trunc_ln321_1 == 7)> <Delay = 0.00>
+ST_1 : Operation 43 [1/1] (0.00ns)   --->   "br label %branch023" [cubeocc_hls.cpp:52]   --->   Operation 43 'br' <Predicate = (and_ln50 & trunc_ln321 == 0 & trunc_ln321_1 == 7)> <Delay = 0.00>
+ST_1 : Operation 44 [1/1] (1.44ns)   --->   "switch i3 %trunc_ln321_1, label %branch71 [
+    i3 0, label %branch64
+    i3 1, label %branch792
+    i3 2, label %branch792
+    i3 3, label %branch792
+    i3 -4, label %branch792
+    i3 -3, label %branch792
+    i3 -2, label %branch792
+  ]" [cubeocc_hls.cpp:52]   --->   Operation 44 'switch' <Predicate = (and_ln50 & trunc_ln321 == 7)> <Delay = 1.44>
+ST_1 : Operation 45 [1/1] (0.00ns)   --->   "store i8 %tmp_data_V, i8* @grid_V_7_0, align 1" [cubeocc_hls.cpp:52]   --->   Operation 45 'store' <Predicate = (and_ln50 & trunc_ln321 == 7 & trunc_ln321_1 == 0)> <Delay = 0.00>
+ST_1 : Operation 46 [1/1] (0.00ns)   --->   "br label %branch792" [cubeocc_hls.cpp:52]   --->   Operation 46 'br' <Predicate = (and_ln50 & trunc_ln321 == 7 & trunc_ln321_1 == 0)> <Delay = 0.00>
+ST_1 : Operation 47 [1/1] (0.00ns)   --->   "store i8 %tmp_data_V, i8* @grid_V_7_7, align 1" [cubeocc_hls.cpp:52]   --->   Operation 47 'store' <Predicate = (and_ln50 & trunc_ln321 == 7 & trunc_ln321_1 == 7)> <Delay = 0.00>
+ST_1 : Operation 48 [1/1] (0.00ns)   --->   "br label %branch792" [cubeocc_hls.cpp:52]   --->   Operation 48 'br' <Predicate = (and_ln50 & trunc_ln321 == 7 & trunc_ln321_1 == 7)> <Delay = 0.00>
+ST_1 : Operation 49 [1/1] (2.43ns)   --->   "%icmp_ln55 = icmp eq i32 %row_loc_0, 8" [cubeocc_hls.cpp:55]   --->   Operation 49 'icmp' 'icmp_ln55' <Predicate = true> <Delay = 2.43> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 2.43> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 50 [1/1] (2.43ns)   --->   "%icmp_ln55_1 = icmp eq i32 %empty_4, 0" [cubeocc_hls.cpp:55]   --->   Operation 50 'icmp' 'icmp_ln55_1' <Predicate = true> <Delay = 2.43> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 2.43> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 51 [1/1] (0.97ns)   --->   "%and_ln55 = and i1 %icmp_ln55, %icmp_ln55_1" [cubeocc_hls.cpp:55]   --->   Operation 51 'and' 'and_ln55' <Predicate = true> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_1 : Operation 52 [1/1] (0.00ns)   --->   "br i1 %and_ln55, label %6, label %._crit_edge133" [cubeocc_hls.cpp:55]   --->   Operation 52 'br' <Predicate = true> <Delay = 0.00>
+ST_1 : Operation 53 [2/2] (0.00ns)   --->   "call void @_ssdm_op_Write.axis.volatile.i8P.i1P.i1P.i1P.i1P.i1P.i1P(i8* %m_axis_V_data_V, i1* %m_axis_V_keep_V, i1* %m_axis_V_strb_V, i1* %m_axis_V_user_V, i1* %m_axis_V_last_V, i1* %m_axis_V_id_V, i1* %m_axis_V_dest_V, i8 %tmp_data_V, i1 %tmp_keep_V, i1 %tmp_strb_V, i1 %tmp_user_V, i1 %tmp_last_V_1, i1 %tmp_id_V, i1 %tmp_dest_V)" [cubeocc_hls.cpp:110]   --->   Operation 53 'write' <Predicate = true> <Delay = 0.00> <Core = "AXI4Stream">   --->   Core 5 'AXI4Stream' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : >
 
-State 2 <SV = 1> <Delay = 3.41>
-ST_2 : Operation 34 [1/1] (0.00ns)   --->   "%i_0 = phi i31 [ 0, %0 ], [ %add_ln17, %hls_label_0 ]" [cubeocc_hls.cpp:17]   --->   Operation 34 'phi' 'i_0' <Predicate = true> <Delay = 0.00>
-ST_2 : Operation 35 [1/1] (0.00ns)   --->   "%i_0_cast = zext i31 %i_0 to i32" [cubeocc_hls.cpp:17]   --->   Operation 35 'zext' 'i_0_cast' <Predicate = true> <Delay = 0.00>
-ST_2 : Operation 36 [1/1] (2.43ns)   --->   "%icmp_ln17 = icmp slt i32 %i_0_cast, %pixel_count_read" [cubeocc_hls.cpp:17]   --->   Operation 36 'icmp' 'icmp_ln17' <Predicate = true> <Delay = 2.43> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 1.47> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
-ST_2 : Operation 37 [1/1] (2.66ns)   --->   "%add_ln17 = add i31 %i_0, 1" [cubeocc_hls.cpp:17]   --->   Operation 37 'add' 'add_ln17' <Predicate = true> <Delay = 2.66> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 2.66> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
-ST_2 : Operation 38 [1/1] (0.00ns)   --->   "br i1 %icmp_ln17, label %hls_label_0, label %2" [cubeocc_hls.cpp:17]   --->   Operation 38 'br' <Predicate = true> <Delay = 0.00>
-ST_2 : Operation 39 [1/1] (0.00ns)   --->   "%empty = call { i8, i1, i1, i1, i1, i1, i1 } @_ssdm_op_Read.axis.volatile.i8P.i1P.i1P.i1P.i1P.i1P.i1P(i8* %s_axis_V_data_V, i1* %s_axis_V_keep_V, i1* %s_axis_V_strb_V, i1* %s_axis_V_user_V, i1* %s_axis_V_last_V, i1* %s_axis_V_id_V, i1* %s_axis_V_dest_V)" [cubeocc_hls.cpp:19]   --->   Operation 39 'read' 'empty' <Predicate = (icmp_ln17)> <Delay = 0.00> <Core = "AXI4Stream">   --->   Core 5 'AXI4Stream' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : >
-ST_2 : Operation 40 [1/1] (0.00ns)   --->   "%tmp_data_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 0" [cubeocc_hls.cpp:19]   --->   Operation 40 'extractvalue' 'tmp_data_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 41 [1/1] (0.00ns)   --->   "%tmp_keep_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 1" [cubeocc_hls.cpp:19]   --->   Operation 41 'extractvalue' 'tmp_keep_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 42 [1/1] (0.00ns)   --->   "%tmp_strb_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 2" [cubeocc_hls.cpp:19]   --->   Operation 42 'extractvalue' 'tmp_strb_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 43 [1/1] (0.00ns)   --->   "%tmp_user_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 3" [cubeocc_hls.cpp:19]   --->   Operation 43 'extractvalue' 'tmp_user_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 44 [1/1] (0.00ns)   --->   "%tmp_last_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 4" [cubeocc_hls.cpp:19]   --->   Operation 44 'extractvalue' 'tmp_last_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 45 [1/1] (0.00ns)   --->   "%tmp_id_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 5" [cubeocc_hls.cpp:19]   --->   Operation 45 'extractvalue' 'tmp_id_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 46 [1/1] (0.00ns)   --->   "%tmp_dest_V = extractvalue { i8, i1, i1, i1, i1, i1, i1 } %empty, 6" [cubeocc_hls.cpp:19]   --->   Operation 46 'extractvalue' 'tmp_dest_V' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_2 : Operation 47 [1/1] (1.47ns)   --->   "%icmp_ln895 = icmp ugt i8 %tmp_data_V, %threshold_V_read" [cubeocc_hls.cpp:22]   --->   Operation 47 'icmp' 'icmp_ln895' <Predicate = (icmp_ln17 & threshold_enable_rea)> <Delay = 1.47> <Core = "Cmp">   --->   Core 25 'Cmp' <Latency = 0> <II = 1> <Delay = 1.47> <FuncUnit> <Opcode : 'icmp'> <InPorts = 2> <OutPorts = 1>
-ST_2 : Operation 48 [1/1] (0.00ns) (grouped into LUT with out node tmp_data_V_2)   --->   "%tmp_data_V_1 = select i1 %icmp_ln895, i8 -1, i8 0" [cubeocc_hls.cpp:22]   --->   Operation 48 'select' 'tmp_data_V_1' <Predicate = (icmp_ln17 & threshold_enable_rea)> <Delay = 0.00> <Core = "Sel">   --->   Core 26 'Sel' <Latency = 0> <II = 1> <Delay = 1.04> <FuncUnit> <Opcode : 'select'> <InPorts = 3> <OutPorts = 1>
-ST_2 : Operation 49 [1/1] (1.04ns) (out node of the LUT)   --->   "%tmp_data_V_2 = select i1 %threshold_enable_rea, i8 %tmp_data_V_1, i8 %tmp_data_V" [cubeocc_hls.cpp:8]   --->   Operation 49 'select' 'tmp_data_V_2' <Predicate = (icmp_ln17)> <Delay = 1.04> <Core = "Sel">   --->   Core 26 'Sel' <Latency = 0> <II = 1> <Delay = 1.04> <FuncUnit> <Opcode : 'select'> <InPorts = 3> <OutPorts = 1>
-
-State 3 <SV = 2> <Delay = 0.00>
-ST_3 : Operation 50 [2/2] (0.00ns)   --->   "call void @_ssdm_op_Write.axis.volatile.i8P.i1P.i1P.i1P.i1P.i1P.i1P(i8* %m_axis_V_data_V, i1* %m_axis_V_keep_V, i1* %m_axis_V_strb_V, i1* %m_axis_V_user_V, i1* %m_axis_V_last_V, i1* %m_axis_V_id_V, i1* %m_axis_V_dest_V, i8 %tmp_data_V_2, i1 %tmp_keep_V, i1 %tmp_strb_V, i1 %tmp_user_V, i1 %tmp_last_V, i1 %tmp_id_V, i1 %tmp_dest_V)" [cubeocc_hls.cpp:25]   --->   Operation 50 'write' <Predicate = (icmp_ln17)> <Delay = 0.00> <Core = "AXI4Stream">   --->   Core 5 'AXI4Stream' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : >
-
-State 4 <SV = 3> <Delay = 0.00>
-ST_4 : Operation 51 [1/1] (0.00ns)   --->   "%tmp = call i32 (...)* @_ssdm_op_SpecRegionBegin([12 x i8]* @p_str5)" [cubeocc_hls.cpp:17]   --->   Operation 51 'specregionbegin' 'tmp' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_4 : Operation 52 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:18]   --->   Operation 52 'specpipeline' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_4 : Operation 53 [1/2] (0.00ns)   --->   "call void @_ssdm_op_Write.axis.volatile.i8P.i1P.i1P.i1P.i1P.i1P.i1P(i8* %m_axis_V_data_V, i1* %m_axis_V_keep_V, i1* %m_axis_V_strb_V, i1* %m_axis_V_user_V, i1* %m_axis_V_last_V, i1* %m_axis_V_id_V, i1* %m_axis_V_dest_V, i8 %tmp_data_V_2, i1 %tmp_keep_V, i1 %tmp_strb_V, i1 %tmp_user_V, i1 %tmp_last_V, i1 %tmp_id_V, i1 %tmp_dest_V)" [cubeocc_hls.cpp:25]   --->   Operation 53 'write' <Predicate = (icmp_ln17)> <Delay = 0.00> <Core = "AXI4Stream">   --->   Core 5 'AXI4Stream' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : >
-ST_4 : Operation 54 [1/1] (0.00ns)   --->   "%empty_2 = call i32 (...)* @_ssdm_op_SpecRegionEnd([12 x i8]* @p_str5, i32 %tmp)" [cubeocc_hls.cpp:26]   --->   Operation 54 'specregionend' 'empty_2' <Predicate = (icmp_ln17)> <Delay = 0.00>
-ST_4 : Operation 55 [1/1] (0.00ns)   --->   "br label %1" [cubeocc_hls.cpp:17]   --->   Operation 55 'br' <Predicate = (icmp_ln17)> <Delay = 0.00>
-
-State 5 <SV = 2> <Delay = 0.00>
-ST_5 : Operation 56 [1/1] (0.00ns)   --->   "ret void" [cubeocc_hls.cpp:27]   --->   Operation 56 'ret' <Predicate = true> <Delay = 0.00>
+State 2 <SV = 1> <Delay = 2.93>
+ST_2 : Operation 54 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i8* %s_axis_V_data_V), !map !59"   --->   Operation 54 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 55 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_keep_V), !map !65"   --->   Operation 55 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 56 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_strb_V), !map !69"   --->   Operation 56 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 57 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_user_V), !map !73"   --->   Operation 57 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 58 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_last_V), !map !77"   --->   Operation 58 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 59 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_id_V), !map !81"   --->   Operation 59 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 60 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %s_axis_V_dest_V), !map !85"   --->   Operation 60 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 61 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i8* %m_axis_V_data_V), !map !89"   --->   Operation 61 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 62 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_keep_V), !map !93"   --->   Operation 62 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 63 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_strb_V), !map !97"   --->   Operation 63 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 64 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_user_V), !map !101"   --->   Operation 64 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 65 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_last_V), !map !105"   --->   Operation 65 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 66 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_id_V), !map !109"   --->   Operation 66 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 67 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecBitsMap(i1* %m_axis_V_dest_V), !map !113"   --->   Operation 67 'specbitsmap' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 68 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecTopModule([12 x i8]* @cubeocc_hls_str) nounwind"   --->   Operation 68 'spectopmodule' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 69 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i8* %s_axis_V_data_V, i1* %s_axis_V_keep_V, i1* %s_axis_V_strb_V, i1* %s_axis_V_user_V, i1* %s_axis_V_last_V, i1* %s_axis_V_id_V, i1* %s_axis_V_dest_V, [5 x i8]* @p_str, i32 1, i32 1, [5 x i8]* @p_str1, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:13]   --->   Operation 69 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 70 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i8* %m_axis_V_data_V, i1* %m_axis_V_keep_V, i1* %m_axis_V_strb_V, i1* %m_axis_V_user_V, i1* %m_axis_V_last_V, i1* %m_axis_V_id_V, i1* %m_axis_V_dest_V, [5 x i8]* @p_str, i32 1, i32 1, [5 x i8]* @p_str1, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:14]   --->   Operation 70 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 71 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecInterface(i32 0, [13 x i8]* @p_str3, i32 0, i32 0, [1 x i8]* @p_str2, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2, [1 x i8]* @p_str2, i32 0, i32 0, i32 0, i32 0, [1 x i8]* @p_str2, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:15]   --->   Operation 71 'specinterface' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 72 [1/1] (0.00ns)   --->   "call void (...)* @_ssdm_op_SpecPipeline(i32 1, i32 1, i32 1, i32 0, [1 x i8]* @p_str2) nounwind" [cubeocc_hls.cpp:16]   --->   Operation 72 'specpipeline' <Predicate = true> <Delay = 0.00>
+ST_2 : Operation 73 [1/1] (0.00ns)   --->   "br label %branch132" [cubeocc_hls.cpp:52]   --->   Operation 73 'br' <Predicate = (and_ln50 & trunc_ln321 == 0)> <Delay = 0.00>
+ST_2 : Operation 74 [1/1] (0.00ns)   --->   "br label %branch132" [cubeocc_hls.cpp:52]   --->   Operation 74 'br' <Predicate = (and_ln50 & trunc_ln321 == 7)> <Delay = 0.00>
+ST_2 : Operation 75 [1/1] (0.00ns)   --->   "br label %._crit_edge132" [cubeocc_hls.cpp:53]   --->   Operation 75 'br' <Predicate = (and_ln50)> <Delay = 0.00>
+ST_2 : Operation 76 [1/1] (0.00ns)   --->   "%grid_V_0_0_load = load i8* @grid_V_0_0, align 16" [cubeocc_hls.cpp:57]   --->   Operation 76 'load' 'grid_V_0_0_load' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 77 [1/1] (0.00ns)   --->   "%grid_V_0_7_load = load i8* @grid_V_0_7, align 1" [cubeocc_hls.cpp:58]   --->   Operation 77 'load' 'grid_V_0_7_load' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 78 [1/1] (0.00ns)   --->   "%grid_V_7_0_load = load i8* @grid_V_7_0, align 8" [cubeocc_hls.cpp:59]   --->   Operation 78 'load' 'grid_V_7_0_load' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 79 [1/1] (0.00ns)   --->   "%grid_V_7_7_load = load i8* @grid_V_7_7, align 1" [cubeocc_hls.cpp:60]   --->   Operation 79 'load' 'grid_V_7_7_load' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 80 [1/1] (0.00ns)   --->   "%grid_V_0_1_load = load i8* @grid_V_0_1, align 1" [cubeocc_hls.cpp:61]   --->   Operation 80 'load' 'grid_V_0_1_load' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 81 [1/1] (0.00ns)   --->   "%clk_state = call i1 @_ssdm_op_BitSelect.i1.i8.i32(i8 %grid_V_0_1_load, i32 7)" [cubeocc_hls.cpp:61]   --->   Operation 81 'bitselect' 'clk_state' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 82 [1/1] (0.00ns) (grouped into LUT with out node and_ln63_1)   --->   "%and_ln63 = and i8 %grid_V_0_0_load, %grid_V_7_0_load" [cubeocc_hls.cpp:63]   --->   Operation 82 'and' 'and_ln63' <Predicate = (and_ln55)> <Delay = 0.00> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 83 [1/1] (0.97ns) (out node of the LUT)   --->   "%and_ln63_1 = and i8 %and_ln63, %grid_V_0_7_load" [cubeocc_hls.cpp:63]   --->   Operation 83 'and' 'and_ln63_1' <Predicate = (and_ln55)> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 84 [1/1] (0.00ns)   --->   "%tmp_3 = call i1 @_ssdm_op_BitSelect.i1.i8.i32(i8 %and_ln63_1, i32 7)" [cubeocc_hls.cpp:63]   --->   Operation 84 'bitselect' 'tmp_3' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 85 [1/1] (0.97ns)   --->   "%xor_ln63 = xor i1 %tmp_3, true" [cubeocc_hls.cpp:63]   --->   Operation 85 'xor' 'xor_ln63' <Predicate = (and_ln55)> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 86 [1/1] (0.97ns)   --->   "%and_ln63_2 = and i8 %and_ln63_1, %grid_V_7_7_load" [cubeocc_hls.cpp:63]   --->   Operation 86 'and' 'and_ln63_2' <Predicate = (and_ln55)> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 87 [1/1] (0.00ns)   --->   "%tmp_4 = call i1 @_ssdm_op_BitSelect.i1.i8.i32(i8 %and_ln63_2, i32 7)" [cubeocc_hls.cpp:63]   --->   Operation 87 'bitselect' 'tmp_4' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 88 [1/1] (0.00ns)   --->   "br i1 %tmp_4, label %7, label %8" [cubeocc_hls.cpp:63]   --->   Operation 88 'br' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 89 [1/1] (0.00ns) (grouped into LUT with out node or_ln68_1)   --->   "%or_ln68 = or i8 %grid_V_7_7_load, %grid_V_0_1_load" [cubeocc_hls.cpp:68]   --->   Operation 89 'or' 'or_ln68' <Predicate = (and_ln55 & !tmp_4)> <Delay = 0.00> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 90 [1/1] (0.00ns) (grouped into LUT with out node or_ln68_1)   --->   "%tmp_5 = call i1 @_ssdm_op_BitSelect.i1.i8.i32(i8 %or_ln68, i32 7)" [cubeocc_hls.cpp:68]   --->   Operation 90 'bitselect' 'tmp_5' <Predicate = (and_ln55 & !tmp_4)> <Delay = 0.00>
+ST_2 : Operation 91 [1/1] (0.97ns) (out node of the LUT)   --->   "%or_ln68_1 = or i1 %tmp_5, %xor_ln63" [cubeocc_hls.cpp:68]   --->   Operation 91 'or' 'or_ln68_1' <Predicate = (and_ln55 & !tmp_4)> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 92 [1/1] (0.00ns)   --->   "br i1 %or_ln68_1, label %10, label %9" [cubeocc_hls.cpp:68]   --->   Operation 92 'br' <Predicate = (and_ln55 & !tmp_4)> <Delay = 0.00>
+ST_2 : Operation 93 [1/1] (1.66ns)   --->   "store i1 false, i1* @frame_active, align 1" [cubeocc_hls.cpp:70]   --->   Operation 93 'store' <Predicate = (and_ln55 & !tmp_4 & !or_ln68_1)> <Delay = 1.66>
+ST_2 : Operation 94 [1/1] (0.00ns)   --->   "br label %12" [cubeocc_hls.cpp:71]   --->   Operation 94 'br' <Predicate = (and_ln55 & !tmp_4 & !or_ln68_1)> <Delay = 0.00>
+ST_2 : Operation 95 [1/1] (0.00ns)   --->   "%frame_active_load = load i1* @frame_active, align 1" [cubeocc_hls.cpp:72]   --->   Operation 95 'load' 'frame_active_load' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1)> <Delay = 0.00>
+ST_2 : Operation 96 [1/1] (0.00ns)   --->   "br i1 %frame_active_load, label %11, label %._crit_edge134" [cubeocc_hls.cpp:72]   --->   Operation 96 'br' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1)> <Delay = 0.00>
+ST_2 : Operation 97 [1/1] (0.00ns)   --->   "%tmp_6 = call i1 @_ssdm_op_BitSelect.i1.i8.i32(i8 %grid_V_0_1_load, i32 7)" [cubeocc_hls.cpp:74]   --->   Operation 97 'bitselect' 'tmp_6' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load)> <Delay = 0.00>
+ST_2 : Operation 98 [1/1] (0.00ns)   --->   "%prev_clk_V_load = load i1* @prev_clk_V, align 1" [cubeocc_hls.cpp:74]   --->   Operation 98 'load' 'prev_clk_V_load' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load)> <Delay = 0.00>
+ST_2 : Operation 99 [1/1] (0.97ns)   --->   "%xor_ln883 = xor i1 %tmp_6, %prev_clk_V_load" [cubeocc_hls.cpp:74]   --->   Operation 99 'xor' 'xor_ln883' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load)> <Delay = 0.97> <Core = "LogicGate">   --->   Core 27 'LogicGate' <Latency = 0> <II = 1> <Delay = 0.97> <FuncUnit> <Opcode : 'and' 'or' 'xor'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 100 [1/1] (0.00ns)   --->   "br i1 %xor_ln883, label %.preheader.preheader.0, label %.loopexit" [cubeocc_hls.cpp:74]   --->   Operation 100 'br' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load)> <Delay = 0.00>
+ST_2 : Operation 101 [1/1] (0.00ns)   --->   "%frame_id_load = load i32* @frame_id, align 4" [cubeocc_hls.cpp:77]   --->   Operation 101 'load' 'frame_id_load' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load & xor_ln883)> <Delay = 0.00>
+ST_2 : Operation 102 [1/1] (2.70ns)   --->   "%add_ln77 = add nsw i32 %frame_id_load, 1" [cubeocc_hls.cpp:77]   --->   Operation 102 'add' 'add_ln77' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load & xor_ln883)> <Delay = 2.70> <Core = "AddSub">   --->   Core 14 'AddSub' <Latency = 0> <II = 1> <Delay = 2.70> <FuncUnit> <Opcode : 'add' 'sub'> <InPorts = 2> <OutPorts = 1>
+ST_2 : Operation 103 [1/1] (0.00ns)   --->   "store i32 %add_ln77, i32* @frame_id, align 4" [cubeocc_hls.cpp:77]   --->   Operation 103 'store' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load & xor_ln883)> <Delay = 0.00>
+ST_2 : Operation 104 [1/1] (0.00ns)   --->   "store i1 %clk_state, i1* @prev_clk_V, align 1" [cubeocc_hls.cpp:78]   --->   Operation 104 'store' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load & xor_ln883)> <Delay = 0.00>
+ST_2 : Operation 105 [1/1] (0.00ns)   --->   "br label %.loopexit"   --->   Operation 105 'br' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load & xor_ln883)> <Delay = 0.00>
+ST_2 : Operation 106 [1/1] (0.00ns)   --->   "br label %._crit_edge134" [cubeocc_hls.cpp:107]   --->   Operation 106 'br' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1 & frame_active_load)> <Delay = 0.00>
+ST_2 : Operation 107 [1/1] (0.00ns)   --->   "br label %12"   --->   Operation 107 'br' <Predicate = (and_ln55 & !tmp_4 & or_ln68_1)> <Delay = 0.00>
+ST_2 : Operation 108 [1/1] (0.00ns)   --->   "br label %13"   --->   Operation 108 'br' <Predicate = (and_ln55 & !tmp_4)> <Delay = 0.00>
+ST_2 : Operation 109 [1/1] (1.66ns)   --->   "store i1 true, i1* @frame_active, align 1" [cubeocc_hls.cpp:65]   --->   Operation 109 'store' <Predicate = (and_ln55 & tmp_4)> <Delay = 1.66>
+ST_2 : Operation 110 [1/1] (0.00ns)   --->   "store i1 %clk_state, i1* @prev_clk_V, align 1" [cubeocc_hls.cpp:66]   --->   Operation 110 'store' <Predicate = (and_ln55 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 111 [1/1] (0.00ns)   --->   "br label %13" [cubeocc_hls.cpp:67]   --->   Operation 111 'br' <Predicate = (and_ln55 & tmp_4)> <Delay = 0.00>
+ST_2 : Operation 112 [1/1] (0.00ns)   --->   "br label %._crit_edge133" [cubeocc_hls.cpp:108]   --->   Operation 112 'br' <Predicate = (and_ln55)> <Delay = 0.00>
+ST_2 : Operation 113 [1/2] (0.00ns)   --->   "call void @_ssdm_op_Write.axis.volatile.i8P.i1P.i1P.i1P.i1P.i1P.i1P(i8* %m_axis_V_data_V, i1* %m_axis_V_keep_V, i1* %m_axis_V_strb_V, i1* %m_axis_V_user_V, i1* %m_axis_V_last_V, i1* %m_axis_V_id_V, i1* %m_axis_V_dest_V, i8 %tmp_data_V, i1 %tmp_keep_V, i1 %tmp_strb_V, i1 %tmp_user_V, i1 %tmp_last_V_1, i1 %tmp_id_V, i1 %tmp_dest_V)" [cubeocc_hls.cpp:110]   --->   Operation 113 'write' <Predicate = true> <Delay = 0.00> <Core = "AXI4Stream">   --->   Core 5 'AXI4Stream' <Latency = 0> <II = 1> <Delay = 1.00> <Adapter> <Opcode : >
+ST_2 : Operation 114 [1/1] (0.00ns)   --->   "ret void" [cubeocc_hls.cpp:111]   --->   Operation 114 'ret' <Predicate = true> <Delay = 0.00>
 
 
 ============================================================
@@ -154,23 +225,22 @@ ST_5 : Operation 56 [1/1] (0.00ns)   --->   "ret void" [cubeocc_hls.cpp:27]   --
 ============================================================
 Target clock period: 10ns, clock uncertainty: 1.25ns.
 
- <State 1>: 1.66ns
+ <State 1>: 7.83ns
 The critical path consists of the following:
-	multiplexor before 'phi' operation ('i_0', cubeocc_hls.cpp:17) with incoming values : ('add_ln17', cubeocc_hls.cpp:17) [47]  (1.66 ns)
+	'load' operation ('row_load', cubeocc_hls.cpp:42) on static variable 'row' [52]  (0 ns)
+	'add' operation ('add_ln42', cubeocc_hls.cpp:42) [63]  (2.7 ns)
+	multiplexor before 'phi' operation ('row_loc_0', cubeocc_hls.cpp:42) with incoming values : ('row_load', cubeocc_hls.cpp:42) ('add_ln42', cubeocc_hls.cpp:42) [71]  (1.71 ns)
+	'phi' operation ('row_loc_0', cubeocc_hls.cpp:42) with incoming values : ('row_load', cubeocc_hls.cpp:42) ('add_ln42', cubeocc_hls.cpp:42) [71]  (0 ns)
+	'icmp' operation ('icmp_ln55', cubeocc_hls.cpp:55) [110]  (2.44 ns)
+	'and' operation ('and_ln55', cubeocc_hls.cpp:55) [112]  (0.978 ns)
 
- <State 2>: 3.42ns
+ <State 2>: 2.93ns
 The critical path consists of the following:
-	'icmp' operation ('icmp_ln17', cubeocc_hls.cpp:17) [49]  (2.44 ns)
-	blocking operation 0.978 ns on control path)
-
- <State 3>: 0ns
-The critical path consists of the following:
-
- <State 4>: 0ns
-The critical path consists of the following:
-
- <State 5>: 0ns
-The critical path consists of the following:
+	'load' operation ('grid_V_0_0_load', cubeocc_hls.cpp:57) on static variable 'grid_V_0_0' [115]  (0 ns)
+	'and' operation ('and_ln63', cubeocc_hls.cpp:63) [121]  (0 ns)
+	'and' operation ('and_ln63_1', cubeocc_hls.cpp:63) [122]  (0.975 ns)
+	'xor' operation ('xor_ln63', cubeocc_hls.cpp:63) [124]  (0.978 ns)
+	'or' operation ('or_ln68_1', cubeocc_hls.cpp:68) [131]  (0.978 ns)
 
 
 ============================================================
@@ -183,9 +253,6 @@ N/A
   - Chain level:
 	State 1
 	State 2
-	State 3
-	State 4
-	State 5
 
 
 ============================================================

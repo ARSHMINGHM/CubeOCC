@@ -4,7 +4,7 @@ set ClockPeriod 10
 set ClockList ap_clk
 set HasVivadoClockPeriod 0
 set CombLogicFlag 0
-set PipelineFlag 0
+set PipelineFlag 1
 set DataflowTaskPipelineFlag 1
 set TrivialPipelineFlag 0
 set noPortSwitchingFlag 0
@@ -42,7 +42,7 @@ set SCTraceOption all
 set TargetInfo xc7a35t:-cpg236:-1
 set SourceFiles {sc {} c ../../cubeocc_hls.cpp}
 set SourceFlags {sc {} c {{}}}
-set DirectiveFile C:/Users/arshm/Desktop/CubeOCC/hls/cubeocc_hls_prj/solution1/solution1.directive
+set DirectiveFile D:/occ_project/CubeOCC/hls/cubeocc_hls_prj/solution1/solution1.directive
 set TBFiles {verilog ../../cubeocc_hls_tb.cpp bc ../../cubeocc_hls_tb.cpp vhdl ../../cubeocc_hls_tb.cpp sc ../../cubeocc_hls_tb.cpp cas ../../cubeocc_hls_tb.cpp c {}}
 set SpecLanguage C
 set TVInFiles {bc {} c {} sc {} cas {} vhdl {} verilog {}}

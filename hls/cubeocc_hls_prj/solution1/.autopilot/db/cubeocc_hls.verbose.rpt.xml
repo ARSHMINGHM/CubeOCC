@@ -1,7 +1,7 @@
 <profile>
 
 <section name = "Vivado HLS Report for 'cubeocc_hls'" level="0">
-<item name = "Date">Tue Aug 25 17:48:39 2026
+<item name = "Date">Thu Aug 27 17:24:28 2026
 </item>
 <item name = "Version">2019.1 (Build 2552052 on Fri May 24 15:28:33 MDT 2019)</item>
 <item name = "Project">cubeocc_hls_prj</item>
@@ -15,7 +15,7 @@
 <section name = "" level="1">
 <item name = "Summary"><table name="" hasTotal="0">
 <keys size="4">Clock, Target, Estimated, Uncertainty</keys>
-<column name="ap_clk">10.00, 3.416, 1.25</column>
+<column name="ap_clk">10.00, 7.827, 1.25</column>
 </table>
 </item>
 </section>
@@ -24,7 +24,7 @@
 <section name = "" level="1">
 <item name = "Summary"><table name="" hasTotal="0">
 <keys size="6">, min, max, min, max, Type</keys>
-<column name="">?, ?, ?, ?, none</column>
+<column name="">1, 1, 1, 1, function</column>
 </table>
 </item>
 <item name = "Detail">
@@ -35,7 +35,6 @@
 </item>
 <item name = "Loop"><table name="" hasTotal="0">
 <keys size="8">Loop Name, min, max, Latency, achieved, target, Count, Pipelined</keys>
-<column name="- Loop 1">?, ?, 3, 1, 1, ?, yes</column>
 </table>
 </item>
 </section>
@@ -48,21 +47,20 @@
 <item name = "Summary"><table name="" hasTotal="1">
 <keys size="6">Name, BRAM_18K, DSP48E, FF, LUT, URAM</keys>
 <column name="DSP">-, -, -, -, -</column>
-<column name="Expression">-, -, 0, 261, -</column>
+<column name="Expression">-, -, 0, 413, -</column>
 <column name="FIFO">-, -, -, -, -</column>
-<column name="Instance">0, -, 95, 122, -</column>
+<column name="Instance">-, -, -, -, -</column>
 <column name="Memory">-, -, -, -, -</column>
-<column name="Multiplexer">-, -, -, 402, -</column>
-<column name="Register">-, -, 206, -, -</column>
+<column name="Multiplexer">-, -, -, 429, -</column>
+<column name="Register">-, -, 253, -, -</column>
 <specialColumn name="Available">100, 90, 41600, 20800, 0</specialColumn>
-<specialColumn name="Utilization (%)">0, 0, ~0, 3, 0</specialColumn>
+<specialColumn name="Utilization (%)">0, 0, ~0, 4, 0</specialColumn>
 </table>
 </item>
 <item name = "Detail">
 <section name = "" level="1">
 <item name = "Instance"><table name="" hasTotal="1">
 <keys size="7">Instance, Module, BRAM_18K, DSP48E, FF, LUT, URAM</keys>
-<column name="cubeocc_hls_CTRL_s_axi_U">cubeocc_hls_CTRL_s_axi, 0, 0, 95, 122, 0</column>
 </table>
 </item>
 <item name = "DSP48E"><table name="" hasTotal="0">
@@ -79,11 +77,17 @@
 </item>
 <item name = "Expression"><table name="" hasTotal="1">
 <keys size="7">Variable Name, Operation, DSP48E, FF, LUT, Bitwidth P0, Bitwidth P1</keys>
-<column name="add_ln17_fu_163_p2">+, 0, 0, 38, 31, 1</column>
-<column name="ap_block_pp0_stage0_01001">and, 0, 0, 2, 1, 1</column>
-<column name="ap_block_state2_pp0_stage0_iter0">and, 0, 0, 2, 1, 1</column>
-<column name="ap_block_state3_io">and, 0, 0, 2, 1, 1</column>
-<column name="ap_block_state4_io">and, 0, 0, 2, 1, 1</column>
+<column name="add_ln42_fu_258_p2">+, 0, 0, 39, 32, 1</column>
+<column name="add_ln46_fu_245_p2">+, 0, 0, 39, 32, 1</column>
+<column name="add_ln77_fu_492_p2">+, 0, 0, 39, 32, 1</column>
+<column name="and_ln50_fu_309_p2">and, 0, 0, 2, 1, 1</column>
+<column name="and_ln55_fu_365_p2">and, 0, 0, 2, 1, 1</column>
+<column name="and_ln63_1_fu_406_p2">and, 0, 0, 8, 8, 8</column>
+<column name="and_ln63_2_fu_426_p2">and, 0, 0, 8, 8, 8</column>
+<column name="and_ln63_fu_400_p2">and, 0, 0, 8, 8, 8</column>
+<column name="ap_condition_1192">and, 0, 0, 2, 1, 1</column>
+<column name="ap_condition_844">and, 0, 0, 2, 1, 1</column>
+<column name="ap_condition_915">and, 0, 0, 2, 1, 1</column>
 <column name="m_axis_V_data_V_1_load_A">and, 0, 0, 2, 1, 1</column>
 <column name="m_axis_V_data_V_1_load_B">and, 0, 0, 2, 1, 1</column>
 <column name="m_axis_V_dest_V_1_load_A">and, 0, 0, 2, 1, 1</column>
@@ -112,8 +116,10 @@
 <column name="s_axis_V_strb_V_0_load_B">and, 0, 0, 2, 1, 1</column>
 <column name="s_axis_V_user_V_0_load_A">and, 0, 0, 2, 1, 1</column>
 <column name="s_axis_V_user_V_0_load_B">and, 0, 0, 2, 1, 1</column>
-<column name="icmp_ln17_fu_158_p2">icmp, 0, 0, 18, 32, 32</column>
-<column name="icmp_ln895_fu_197_p2">icmp, 0, 0, 11, 8, 8</column>
+<column name="icmp_ln50_1_fu_303_p2">icmp, 0, 0, 18, 29, 1</column>
+<column name="icmp_ln50_fu_287_p2">icmp, 0, 0, 18, 29, 1</column>
+<column name="icmp_ln55_1_fu_359_p2">icmp, 0, 0, 18, 32, 1</column>
+<column name="icmp_ln55_fu_353_p2">icmp, 0, 0, 18, 32, 4</column>
 <column name="m_axis_V_data_V_1_state_cmp_full">icmp, 0, 0, 8, 2, 1</column>
 <column name="m_axis_V_dest_V_1_state_cmp_full">icmp, 0, 0, 8, 2, 1</column>
 <column name="m_axis_V_id_V_1_state_cmp_full">icmp, 0, 0, 8, 2, 1</column>
@@ -128,20 +134,22 @@
 <column name="s_axis_V_last_V_0_state_cmp_full">icmp, 0, 0, 8, 2, 1</column>
 <column name="s_axis_V_strb_V_0_state_cmp_full">icmp, 0, 0, 8, 2, 1</column>
 <column name="s_axis_V_user_V_0_state_cmp_full">icmp, 0, 0, 8, 2, 1</column>
+<column name="ap_block_pp0_stage0_01001">or, 0, 0, 2, 1, 1</column>
 <column name="ap_block_pp0_stage0_11001">or, 0, 0, 2, 1, 1</column>
-<column name="ap_block_state5">or, 0, 0, 2, 1, 1</column>
-<column name="tmp_data_V_1_fu_202_p3">select, 0, 0, 2, 1, 2</column>
-<column name="tmp_data_V_2_fu_210_p3">select, 0, 0, 8, 1, 8</column>
+<column name="ap_block_state2_pp0_stage0_iter1">or, 0, 0, 2, 1, 1</column>
+<column name="or_ln68_1_fu_454_p2">or, 0, 0, 2, 1, 1</column>
+<column name="or_ln68_fu_440_p2">or, 0, 0, 8, 8, 8</column>
 <column name="ap_enable_pp0">xor, 0, 0, 2, 1, 2</column>
-<column name="ap_enable_reg_pp0_iter1">xor, 0, 0, 2, 2, 1</column>
+<column name="xor_ln63_fu_420_p2">xor, 0, 0, 2, 1, 2</column>
+<column name="xor_ln883_fu_482_p2">xor, 0, 0, 2, 1, 1</column>
 </table>
 </item>
 <item name = "Multiplexer"><table name="" hasTotal="1">
 <keys size="5">Name, LUT, Input Size, Bits, Total Bits</keys>
-<column name="ap_NS_fsm">21, 4, 1, 4</column>
-<column name="ap_enable_reg_pp0_iter1">9, 2, 1, 2</column>
-<column name="ap_enable_reg_pp0_iter2">9, 2, 1, 2</column>
-<column name="i_0_reg_143">9, 2, 31, 62</column>
+<column name="ap_phi_mux_empty_4_phi_fu_180_p6">15, 3, 32, 96</column>
+<column name="ap_phi_mux_row_loc_0_phi_fu_152_p6">21, 4, 32, 128</column>
+<column name="ap_phi_mux_tmp_last_V_1_phi_fu_165_p6">21, 4, 1, 4</column>
+<column name="col">9, 2, 32, 64</column>
 <column name="m_axis_TDATA_blk_n">9, 2, 1, 2</column>
 <column name="m_axis_V_data_V_1_data_out">9, 2, 8, 16</column>
 <column name="m_axis_V_data_V_1_state">15, 3, 2, 6</column>
@@ -157,6 +165,7 @@
 <column name="m_axis_V_strb_V_1_state">15, 3, 2, 6</column>
 <column name="m_axis_V_user_V_1_data_out">9, 2, 1, 2</column>
 <column name="m_axis_V_user_V_1_state">15, 3, 2, 6</column>
+<column name="row">9, 2, 32, 64</column>
 <column name="s_axis_TDATA_blk_n">9, 2, 1, 2</column>
 <column name="s_axis_V_data_V_0_data_out">9, 2, 8, 16</column>
 <column name="s_axis_V_data_V_0_state">15, 3, 2, 6</column>
@@ -176,13 +185,17 @@
 </item>
 <item name = "Register"><table name="" hasTotal="1">
 <keys size="5">Name, FF, LUT, Bits, Const Bits</keys>
-<column name="ap_CS_fsm">3, 0, 3, 0</column>
-<column name="ap_enable_reg_pp0_iter0">1, 0, 1, 0</column>
+<column name="and_ln55_reg_554">1, 0, 1, 0</column>
+<column name="ap_CS_fsm">1, 0, 1, 0</column>
 <column name="ap_enable_reg_pp0_iter1">1, 0, 1, 0</column>
-<column name="ap_enable_reg_pp0_iter2">1, 0, 1, 0</column>
-<column name="i_0_reg_143">31, 0, 31, 0</column>
-<column name="icmp_ln17_reg_232">1, 0, 1, 0</column>
-<column name="icmp_ln17_reg_232_pp0_iter1_reg">1, 0, 1, 0</column>
+<column name="col">32, 0, 32, 0</column>
+<column name="frame_active">1, 0, 1, 0</column>
+<column name="frame_id">32, 0, 32, 0</column>
+<column name="grid_V_0_0">8, 0, 8, 0</column>
+<column name="grid_V_0_1">8, 0, 8, 0</column>
+<column name="grid_V_0_7">8, 0, 8, 0</column>
+<column name="grid_V_7_0">8, 0, 8, 0</column>
+<column name="grid_V_7_7">8, 0, 8, 0</column>
 <column name="m_axis_V_data_V_1_payload_A">8, 0, 8, 0</column>
 <column name="m_axis_V_data_V_1_payload_B">8, 0, 8, 0</column>
 <column name="m_axis_V_data_V_1_sel_rd">1, 0, 1, 0</column>
@@ -218,7 +231,8 @@
 <column name="m_axis_V_user_V_1_sel_rd">1, 0, 1, 0</column>
 <column name="m_axis_V_user_V_1_sel_wr">1, 0, 1, 0</column>
 <column name="m_axis_V_user_V_1_state">2, 0, 2, 0</column>
-<column name="pixel_count_read_reg_227">32, 0, 32, 0</column>
+<column name="prev_clk_V">1, 0, 1, 0</column>
+<column name="row">32, 0, 32, 0</column>
 <column name="s_axis_V_data_V_0_payload_A">8, 0, 8, 0</column>
 <column name="s_axis_V_data_V_0_payload_B">8, 0, 8, 0</column>
 <column name="s_axis_V_data_V_0_sel_rd">1, 0, 1, 0</column>
@@ -254,15 +268,6 @@
 <column name="s_axis_V_user_V_0_sel_rd">1, 0, 1, 0</column>
 <column name="s_axis_V_user_V_0_sel_wr">1, 0, 1, 0</column>
 <column name="s_axis_V_user_V_0_state">2, 0, 2, 0</column>
-<column name="threshold_V_read_reg_222">8, 0, 8, 0</column>
-<column name="threshold_enable_rea_reg_217">1, 0, 1, 0</column>
-<column name="tmp_data_V_2_reg_271">8, 0, 8, 0</column>
-<column name="tmp_dest_V_reg_266">1, 0, 1, 0</column>
-<column name="tmp_id_V_reg_261">1, 0, 1, 0</column>
-<column name="tmp_keep_V_reg_241">1, 0, 1, 0</column>
-<column name="tmp_last_V_reg_256">1, 0, 1, 0</column>
-<column name="tmp_strb_V_reg_246">1, 0, 1, 0</column>
-<column name="tmp_user_V_reg_251">1, 0, 1, 0</column>
 </table>
 </item>
 </section>
@@ -272,26 +277,8 @@
 <section name = "Interface" level="0">
 <item name = "Summary"><table name="" hasTotal="0">
 <keys size="6">RTL Ports, Dir, Bits, Protocol, Source Object, C Type</keys>
-<column name="s_axi_CTRL_AWVALID">in, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_AWREADY">out, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_AWADDR">in, 6, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_WVALID">in, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_WREADY">out, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_WDATA">in, 32, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_WSTRB">in, 4, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_ARVALID">in, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_ARREADY">out, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_ARADDR">in, 6, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_RVALID">out, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_RREADY">in, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_RDATA">out, 32, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_RRESP">out, 2, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_BVALID">out, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_BREADY">in, 1, s_axi, CTRL, scalar</column>
-<column name="s_axi_CTRL_BRESP">out, 2, s_axi, CTRL, scalar</column>
-<column name="ap_clk">in, 1, ap_ctrl_hs, cubeocc_hls, return value</column>
-<column name="ap_rst_n">in, 1, ap_ctrl_hs, cubeocc_hls, return value</column>
-<column name="interrupt">out, 1, ap_ctrl_hs, cubeocc_hls, return value</column>
+<column name="ap_clk">in, 1, ap_ctrl_none, cubeocc_hls, return value</column>
+<column name="ap_rst_n">in, 1, ap_ctrl_none, cubeocc_hls, return value</column>
 <column name="s_axis_TDATA">in, 8, axis, s_axis_V_data_V, pointer</column>
 <column name="s_axis_TVALID">in, 1, axis, s_axis_V_dest_V, pointer</column>
 <column name="s_axis_TREADY">out, 1, axis, s_axis_V_dest_V, pointer</column>
