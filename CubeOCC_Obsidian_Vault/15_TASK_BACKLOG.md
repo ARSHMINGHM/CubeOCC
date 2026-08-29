@@ -7,6 +7,8 @@ last_reviewed: 2026-08-28
 
 # Task Backlog
 
+> 📝 **Migration Note:** All tasks under the V1 units in the Inbox below have been migrated to GitHub Issues with their respective `unit:*` tags.
+
 This note is for user-defined project tasks. Do not auto-fill it from open questions; tasks should be added only after Armin describes them.
 
 Tasks are organized by V1 pipeline units. Add and refine tasks progressively as we walk through each unit in conversation, from sender side to camera units, image processing, link/payload decode, ECC, regression, and reporting.
