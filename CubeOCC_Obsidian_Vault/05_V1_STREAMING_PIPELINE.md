@@ -9,16 +9,16 @@ last_reviewed: 2026-08-22
 
 ## Core rule
 
-**Do not store full raw RGB frames in V1 unless a specific stage proves it unavoidable.**
+**Do not store full raw frames in V1 unless a specific stage proves it unavoidable.**
 
 ```mermaid
 flowchart LR
     S[Camera 2 cropped ROI pixel stream] --> D[Denoise or bypass]
     D --> W[Warp / coordinate mapping]
     W --> G[Grid extraction]
-    G --> A[Per-cell RGB accumulators]
+    G --> A[Per-cell grayscale accumulators]
     A --> M[Per-cell averages]
-    M --> T[RGB threshold classifier]
+    M --> T[Grayscale/on-off recovery]
     T --> F[Frame/link decoder]
     F --> E[ECC decoder]
     E --> O[Recovered bitstream]
@@ -31,10 +31,10 @@ Allowed/expected:
 - line buffers needed by small spatial filters
 - small warp/LUT state
 - grid/cell metadata
-- R/G/B accumulators per active cell
+- grayscale accumulators per active cell
 - pixel count per cell
 - final per-cell average
-- classified 3-bit symbol
+- classified grayscale/on-off symbol
 - ECC/codeword buffers
 - packet/reassembly metadata
 
@@ -48,21 +48,26 @@ Avoid:
 For pixels inside the selected sampling region:
 
 ```text
-sum_R += R
-sum_G += G
-sum_B += B
+sum_gray += pixel_gray
 count += 1
 ```
 
 Then:
 
 ```text
-avg_R = sum_R / count
-avg_G = sum_G / count
-avg_B = sum_B / count
+avg_gray = sum_gray / count
 ```
 
 After the cell result is finalized, raw pixels are no longer needed.
+
+## V1.5 upgrade
+
+V1.5 extends this same streaming structure to RGB:
+
+- R/G/B accumulators per active cell
+- per-channel averages
+- RGB threshold/classification logic
+- direct 3-bit symbol mapping
 
 ## Warp
 

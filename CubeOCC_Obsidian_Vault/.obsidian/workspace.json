@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "02_OPEN_QUESTIONS.md",
+                "file": "15_TASK_BACKLOG.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "02_OPEN_QUESTIONS"
+              "title": "15_TASK_BACKLOG"
             }
           }
         ]
@@ -190,22 +190,24 @@
   },
   "active": "d489b874bb0aea56",
   "lastOpenFiles": [
-    "00_HOME.md",
-    "12_DECISION_LOG.md",
-    "13_MONTH_PLAN.md",
-    "14_GLOSSARY.md",
-    "01_CONFIRMED_REQUIREMENTS.md",
+    "05_V1_STREAMING_PIPELINE.md",
+    "15_TASK_BACKLOG.md",
+    "06_OPTIONAL_PARALLEL_PIPELINES.md",
+    "09_IMAGE_PROCESSING_EXPERIMENTS.md",
+    "10_ADAPTIVE_TRANSMISSION_EXPERIMENT.md",
+    "16_VERSION_ROADMAP.md",
     "02_OPEN_QUESTIONS.md",
+    "07_ECC_AND_METRICS.md",
+    "00_HOME.md",
+    "01_CONFIRMED_REQUIREMENTS.md",
+    "03_FRAME_AND_LINK_PROTOCOL.md",
+    "04_CAMERA_ROI_AND_CALIBRATION.md",
+    "11_VERIFICATION_CHECKLIST.md",
+    "14_GLOSSARY.md",
+    "13_MONTH_PLAN.md",
+    "12_DECISION_LOG.md",
     "08_SIMULATION_CAMERA_MODEL.md",
     "README.md",
-    "11_VERIFICATION_CHECKLIST.md",
-    "10_ADAPTIVE_TRANSMISSION_EXPERIMENT.md",
-    "09_IMAGE_PROCESSING_EXPERIMENTS.md",
-    "07_ECC_AND_METRICS.md",
-    "06_OPTIONAL_PARALLEL_PIPELINES.md",
-    "05_V1_STREAMING_PIPELINE.md",
-    "04_CAMERA_ROI_AND_CALIBRATION.md",
-    "03_FRAME_AND_LINK_PROTOCOL.md",
     "02_OPEN_QUESTIONS_AND_AMBIGUITIES.md",
     "11_MONTH_PLAN.md",
     "10_DECISION_LOG.md",

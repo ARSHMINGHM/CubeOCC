@@ -13,10 +13,20 @@ last_reviewed: 2026-08-22
 64 cells total
 = 4 white corner markers
 + 1 CLK/toggle cell
-+ 59 RGB payload/ECC cells
++ 59 payload/ECC cells
 ```
 
-**59 × 3 = 177 coded bits.**
+V1 grayscale mode:
+
+```text
+59 cells x 1 bit/cell = 59 coded bits
+```
+
+V1.5 RGB mode:
+
+```text
+59 cells x 3 bits/cell = 177 coded bits
+```
 
 ### Normal DATA invariants
 
@@ -25,7 +35,8 @@ last_reviewed: 2026-08-22
 - BL = white marker
 - BR = white marker
 - CLK = toggles on each newly transmitted DATA frame
-- 59 remaining cells = legal 8-state RGB symbols
+- V1: 59 remaining cells = grayscale/on-off symbols
+- V1.5: 59 remaining cells = legal 8-state RGB symbols
 
 > [!note]
 > CLK location is configurable and architecturally unimportant.
@@ -58,6 +69,20 @@ all ordinary cells = BLACK/OFF
 
 The protocol reserves **full-frame layouts**, not individual colors. Normal DATA can contain black and white cells freely.
 
+## V1 / V1.5 Symbol Mapping
+
+V1 starts with grayscale symbols for the first receiver implementation.
+
+V1.5 adds direct RGB-to-bit mapping for all 8 legal DATA symbols:
+
+```text
+R = bit 2
+G = bit 1
+B = bit 0
+```
+
+In V1.5, each cube's on/off RGB state represents one 3-bit value.
+
 ## Receiver FSM
 
 ```mermaid
@@ -87,3 +112,17 @@ Only the transition to the new CLK state commits a new optical DATA frame.
 ## Optional V2 sequence number
 
 Not required in V1. A small sequence field can later be placed inside the protected payload to detect missed/duplicated transmitted frames. No machine learning is involved; it is only a small counter.
+
+Padding bits left by ECC packing may be used for frame numbers or sequence metadata before adding shortened-code complexity.
+
+## Missed Frame Policy
+
+CubeOCC is one-way and UDP-like. The receiver does not request retransmission.
+
+If Camera 2 completely misses one or more transmitted DATA frames:
+
+- ignore the missing data and continue with later frames
+- do not send feedback or retry requests to the transmitter
+- report the event through debug/diagnostic output, such as FPGA serial output or a status pin
+
+V2 sequence numbers may make missed-frame detection more explicit, but recovery is still forward-only.

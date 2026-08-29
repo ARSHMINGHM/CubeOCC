@@ -16,7 +16,11 @@ last_reviewed: 2026-08-22
 - Main initial payload is text, but the receiver should recover a generic bitstream.
 - The testbench should behave like real camera hardware as closely as practical so the FPGA-side code can later be connected to a real sensor with minimal or no redesign.
 
-## RGB symbol alphabet
+## Versioned Symbol Alphabet
+
+V1 starts with grayscale/on-off symbols so the first receiver can prove the full streaming path with averaging only.
+
+V1.5 upgrades to RGB symbols:
 
 All **8 binary RGB combinations are legal DATA symbols**:
 
@@ -37,8 +41,9 @@ All **8 binary RGB combinations are legal DATA symbols**:
 - 4 corner markers are white during normal DATA.
 - 1 dedicated CLK/toggle cell.
 - 59 remaining cells carry payload + ECC symbols.
-- Each of those 59 cells carries one of 8 RGB states = 3 bits.
-- Therefore **177 coded bits per 8×8 DATA frame** before payload/ECC packing is chosen.
+- V1 grayscale mode: each of those 59 cells carries one on/off bit.
+- V1.5 RGB mode: each of those 59 cells carries one of 8 RGB states = 3 bits.
+- Therefore V1 has **59 coded bits per 8×8 DATA frame**, and V1.5 RGB mode has **177 coded bits per 8×8 DATA frame**, before payload/ECC packing is chosen.
 
 ## CLK cell
 
@@ -72,14 +77,14 @@ This supersedes earlier generated diagrams that showed END incorrectly.
 - Black and white remain legal DATA cell symbols.
 - START and END are reserved **whole-frame patterns**, not reserved individual colors.
 - No two-frame persistence requirement in V1.
-- Sequence number is **optional/V2 only**, not required in V1.
+- Sequence number is **V2/later only**, not required in V1. Revisit placement when ECC modes and padding bits are tested.
 
 ## Capture/transmit-rate concept
 
 Example target relationship:
 
 - Camera 1 / tracking camera: about **60 FPS**
-- Camera 2 / RGB data camera: about **30 FPS**
+- Camera 2 / data camera: about **30 FPS**
 - A camera may capture the same displayed optical frame multiple times.
 - CLK distinguishes a genuinely new transmitted DATA frame from repeated camera captures of the same displayed frame.
 
@@ -104,7 +109,9 @@ Glare remains a test condition whose effect on BER can be measured.
 
 ## Camera 2
 
-- RGB
+- data camera
+- V1 grayscale processing
+- V1.5 RGB symbols
 - slower than Camera 1
 - used for DATA recovery
 - configured using ROI information from Camera 1
@@ -131,12 +138,12 @@ Large residuals should be reported as mapping/calibration error rather than clai
 
 ## V1 image-processing flow
 
-- sensor-cropped RGB ROI stream
+- sensor-cropped grayscale ROI stream
 - denoise/bypass experiment
 - perspective/geometric correction
 - configurable grid extraction
-- per-cell center-region RGB accumulation/averaging
-- RGB threshold classifier
+- per-cell circular-region grayscale accumulation/averaging
+- grayscale/on-off recovery
 - frame/link decode
 - ECC decode
 - recovered bitstream
@@ -149,23 +156,26 @@ Instead:
 
 - stream pixels through image processing
 - use only required line/local buffers
-- accumulate per-cell RGB information
+- accumulate per-cell grayscale information in V1, then per-cell RGB information in V1.5
 - retain reduced results such as averages, symbols, metadata or decoded bits
 
 Full-frame FF storage is no longer a V1 requirement.
 
 ## Sampling radius
 
-- configurable experiment parameter
-- test several values/fractions in the testbench
+- configurable circle-based experiment parameter
+- estimate each grid box/cell center and the average box/cell size
+- test small, medium, and large sampling circles per supported grid size
 - visualize the sampling region during validation
-- choose the V1 default using measured BER/classification results
+- choose defaults using measured BER/SER/classification results
 
 ## Color decision
 
-V1: simple per-channel RGB thresholds.
+V1: grayscale/on-off averaging only.
 
-V2: normalized RGB/chromaticity experiment.
+V1.5: RGB threshold/classification logic.
+
+V2: calibrated classifier experiment, including offline Python SVM training and FPGA implementation of the learned decision behavior. Normalized RGB/chromaticity remains a comparison candidate.
 
 ## ECC
 
@@ -204,5 +214,6 @@ Optional optimization:
 
 - instantiate the same pipeline module N times
 - input scheduler chooses a free worker
-- one shared overflow buffer only if needed
+- one shared one-frame overflow buffer only if needed
+- raise an overflow flag if another frame arrives while that buffer is full
 - output reorder buffer restores frame order
