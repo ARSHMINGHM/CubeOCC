@@ -7,6 +7,10 @@ last_reviewed: 2026-08-22
 
 # ECC and Metrics
 
+## Child Notes
+
+- [[07_01_SENDER_BITSTREAM_TOOL]]
+
 ## Capacity reminder
 
 8×8 DATA frame:
@@ -62,13 +66,13 @@ BCH is the candidate family for a more trusted/reliable transmission mode. Test 
 
 For binary BCH candidates, correction capability is `t = floor((dmin-1)/2)`.
 
-| Scheme | Code `(n,k,dmin)` | Data bits/codeword | Redundancy bits/codeword | Corrects up to | Whole codewords in 177 bits | Useful data bits/frame | Used coded bits | Padding |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| BCH | (15,7,5) | 7 | 8 | 2 bits/codeword | 11 | 77 | 165 | 12 |
-| BCH | (15,5,7) | 5 | 10 | 3 bits/codeword | 11 | 55 | 165 | 12 |
-| BCH | (31,21,5) | 21 | 10 | 2 bits/codeword | 5 | 105 | 155 | 22 |
-| BCH | (31,16,7) | 16 | 15 | 3 bits/codeword | 5 | 80 | 155 | 22 |
-| BCH | (31,11,11) | 11 | 20 | 5 bits/codeword | 5 | 55 | 155 | 22 |
+| Scheme | Code `(n,k,dmin)` | Data bits/codeword | Redundancy bits/codeword |  Corrects up to | Whole codewords in 177 bits | Useful data bits/frame | Used coded bits | Padding |
+| ------ | ----------------: | -----------------: | -----------------------: | --------------: | --------------------------: | ---------------------: | --------------: | ------: |
+| BCH    |          (15,7,5) |                  7 |                        8 | 2 bits/codeword |                          11 |                     77 |             165 |      12 |
+| BCH    |          (15,5,7) |                  5 |                       10 | 3 bits/codeword |                          11 |                     55 |             165 |      12 |
+| BCH    |         (31,21,5) |                 21 |                       10 | 2 bits/codeword |                           5 |                    105 |             155 |      22 |
+| BCH    |         (31,16,7) |                 16 |                       15 | 3 bits/codeword |                           5 |                     80 |             155 |      22 |
+| BCH    |        (31,11,11) |                 11 |                       20 | 5 bits/codeword |                           5 |                     55 |             155 |      22 |
 
 > [!note]
 > These are candidate standard block codes. Final implementation must lock and verify the exact generator polynomial/decoder configuration in the golden model.

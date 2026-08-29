@@ -7,7 +7,52 @@ last_reviewed: 2026-08-28
 
 # Task Backlog
 
-> 📝 **Migration Note:** All tasks under the V1 units in the Inbox below have been migrated to GitHub Issues with their respective `unit:*` tags.
+> 📝 **Migration Note:** The V1 unit tasks below were migrated to GitHub Issues as one issue per checklist task, with `unit:*` labels.
+
+## GitHub Sync Audit
+
+Checked against GitHub on 2026-08-29.
+
+- V1 task issues exist in GitHub as open issues `#3` through `#84`.
+- Closed historical issues `#1` and `#2` are older project/setup issues and are not part of this V1 task migration.
+- The GitHub issues are related to this Obsidian backlog and use unit labels such as `unit: sender-side`, `unit: camera-simulation`, `unit: dataset`, `unit: image-processing`, `unit: link-payload-decoder`, `unit: testbench-regression`, and `unit: reporting-output`.
+- The migration created some duplicate GitHub issues; cleanup was completed on 2026-08-29.
+
+Duplicate issue groups cleaned up:
+
+- `#45` through `#50` duplicate the newer streaming/no-full-frame storage issues `#61` through `#66`.
+- `#56` through `#60` duplicate part of the newer testbench/regression issues `#72` through `#76`.
+
+Detailed duplicate map:
+
+| Close duplicate | Keep canonical issue | Task |
+|---|---|---|
+| `#45` | `#61` | Keep V1 as a streaming pipeline from camera input to recovered bits. |
+| `#46` | `#62` | Avoid storing a complete raw frame unless a later measurement proves it is needed. |
+| `#47` | `#63` | Use only required line/local buffers for filtering or coordinate mapping. |
+| `#48` | `#64` | Store reduced grid metadata instead of full image data. |
+| `#49` | `#65` | Store per-cell sums, pixel counts, cell averages, recovered symbols, and decoded bits. |
+| `#50` | `#66` | Confirm the design can process the ROI stream without a full-frame RAM/FF buffer in the baseline. |
+| `#56` | `#72` | Check pixel count for each camera/path simulation. |
+| `#57` | `#73` | Check line count and end-of-line markers. |
+| `#58` | `#74` | Check frame start markers and frame count. |
+| `#59` | `#75` | Check ROI crop size and ROI crop position. |
+| `#60` | `#76` | Check START frame detection. |
+
+Why these are duplicates:
+
+- The task text is the same or functionally identical.
+- The newer issue numbers match the current unit-style backlog after the task list was reorganized.
+- The older duplicates came from an earlier migration pass before the final unit layout was stable.
+
+Completed GitHub cleanup:
+
+- Kept `#61` through `#66` for streaming/no-full-frame storage.
+- Closed `#45` through `#50` as duplicates.
+- Kept `#72` through `#79` for testbench/regression.
+- Closed `#56` through `#60` as duplicates.
+- Added a duplicate comment on each closed issue pointing to the canonical issue.
+- Optional later cleanup: consider grouping tiny checklist-item issues into larger unit-level issues if the GitHub Project becomes too noisy.
 
 This note is for user-defined project tasks. Do not auto-fill it from open questions; tasks should be added only after Armin describes them.
 
