@@ -26,4 +26,5 @@ Open this directory as an Obsidian vault and begin with `00_HOME.md`.
 - sampling radius is an experimental parameter with visualization.
 - V1 classifier = averaging-only grayscale/on-off; V1.5 = RGB thresholds; V2 = offline SVM-calibrated classification.
 - ECC note contains multiple Hamming and BCH candidate tables.
+- Sender tools now cover bitstream generation, frame mapping, optional PNG image output, and fullscreen sender preview.
 - V3 extends grid benchmarks; V4 adds active grid-size detection and possible SCCB compatibility.

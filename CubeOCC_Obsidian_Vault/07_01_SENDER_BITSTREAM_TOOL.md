@@ -22,6 +22,12 @@ The tool creates:
 
 This tool is for the bitstream and ECC stage only. It does not generate optical image frames.
 
+Downstream sender-side steps:
+
+- [[07_03_SENDER_FRAME_MAPPING]] maps generated `.bin` bitstreams into protocol frames and optional PNG images.
+- [[07_04_SENDER_FRAME_PLAYER]] previews generated PNG frame folders full screen like a sender display.
+- [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]] shows the complete V1 example flow.
+
 ## Python Tool
 
 ```text

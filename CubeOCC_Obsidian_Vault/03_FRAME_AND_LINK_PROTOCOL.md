@@ -7,6 +7,12 @@ last_reviewed: 2026-08-22
 
 # Frame and Link Protocol
 
+## Related Sender Tool Notes
+
+- [[07_03_SENDER_FRAME_MAPPING]]
+- [[07_04_SENDER_FRAME_PLAYER]]
+- [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]]
+
 ## DATA frame — 8×8
 
 ```text

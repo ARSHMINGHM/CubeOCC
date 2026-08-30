@@ -30,6 +30,7 @@ This vault is the living project specification. It separates **confirmed decisio
 - [[14_GLOSSARY]]
 - [[15_TASK_BACKLOG]]
 - [[16_VERSION_ROADMAP]]
+- [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]]
 
 ## Current V1 concept
 
