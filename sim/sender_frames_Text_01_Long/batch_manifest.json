@@ -1,0 +1,15 @@
+{
+  "tool": "cubeocc_frame_mapper.py",
+  "batch_input_dir": "C:\\Users\\arshm\\Desktop\\CubeOCC\\sim\\sender_bitstreams_Text_01",
+  "batch_output_dir": "sim\\sender_frames",
+  "bitstream_pairs": 12,
+  "presets": [
+    "8x8_grayscale_clk",
+    "8x8_rgb_clk_sequence_seq8"
+  ],
+  "image_mode": "all",
+  "preview_count": 5,
+  "cell_px": 32,
+  "written_outputs": 24,
+  "errors": []
+}

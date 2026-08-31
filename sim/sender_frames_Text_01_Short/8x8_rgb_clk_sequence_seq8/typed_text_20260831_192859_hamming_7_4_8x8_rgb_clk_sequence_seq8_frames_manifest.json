@@ -1,0 +1,299 @@
+{
+  "tool": "cubeocc_frame_mapper.py",
+  "protocol_note": "CubeOCC_Obsidian_Vault/03_FRAME_AND_LINK_PROTOCOL.md",
+  "version": "experimental",
+  "source_bitstream": "C:\\Users\\arshm\\Desktop\\CubeOCC\\sim\\sender_bitstreams_Text_01_Short\\typed_text_20260831_192859_hamming_7_4.bin",
+  "source_metadata": "C:\\Users\\arshm\\Desktop\\CubeOCC\\sim\\sender_bitstreams_Text_01_Short\\typed_text_20260831_192859_hamming_7_4.json",
+  "frame_file": "typed_text_20260831_192859_hamming_7_4_8x8_rgb_clk_sequence_seq8_frames.jsonl",
+  "image_mode": "all",
+  "image_dir": "typed_text_20260831_192859_hamming_7_4_8x8_rgb_clk_sequence_seq8_images",
+  "preview_count": 5,
+  "cell_px": 32,
+  "rows": 8,
+  "cols": 8,
+  "symbol_mode": "rgb",
+  "bits_per_symbol": 3,
+  "sync_mode": "clk_sequence",
+  "sequence_bits": 8,
+  "cell_order": "row-major",
+  "corner_markers": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 7
+    },
+    {
+      "row": 7,
+      "col": 0
+    },
+    {
+      "row": 7,
+      "col": 7
+    }
+  ],
+  "clk_cell": {
+    "row": 0,
+    "col": 1
+  },
+  "payload_cells": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 4
+    },
+    {
+      "row": 0,
+      "col": 5
+    },
+    {
+      "row": 0,
+      "col": 6
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 4
+    },
+    {
+      "row": 1,
+      "col": 5
+    },
+    {
+      "row": 1,
+      "col": 6
+    },
+    {
+      "row": 1,
+      "col": 7
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 4
+    },
+    {
+      "row": 2,
+      "col": 5
+    },
+    {
+      "row": 2,
+      "col": 6
+    },
+    {
+      "row": 2,
+      "col": 7
+    },
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 4
+    },
+    {
+      "row": 3,
+      "col": 5
+    },
+    {
+      "row": 3,
+      "col": 6
+    },
+    {
+      "row": 3,
+      "col": 7
+    },
+    {
+      "row": 4,
+      "col": 0
+    },
+    {
+      "row": 4,
+      "col": 1
+    },
+    {
+      "row": 4,
+      "col": 2
+    },
+    {
+      "row": 4,
+      "col": 3
+    },
+    {
+      "row": 4,
+      "col": 4
+    },
+    {
+      "row": 4,
+      "col": 5
+    },
+    {
+      "row": 4,
+      "col": 6
+    },
+    {
+      "row": 4,
+      "col": 7
+    },
+    {
+      "row": 5,
+      "col": 0
+    },
+    {
+      "row": 5,
+      "col": 1
+    },
+    {
+      "row": 5,
+      "col": 2
+    },
+    {
+      "row": 5,
+      "col": 3
+    },
+    {
+      "row": 5,
+      "col": 4
+    },
+    {
+      "row": 5,
+      "col": 5
+    },
+    {
+      "row": 5,
+      "col": 6
+    },
+    {
+      "row": 5,
+      "col": 7
+    },
+    {
+      "row": 6,
+      "col": 0
+    },
+    {
+      "row": 6,
+      "col": 1
+    },
+    {
+      "row": 6,
+      "col": 2
+    },
+    {
+      "row": 6,
+      "col": 3
+    },
+    {
+      "row": 6,
+      "col": 4
+    },
+    {
+      "row": 6,
+      "col": 5
+    },
+    {
+      "row": 6,
+      "col": 6
+    },
+    {
+      "row": 6,
+      "col": 7
+    },
+    {
+      "row": 7,
+      "col": 1
+    },
+    {
+      "row": 7,
+      "col": 2
+    },
+    {
+      "row": 7,
+      "col": 3
+    },
+    {
+      "row": 7,
+      "col": 4
+    },
+    {
+      "row": 7,
+      "col": 5
+    },
+    {
+      "row": 7,
+      "col": 6
+    }
+  ],
+  "payload_symbol_bits_per_data_frame": 177,
+  "metadata_bits_per_data_frame": 8,
+  "bitstream_bits_per_data_frame": 169,
+  "input_bitstream_bits": 1064,
+  "padding_payload_bits": 119,
+  "data_frames": 7,
+  "total_frames": 9,
+  "start_frame": "all cells white/on",
+  "data_frame": "4 white corners + optional CLK toggle + optional sequence bits + bitstream payload cells",
+  "end_frame": "TL/TR/BL white, BR off, CLK off, payload cells off",
+  "bitstream_metadata": {
+    "mode": "Hamming (7,4)",
+    "input_bits": 608,
+    "output_bits": 1064,
+    "data_bits_per_codeword": 4,
+    "coded_bits_per_codeword": 7,
+    "padding_bits": 0,
+    "codewords": 152,
+    "output_format": "bin"
+  }
+}

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "07_05_FULL_FRAME_GENERATION_WALKTHROUGH.md",
+                "file": "15_01_MONITOR_CAPTURE_DATASET_LABELING.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "07_05_FULL_FRAME_GENERATION_WALKTHROUGH"
+              "title": "15_01_MONITOR_CAPTURE_DATASET_LABELING"
             }
           }
         ]
@@ -83,7 +83,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 274.16991424560547
+    "width": 366.2751998901367,
+    "collapsed": true
   },
   "right": {
     "id": "56ce6b17eb0773f0",
@@ -190,12 +191,14 @@
   },
   "active": "d489b874bb0aea56",
   "lastOpenFiles": [
+    "15_02_ROI_WARP_AND_DEGRADATION_TOOL.md",
+    "15_01_MONITOR_CAPTURE_DATASET_LABELING.md",
+    "03_FRAME_AND_LINK_PROTOCOL.md",
+    "07_05_FULL_FRAME_GENERATION_WALKTHROUGH.md",
     "07_04_SENDER_FRAME_PLAYER.md",
     "07_03_SENDER_FRAME_MAPPING.md",
     "07_02_SENDER_BITSTREAM_TESTING.md",
-    "07_05_FULL_FRAME_GENERATION_WALKTHROUGH.md",
     "07_01_SENDER_BITSTREAM_TOOL.md",
-    "03_FRAME_AND_LINK_PROTOCOL.md",
     "17_V1_SENDER_SIMULATION_WALKTHROUGH.md",
     "03_02_SENDER_FRAME_PLAYER.md",
     "03_01_SENDER_FRAME_MAPPING.md",
@@ -213,8 +216,6 @@
     "12_DECISION_LOG.md",
     "13_MONTH_PLAN.md",
     "14_GLOSSARY.md",
-    "16_VERSION_ROADMAP.md",
-    "00_HOME.md",
-    "README.md"
+    "16_VERSION_ROADMAP.md"
   ]
 }
