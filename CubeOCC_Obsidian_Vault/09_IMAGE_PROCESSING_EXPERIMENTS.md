@@ -79,6 +79,30 @@ Testbench debug overlays should show:
 
 Select the V1 radius using raw BER, SER, ECC correction count and stability across conditions. Do not spend V1 FPGA resources auto-detecting an oversized radius.
 
+## 3.5 Offline ROI warp and degradation
+
+Tool note:
+
+- [[15_02_ROI_WARP_AND_DEGRADATION_TOOL]]
+
+For captured monitor images, use the given four corner points to make a regular ROI dataset before ML training or receiver testing.
+
+Offline preparation flow:
+
+- take real monitor-capture images
+- use four corners: TL, TR, BR, BL
+- prefer auto-detecting bright corner markers first, using quadrant-based marker selection for real captures
+- use bright-pixel bounds only for clean generated images or tightly cropped frames
+- fall back to manual corner labels when auto-detection is unstable
+- perspective-warp the capture to a regular ROI image
+- create downsampled variants to simulate lower-resolution ROI/camera input
+- create Gaussian-blurred variants to simulate less visible / softer camera images
+- keep labels from [[15_01_MONITOR_CAPTURE_DATASET_LABELING]]
+
+This is not FPGA V1 processing. It is dataset preparation for experiments and ML. The FPGA-side V1 receiver still starts with streaming ROI pixels and averaging-only grayscale/on-off recovery.
+
+Current stress result is recorded in [[15_02_ROI_WARP_AND_DEGRADATION_TOOL]].
+
 ## 4. Color classification
 
 ### V1 — grayscale baseline

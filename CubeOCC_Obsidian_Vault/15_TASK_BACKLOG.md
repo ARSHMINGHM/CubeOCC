@@ -109,6 +109,11 @@ Tasks are organized by V1 pipeline units. Add and refine tasks progressively as 
 
 ### V1 Unit — Dataset
 
+Child note:
+
+- [[15_01_MONITOR_CAPTURE_DATASET_LABELING]]
+- [[15_02_ROI_WARP_AND_DEGRADATION_TOOL]]
+
 - [ ] Label each monitor-capture image set with distance.
 - [ ] Label each monitor-capture image set with viewing angle.
 - [ ] Label each monitor-capture image set with brightness and screen brightness.

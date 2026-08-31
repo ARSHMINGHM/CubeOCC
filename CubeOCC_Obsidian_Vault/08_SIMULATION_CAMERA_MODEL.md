@@ -138,6 +138,10 @@ sequenceDiagram
 
 ## Dataset conditions (For V1/V2 Testing)
 
+Dataset labeling task note:
+
+- [[15_01_MONITOR_CAPTURE_DATASET_LABELING]]
+
 - source image folder / dataset id
 - distance
 - viewing angle
