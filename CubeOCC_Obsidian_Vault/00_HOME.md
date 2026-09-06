@@ -28,6 +28,9 @@ This vault is the living project specification. It separates **confirmed decisio
 - [[12_DECISION_LOG]]
 - [[13_MONTH_PLAN]]
 - [[14_GLOSSARY]]
+- [[15_TASK_BACKLOG]]
+- [[16_VERSION_ROADMAP]]
+- [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]]
 
 ## Current V1 concept
 
@@ -35,7 +38,7 @@ This vault is the living project specification. It separates **confirmed decisio
 flowchart LR
     BTN[Simulated button] --> TX[START / DATA / END optical frames]
     TX --> C1[Camera 1\nGrayscale / ROI / feedback\n~60 FPS target]
-    TX --> C2[Camera 2\nRGB data camera\n~30 FPS target]
+    TX --> C2[Camera 2\nData camera\n~30 FPS target]
     C1 --> CAL[ROI + marker geometry\nbrightness + confidence]
     CAL --> REG[Camera 2 sensor ROI registers]
     REG --> C2
@@ -43,8 +46,8 @@ flowchart LR
     STREAM --> IP[Image processing]
     IP --> WARP[Warp from markers]
     WARP --> GRID[Grid extraction]
-    GRID --> AVG[Per-cell RGB averaging]
-    AVG --> CLASS[RGB threshold classifier]
+    GRID --> AVG[Per-cell grayscale averaging]
+    AVG --> CLASS[Grayscale/on-off recovery]
     CLASS --> LINK[START / DATA / END decoder]
     LINK --> ECC[ECC decode]
     ECC --> OUT[Recovered ordered bitstream + metrics]
@@ -58,3 +61,11 @@ flowchart LR
 4. Keep reduced information whenever possible: per-cell sums/averages, symbols, decoded bits.
 5. Benchmark first; add parallel workers only if one pipeline cannot keep up.
 6. Treat glare as a channel impairment to measure, not something V1 promises to correct.
+
+## Version Direction
+
+- V1: grayscale/on-off averaging, image-backed camera simulation, I2C ROI, DVP and MIPI-style comparison models.
+- V1.5: RGB symbols, RGB-aware image input, RGB threshold/classification.
+- V2: SVM-calibrated classification, ECC comparisons, static grid scaling through 64x64, and pipeline-performance decisions.
+- V3: larger grid benchmark tables beyond 64x64.
+- V4: active grid-size detection and SCCB compatibility if the chosen camera needs it.

@@ -1,0 +1,256 @@
+{
+  "tool": "dataset/prepare_monitor_capture.py",
+  "input_dir": "sim\\warp_stress_capture",
+  "corners_json": null,
+  "auto_corners": true,
+  "auto_threshold": "adaptive",
+  "auto_min_area": 20,
+  "auto_detect_width": 640,
+  "auto_corner_method": "quadrants",
+  "roi_width": 128,
+  "roi_height": 128,
+  "scales": [
+    1.0
+  ],
+  "gaussian_blurs": [
+    0.0
+  ],
+  "detected_corners": {
+    "stress_00_clean.png": {
+      "tl": [
+        31.5,
+        31.5
+      ],
+      "tr": [
+        447.5,
+        31.5
+      ],
+      "br": [
+        415.5,
+        479.5
+      ],
+      "bl": [
+        108.3,
+        466.7
+      ]
+    },
+    "stress_01_blur2_dim.png": {
+      "tl": [
+        29.5,
+        29.5
+      ],
+      "tr": [
+        449.5,
+        29.5
+      ],
+      "br": [
+        417.5,
+        481.5
+      ],
+      "bl": [
+        106.02,
+        468.93
+      ]
+    },
+    "stress_02_blur5.png": {
+      "tl": [
+        27.97,
+        27.97
+      ],
+      "tr": [
+        451.03,
+        27.99
+      ],
+      "br": [
+        419.03,
+        483.01
+      ],
+      "bl": [
+        104.2,
+        470.57
+      ]
+    },
+    "stress_03_rotate12.png": {
+      "tl": [
+        39.91,
+        137.86
+      ],
+      "tr": [
+        468.13,
+        46.84
+      ],
+      "br": [
+        533.05,
+        515.18
+      ],
+      "bl": [
+        214.12,
+        569.21
+      ]
+    },
+    "stress_04_rotate25_dim.png": {
+      "tl": [
+        40.16,
+        217.79
+      ],
+      "tr": [
+        393.95,
+        52.85
+      ],
+      "br": [
+        544.44,
+        446.55
+      ],
+      "bl": [
+        141.66,
+        435.59
+      ]
+    },
+    "stress_05_glare_center.png": {
+      "tl": [
+        31.5,
+        31.5
+      ],
+      "tr": [
+        447.5,
+        31.5
+      ],
+      "br": [
+        415.5,
+        479.5
+      ],
+      "bl": [
+        108.3,
+        466.7
+      ]
+    },
+    "stress_06_glare_corner.png": {
+      "tl": [
+        31.5,
+        31.5
+      ],
+      "tr": [
+        447.5,
+        31.5
+      ],
+      "br": [
+        404.63,
+        422.15
+      ],
+      "bl": [
+        108.3,
+        466.7
+      ]
+    },
+    "stress_07_noise2.png": {
+      "tl": [
+        31.52,
+        31.54
+      ],
+      "tr": [
+        447.55,
+        31.5
+      ],
+      "br": [
+        415.44,
+        479.51
+      ],
+      "bl": [
+        108.29,
+        466.69
+      ]
+    },
+    "stress_08_noise8_blur1.png": {
+      "tl": [
+        30.92,
+        30.97
+      ],
+      "tr": [
+        448.01,
+        31.06
+      ],
+      "br": [
+        415.8,
+        480.0
+      ],
+      "bl": [
+        107.68,
+        467.24
+      ]
+    },
+    "stress_09_lowres.png": {
+      "tl": [
+        29.54,
+        29.53
+      ],
+      "tr": [
+        449.42,
+        29.53
+      ],
+      "br": [
+        417.46,
+        481.49
+      ],
+      "bl": [
+        106.03,
+        468.9
+      ]
+    },
+    "stress_10_lowres_blur_dim.png": {
+      "tl": [
+        29.91,
+        29.91
+      ],
+      "tr": [
+        449.11,
+        29.95
+      ],
+      "br": [
+        417.1,
+        481.03
+      ],
+      "bl": [
+        106.52,
+        468.42
+      ]
+    }
+  },
+  "detected_thresholds": {
+    "stress_00_clean.png": 230,
+    "stress_01_blur2_dim.png": 160,
+    "stress_02_blur5.png": 230,
+    "stress_03_rotate12.png": 230,
+    "stress_04_rotate25_dim.png": 130,
+    "stress_05_glare_center.png": 230,
+    "stress_06_glare_corner.png": 230,
+    "stress_07_noise2.png": 230,
+    "stress_08_noise8_blur1.png": 230,
+    "stress_09_lowres.png": 230,
+    "stress_10_lowres_blur_dim.png": 100
+  },
+  "outputs": [
+    "sim\\warp_stress_prepared_adaptive\\stress_00_clean\\stress_00_clean_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_00_clean\\stress_00_clean_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_01_blur2_dim\\stress_01_blur2_dim_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_01_blur2_dim\\stress_01_blur2_dim_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_02_blur5\\stress_02_blur5_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_02_blur5\\stress_02_blur5_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_03_rotate12\\stress_03_rotate12_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_03_rotate12\\stress_03_rotate12_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_04_rotate25_dim\\stress_04_rotate25_dim_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_04_rotate25_dim\\stress_04_rotate25_dim_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_05_glare_center\\stress_05_glare_center_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_05_glare_center\\stress_05_glare_center_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_06_glare_corner\\stress_06_glare_corner_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_06_glare_corner\\stress_06_glare_corner_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_07_noise2\\stress_07_noise2_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_07_noise2\\stress_07_noise2_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_08_noise8_blur1\\stress_08_noise8_blur1_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_08_noise8_blur1\\stress_08_noise8_blur1_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_09_lowres\\stress_09_lowres_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_09_lowres\\stress_09_lowres_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_10_lowres_blur_dim\\stress_10_lowres_blur_dim_warped_roi.png",
+    "sim\\warp_stress_prepared_adaptive\\stress_10_lowres_blur_dim\\stress_10_lowres_blur_dim_roi_scale1_blur0.png"
+  ],
+  "errors": []
+}

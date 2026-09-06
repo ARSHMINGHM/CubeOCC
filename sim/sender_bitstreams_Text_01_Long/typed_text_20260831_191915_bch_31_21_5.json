@@ -1,0 +1,10 @@
+{
+  "mode": "BCH (31,21,5)",
+  "input_bits": 11728,
+  "output_bits": 17329,
+  "data_bits_per_codeword": 21,
+  "coded_bits_per_codeword": 31,
+  "padding_bits": 11,
+  "codewords": 559,
+  "output_format": "bin"
+}

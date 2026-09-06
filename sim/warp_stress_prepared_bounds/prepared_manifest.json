@@ -1,0 +1,213 @@
+{
+  "tool": "dataset/prepare_monitor_capture.py",
+  "input_dir": "sim\\warp_stress_capture",
+  "corners_json": null,
+  "auto_corners": true,
+  "auto_threshold": 200,
+  "auto_min_area": 20,
+  "auto_detect_width": 640,
+  "auto_corner_method": "bounds",
+  "roi_width": 128,
+  "roi_height": 128,
+  "scales": [
+    1.0,
+    0.5
+  ],
+  "gaussian_blurs": [
+    0.0,
+    1.5
+  ],
+  "detected_corners": {
+    "stress_00_clean.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    },
+    "stress_02_blur5.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    },
+    "stress_03_rotate12.png": {
+      "tl": [
+        1.0,
+        1.0
+      ],
+      "tr": [
+        638.0,
+        1.0
+      ],
+      "br": [
+        638.0,
+        638.0
+      ],
+      "bl": [
+        1.0,
+        638.0
+      ]
+    },
+    "stress_05_glare_center.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    },
+    "stress_06_glare_corner.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    },
+    "stress_07_noise2.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    },
+    "stress_08_noise8_blur1.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    },
+    "stress_09_lowres.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        511.0,
+        0.0
+      ],
+      "br": [
+        511.0,
+        511.0
+      ],
+      "bl": [
+        0.0,
+        511.0
+      ]
+    }
+  },
+  "outputs": [
+    "sim\\warp_stress_prepared_bounds\\stress_00_clean\\stress_00_clean_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_00_clean\\stress_00_clean_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_00_clean\\stress_00_clean_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_00_clean\\stress_00_clean_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_00_clean\\stress_00_clean_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_02_blur5\\stress_02_blur5_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_02_blur5\\stress_02_blur5_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_02_blur5\\stress_02_blur5_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_02_blur5\\stress_02_blur5_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_02_blur5\\stress_02_blur5_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_03_rotate12\\stress_03_rotate12_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_03_rotate12\\stress_03_rotate12_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_03_rotate12\\stress_03_rotate12_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_03_rotate12\\stress_03_rotate12_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_03_rotate12\\stress_03_rotate12_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_05_glare_center\\stress_05_glare_center_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_05_glare_center\\stress_05_glare_center_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_05_glare_center\\stress_05_glare_center_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_05_glare_center\\stress_05_glare_center_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_05_glare_center\\stress_05_glare_center_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_06_glare_corner\\stress_06_glare_corner_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_06_glare_corner\\stress_06_glare_corner_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_06_glare_corner\\stress_06_glare_corner_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_06_glare_corner\\stress_06_glare_corner_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_06_glare_corner\\stress_06_glare_corner_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_07_noise2\\stress_07_noise2_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_07_noise2\\stress_07_noise2_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_07_noise2\\stress_07_noise2_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_07_noise2\\stress_07_noise2_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_07_noise2\\stress_07_noise2_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_08_noise8_blur1\\stress_08_noise8_blur1_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_08_noise8_blur1\\stress_08_noise8_blur1_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_08_noise8_blur1\\stress_08_noise8_blur1_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_08_noise8_blur1\\stress_08_noise8_blur1_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_08_noise8_blur1\\stress_08_noise8_blur1_roi_scale0.5_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_09_lowres\\stress_09_lowres_warped_roi.png",
+    "sim\\warp_stress_prepared_bounds\\stress_09_lowres\\stress_09_lowres_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_09_lowres\\stress_09_lowres_roi_scale1_blur1.5.png",
+    "sim\\warp_stress_prepared_bounds\\stress_09_lowres\\stress_09_lowres_roi_scale0.5_blur0.png",
+    "sim\\warp_stress_prepared_bounds\\stress_09_lowres\\stress_09_lowres_roi_scale0.5_blur1.5.png"
+  ],
+  "errors": [
+    "stress_01_blur2_dim.png: auto-corner detection found no bright pixels",
+    "stress_04_rotate25_dim.png: auto-corner detection found no bright pixels",
+    "stress_10_lowres_blur_dim.png: auto-corner detection found no bright pixels"
+  ]
+}

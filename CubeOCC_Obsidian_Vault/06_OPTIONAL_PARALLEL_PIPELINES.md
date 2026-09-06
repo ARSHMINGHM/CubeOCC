@@ -64,21 +64,27 @@ frame 3
 
 A scheduler cannot queue an incoming raw frame without storage.
 
-Options:
+Preferred direction:
 
 ### A. One shared overflow buffer
 
 - one shared buffer, not one per worker
-- used only if every worker is busy
-- depth selected from measured worst case
+- one-frame deep: save only one incoming picture/frame
+- used if every worker is busy when a new frame begins
+- hold that frame until any worker becomes free
+- offer/release the buffered frame to the first available worker
+- if another frame arrives while the one-frame buffer is full, raise an overflow flag
+- exact memory type and overflow-flag reporting path are deferred to a later phase
+
+Fallback options:
 
 ### B. Sensor/backpressure control
 
-If physical sensor/interface permits delaying new frames.
+Use only if the physical sensor/interface permits delaying new frames.
 
 ### C. Frame drop
 
-Explicitly mark a missed frame if neither buffering nor backpressure is available.
+Use only if buffering is not practical. Explicitly mark a missed frame if neither buffering nor backpressure is available.
 
 > [!important]
-> The shared FIFO/buffer is optional. It is not needed when one worker can sustain the camera rate.
+> The shared one-frame buffer is optional. It is not needed when one worker can sustain the camera rate.

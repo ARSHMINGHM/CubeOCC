@@ -1,0 +1,10 @@
+{
+  "mode": "Extended Hamming (32,26)",
+  "input_bits": 11728,
+  "output_bits": 14464,
+  "data_bits_per_codeword": 26,
+  "coded_bits_per_codeword": 32,
+  "padding_bits": 24,
+  "codewords": 452,
+  "output_format": "bin"
+}

@@ -1,0 +1,48 @@
+{
+  "tool": "dataset/prepare_monitor_capture.py",
+  "input_dir": "sim\\warp_smoke_capture",
+  "corners_json": null,
+  "auto_corners": true,
+  "auto_threshold": 200,
+  "auto_min_area": 5,
+  "auto_detect_width": 640,
+  "auto_corner_method": "bounds",
+  "roi_width": 128,
+  "roi_height": 128,
+  "scales": [
+    1.0,
+    0.5
+  ],
+  "gaussian_blurs": [
+    0.0,
+    1.5
+  ],
+  "detected_corners": {
+    "capture_0001.png": {
+      "tl": [
+        0.0,
+        0.0
+      ],
+      "tr": [
+        255.0,
+        0.0
+      ],
+      "br": [
+        255.0,
+        255.0
+      ],
+      "bl": [
+        0.0,
+        255.0
+      ]
+    }
+  },
+  "outputs": [
+    "sim\\warp_smoke_auto_bounds_prepared\\capture_0001\\capture_0001_warped_roi.png",
+    "sim\\warp_smoke_auto_bounds_prepared\\capture_0001\\capture_0001_roi_scale1_blur0.png",
+    "sim\\warp_smoke_auto_bounds_prepared\\capture_0001\\capture_0001_roi_scale1_blur1.5.png",
+    "sim\\warp_smoke_auto_bounds_prepared\\capture_0001\\capture_0001_roi_scale0.5_blur0.png",
+    "sim\\warp_smoke_auto_bounds_prepared\\capture_0001\\capture_0001_roi_scale0.5_blur1.5.png"
+  ],
+  "errors": []
+}

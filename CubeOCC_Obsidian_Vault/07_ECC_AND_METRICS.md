@@ -7,17 +7,37 @@ last_reviewed: 2026-08-22
 
 # ECC and Metrics
 
+## Child Notes
+
+- [[07_01_SENDER_BITSTREAM_TOOL]]
+- [[07_02_SENDER_BITSTREAM_TESTING]]
+- [[07_03_SENDER_FRAME_MAPPING]]
+- [[07_04_SENDER_FRAME_PLAYER]]
+- [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]]
+
 ## Capacity reminder
 
 8×8 DATA frame:
 
-**59 cells × 3 bits/cell = 177 coded bits.**
+- V1 grayscale: **59 cells x 1 bit/cell = 59 coded bits**
+- V1.5 RGB: **59 cells x 3 bits/cell = 177 coded bits**
 
-ECC acts on the recovered binary stream after RGB-symbol classification. A wrong optical symbol may create one or more bit errors; the ECC decoder attempts to correct those bit flips.
+ECC acts on the recovered binary stream after symbol recovery. In V1, a wrong grayscale symbol creates one bit error. In V1.5 RGB mode, a wrong RGB symbol may create one or more bit errors; the ECC decoder attempts to correct those bit flips.
 
 ## Baseline
 
 Always include **No ECC** as the raw reliability/throughput reference.
+
+## ECC Evaluation Strategy
+
+V1 should not get stuck on choosing one perfect Hamming mode. Start with a normal/simple fast Hamming path for the grayscale baseline, then keep the wider ECC table for later comparison as RGB and larger-grid work comes online.
+
+Planned approach:
+
+- keep No ECC as the raw BPS/throughput limit reference
+- implement a simple fast Hamming baseline first for the faster data path
+- test all BCH candidates later as trusted/reliable data-path options
+- choose the final BCH mode after there is measured reliability, useful payload, goodput, latency, and FPGA resource data
 
 ## Hamming candidates
 
@@ -41,24 +61,50 @@ Standard Hamming codes are single-error-correcting (SEC). Extended Hamming varia
 - 165 coded bits used
 - 12 bits padding unless shortened/custom packing is introduced
 
+> [!note]
+> The Hamming and BCH packing tables below use the V1.5 177-bit RGB frame capacity. V1 grayscale has a smaller 59-bit coded frame and should use a smaller baseline configuration or separate packing table when implementation begins.
+
 ## BCH candidates
+
+BCH is the candidate family for a more trusted/reliable transmission mode. Test all listed BCH candidates before selecting the final BCH mode.
 
 For binary BCH candidates, correction capability is `t = floor((dmin-1)/2)`.
 
-| Scheme | Code `(n,k,dmin)` | Data bits/codeword | Redundancy bits/codeword | Corrects up to | Whole codewords in 177 bits | Useful data bits/frame | Used coded bits | Padding |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| BCH | (15,7,5) | 7 | 8 | 2 bits/codeword | 11 | 77 | 165 | 12 |
-| BCH | (15,5,7) | 5 | 10 | 3 bits/codeword | 11 | 55 | 165 | 12 |
-| BCH | (31,21,5) | 21 | 10 | 2 bits/codeword | 5 | 105 | 155 | 22 |
-| BCH | (31,16,7) | 16 | 15 | 3 bits/codeword | 5 | 80 | 155 | 22 |
-| BCH | (31,11,11) | 11 | 20 | 5 bits/codeword | 5 | 55 | 155 | 22 |
+| Scheme | Code `(n,k,dmin)` | Data bits/codeword | Redundancy bits/codeword |  Corrects up to | Whole codewords in 177 bits | Useful data bits/frame | Used coded bits | Padding |
+| ------ | ----------------: | -----------------: | -----------------------: | --------------: | --------------------------: | ---------------------: | --------------: | ------: |
+| BCH    |          (15,7,5) |                  7 |                        8 | 2 bits/codeword |                          11 |                     77 |             165 |      12 |
+| BCH    |          (15,5,7) |                  5 |                       10 | 3 bits/codeword |                          11 |                     55 |             165 |      12 |
+| BCH    |         (31,21,5) |                 21 |                       10 | 2 bits/codeword |                           5 |                    105 |             155 |      22 |
+| BCH    |         (31,16,7) |                 16 |                       15 | 3 bits/codeword |                           5 |                     80 |             155 |      22 |
+| BCH    |        (31,11,11) |                 11 |                       20 | 5 bits/codeword |                           5 |                     55 |             155 |      22 |
 
 > [!note]
 > These are candidate standard block codes. Final implementation must lock and verify the exact generator polynomial/decoder configuration in the golden model.
 
 ## Possible shortened codes
 
-177 is not divisible by many standard block lengths. A later experiment may use shortened codes to improve packing efficiency. Do not add this complexity until standard candidates are working.
+177 is not divisible by many standard block lengths. A later experiment may use shortened codes to improve packing efficiency.
+
+Before adding shortened-code complexity, check whether unused padding bits can carry useful metadata:
+
+- frame number / sequence number
+- small header fields
+- debug or experiment flags
+
+This may reduce wasted bits while keeping the standard ECC candidates simpler.
+
+## V1 packet/header decision
+
+V1 does not add a separate packet/header format inside the ECC-protected payload.
+
+Use:
+
+- START frame
+- DATA frames
+- END frame
+- selected ECC mode
+
+Do not add CRC/checksum in V1 if Hamming ECC is already used. Revisit sequence number placement when testing other ECC methods.
 
 ## Experiment result table
 
@@ -74,7 +120,7 @@ For binary BCH candidates, correction capability is `t = floor((dmin-1)/2)`.
 | BCH (31,16,7) | 8×8 |  |  |  | 80 |  |  |  |  |  |  |
 | BCH (31,11,11) | 8×8 |  |  |  | 55 |  |  |  |  |  |  |
 
-`*` No-ECC row assumes all 177 coded bits are available before packet/header overhead.
+`*` No-ECC row assumes the V1.5 RGB 177 coded bits are available before packet/header overhead. Add separate V1 grayscale rows once the 59-bit baseline is measured.
 
 ## Metrics
 

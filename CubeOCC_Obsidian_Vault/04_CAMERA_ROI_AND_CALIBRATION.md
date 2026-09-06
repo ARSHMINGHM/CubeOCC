@@ -11,6 +11,8 @@ last_reviewed: 2026-08-22
 
 Target example: ~60 FPS.
 
+Camera 1 is the ROI/tracking camera. It receives the full scene at lower resolution and in grayscale. It is not the main data camera.
+
 Outputs:
 
 - current four marker coordinates
@@ -22,13 +24,37 @@ Outputs:
 
 Does **not** perform V1 glare detection.
 
-## Camera 2 — RGB DATA camera
+## Camera 2 — DATA camera
 
 Target example: ~30 FPS.
 
+Camera 2 is the data camera. It receives ROI/window coordinates derived from Camera 1 tracking and should output only the selected ROI pixels.
+
 - receives ROI/window coordinates
 - uses sensor-level crop/windowing
-- outputs only the cropped RGB ROI pixel stream to the FPGA
+- outputs only the cropped ROI pixel stream to the FPGA
+- V1 uses grayscale data-camera processing
+- V1.5 upgrades Camera 2 data symbols to RGB
+
+## Confirmed ROI Rule
+
+Cropping for Camera 2 must happen on the camera/sensor side, not inside the FPGA after receiving a full frame.
+
+Required flow:
+
+```text
+Camera 1 captures full low-resolution grayscale scene
+  -> FPGA finds four corner markers / tracking geometry
+  -> FPGA computes Camera 2 ROI/window
+  -> FPGA writes ROI/window registers to Camera 2
+  -> Camera 2 sensor applies ROI
+  -> Camera 2 outputs only selected data pixels
+  -> FPGA receives cropped stream
+```
+
+The FPGA should not be designed around receiving the full Camera 2 frame and cropping it internally for V1.
+
+V1 starts with grayscale data-camera processing to prove the pipeline. V1.5 upgrades Camera 2 data symbols to RGB.
 
 ## Startup mapping
 

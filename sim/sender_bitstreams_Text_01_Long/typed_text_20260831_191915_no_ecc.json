@@ -1,0 +1,10 @@
+{
+  "mode": "No ECC",
+  "input_bits": 11728,
+  "output_bits": 11728,
+  "data_bits_per_codeword": null,
+  "coded_bits_per_codeword": null,
+  "padding_bits": 0,
+  "codewords": 0,
+  "output_format": "bin"
+}

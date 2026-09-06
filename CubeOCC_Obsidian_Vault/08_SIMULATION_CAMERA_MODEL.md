@@ -14,16 +14,19 @@ Long-term goal: replace the simulated camera with a real physical camera without
 
 ## Current Status
 
-- **DVP Model:** Active and passing regression tests. (Primary V1 target)
-- **MIPI Model:** Active and passing regression tests. (Deferred to V2 for physical hardware)
+- **DVP Model:** Active and passing regression tests. Included in V1 simulation.
+- **MIPI Model:** Active and passing regression tests. Included in V1 simulation so DVP and MIPI can be compared before choosing the physical camera path.
 - Both models simulate OV5640 behavior, including 16-bit SCCB register addresses (e.g., `0x3800` for HSTART) and true hardware ROI windowing (FPS increases as window shrinks).
+- The project uses a protocol-first camera strategy: V1 models both generic DVP behavior and MIPI-style behavior rather than locking to one physical sensor.
+- After camera research and ROI/windowing comparison, one physical camera path may be selected and the other path may be dropped.
+- ROI/windowing is primarily a sensor/register capability, not only a DVP-vs-MIPI transport feature. The selected physical camera must support the required ROI behavior regardless of which pixel transport is used.
 
 ## Dual Camera Simulation Strategy
 
-The CubeOCC architecture uses two cameras (Camera 1 for Grayscale tracking, Camera 2 for RGB data). In the simulation environment, both cameras use the exact same `dvp_camera_model` module. There is no need to write a separate module for Camera 1. The distinction is handled by the testbench parameters:
+The CubeOCC architecture uses two cameras (Camera 1 for grayscale tracking, Camera 2 for data recovery). In the simulation environment, both cameras use the exact same `dvp_camera_model` module. There is no need to write a separate module for Camera 1. The distinction is handled by the testbench parameters:
 
-- **Camera 1 (Tracking):** Driven at a higher frame rate (~60 FPS target), and the testbench feeds it grayscale or down-scaled image data.
-- **Camera 2 (Data):** Driven at a lower frame rate (~30 FPS target), and the testbench feeds it the full RGB image data.
+- **Camera 1 (Tracking / ROI camera):** Driven at a higher frame rate (~60 FPS target). It receives the full scene at lower resolution and grayscale. Its job is to find the four corner markers and provide ROI/window feedback for Camera 2.
+- **Camera 2 (Data camera):** Driven at a lower frame rate (~30 FPS target). It receives ROI/window settings from the FPGA and should output only the selected data pixels. V1 starts with grayscale data-camera processing; V1.5 upgrades Camera 2 data symbols to RGB.
 
 ## Architecture & Philosophy
 
@@ -134,6 +137,10 @@ sequenceDiagram
 ```
 
 ## Dataset conditions (For V1/V2 Testing)
+
+Dataset labeling task note:
+
+- [[15_01_MONITOR_CAPTURE_DATASET_LABELING]]
 
 - source image folder / dataset id
 - distance

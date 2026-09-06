@@ -1,0 +1,206 @@
+{
+  "tool": "dataset/prepare_monitor_capture.py",
+  "input_dir": "sim\\warp_stress_capture",
+  "corners_json": null,
+  "auto_corners": true,
+  "auto_threshold": 120,
+  "auto_min_area": 20,
+  "auto_detect_width": 640,
+  "auto_corner_method": "quadrants",
+  "roi_width": 128,
+  "roi_height": 128,
+  "scales": [
+    1.0
+  ],
+  "gaussian_blurs": [
+    0.0
+  ],
+  "detected_corners": {
+    "stress_00_clean.png": {
+      "tl": [
+        31.5,
+        31.5
+      ],
+      "tr": [
+        447.5,
+        31.5
+      ],
+      "br": [
+        415.5,
+        479.5
+      ],
+      "bl": [
+        108.3,
+        466.7
+      ]
+    },
+    "stress_01_blur2_dim.png": {
+      "tl": [
+        30.98,
+        30.98
+      ],
+      "tr": [
+        448.02,
+        30.99
+      ],
+      "br": [
+        416.02,
+        480.01
+      ],
+      "bl": [
+        107.72,
+        467.27
+      ]
+    },
+    "stress_03_rotate12.png": {
+      "tl": [
+        39.77,
+        137.89
+      ],
+      "tr": [
+        468.17,
+        46.84
+      ],
+      "br": [
+        533.46,
+        515.07
+      ],
+      "bl": [
+        214.08,
+        569.16
+      ]
+    },
+    "stress_04_rotate25_dim.png": {
+      "tl": [
+        40.15,
+        217.74
+      ],
+      "tr": [
+        393.99,
+        52.85
+      ],
+      "br": [
+        544.36,
+        446.57
+      ],
+      "bl": [
+        141.65,
+        435.62
+      ]
+    },
+    "stress_05_glare_center.png": {
+      "tl": [
+        31.5,
+        31.5
+      ],
+      "tr": [
+        447.5,
+        31.5
+      ],
+      "br": [
+        415.5,
+        479.5
+      ],
+      "bl": [
+        108.3,
+        466.7
+      ]
+    },
+    "stress_06_glare_corner.png": {
+      "tl": [
+        31.5,
+        31.5
+      ],
+      "tr": [
+        447.5,
+        31.5
+      ],
+      "br": [
+        404.63,
+        422.15
+      ],
+      "bl": [
+        108.3,
+        466.7
+      ]
+    },
+    "stress_07_noise2.png": {
+      "tl": [
+        31.52,
+        31.54
+      ],
+      "tr": [
+        447.55,
+        31.5
+      ],
+      "br": [
+        415.44,
+        479.51
+      ],
+      "bl": [
+        108.29,
+        466.69
+      ]
+    },
+    "stress_08_noise8_blur1.png": {
+      "tl": [
+        31.44,
+        31.47
+      ],
+      "tr": [
+        447.51,
+        31.59
+      ],
+      "br": [
+        415.3,
+        479.48
+      ],
+      "bl": [
+        108.28,
+        466.69
+      ]
+    },
+    "stress_10_lowres_blur_dim.png": {
+      "tl": [
+        28.45,
+        28.45
+      ],
+      "tr": [
+        450.56,
+        28.47
+      ],
+      "br": [
+        418.55,
+        482.52
+      ],
+      "bl": [
+        104.86,
+        470.08
+      ]
+    }
+  },
+  "outputs": [
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_00_clean\\stress_00_clean_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_00_clean\\stress_00_clean_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_01_blur2_dim\\stress_01_blur2_dim_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_01_blur2_dim\\stress_01_blur2_dim_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_03_rotate12\\stress_03_rotate12_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_03_rotate12\\stress_03_rotate12_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_04_rotate25_dim\\stress_04_rotate25_dim_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_04_rotate25_dim\\stress_04_rotate25_dim_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_05_glare_center\\stress_05_glare_center_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_05_glare_center\\stress_05_glare_center_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_06_glare_corner\\stress_06_glare_corner_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_06_glare_corner\\stress_06_glare_corner_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_07_noise2\\stress_07_noise2_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_07_noise2\\stress_07_noise2_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_08_noise8_blur1\\stress_08_noise8_blur1_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_08_noise8_blur1\\stress_08_noise8_blur1_roi_scale1_blur0.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_10_lowres_blur_dim\\stress_10_lowres_blur_dim_warped_roi.png",
+    "sim\\warp_stress_prepared_quadrants_t120\\stress_10_lowres_blur_dim\\stress_10_lowres_blur_dim_roi_scale1_blur0.png"
+  ],
+  "errors": [
+    "stress_02_blur5.png: auto-corner detection found only 2 bright components",
+    "stress_09_lowres.png: auto-corner detection found only 2 bright components"
+  ]
+}

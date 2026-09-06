@@ -1,0 +1,10 @@
+{
+  "mode": "Hamming (15,11)",
+  "input_bits": 608,
+  "output_bits": 840,
+  "data_bits_per_codeword": 11,
+  "coded_bits_per_codeword": 15,
+  "padding_bits": 8,
+  "codewords": 56,
+  "output_format": "bin"
+}
