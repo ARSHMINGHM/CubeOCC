@@ -19,6 +19,7 @@ set_property simulator_language Mixed [current_project]
 add_files -fileset sources_1 [list \
   [file join $script_dir rtl i2c_master.sv] \
   [file join $script_dir rtl dvp_to_axis.sv] \
+  [file join $script_dir rtl roi_start_detector.sv] \
   [file join $script_dir rtl cubeocc_top.sv] \
 ]
 
@@ -31,6 +32,7 @@ add_files -fileset sim_1 [list \
   [file join $script_dir tb mipi_camera_tb.sv] \
   [file join $script_dir tb i2c_cam_tb.sv] \
   [file join $script_dir tb axis_cam_tb.sv] \
+  [file join $script_dir tb roi_start_detector_tb.sv] \
   [file join $script_dir tb cubeocc_top_tb.sv] \
 ]
 

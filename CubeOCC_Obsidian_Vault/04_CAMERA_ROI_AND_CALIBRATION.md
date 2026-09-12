@@ -44,7 +44,7 @@ Required flow:
 
 ```text
 Camera 1 captures full low-resolution grayscale scene
-  -> FPGA finds four corner markers / tracking geometry
+  -> FPGA finds a V1 axis-aligned START-frame ROI window
   -> FPGA computes Camera 2 ROI/window
   -> FPGA writes ROI/window registers to Camera 2
   -> Camera 2 sensor applies ROI
@@ -53,6 +53,8 @@ Camera 1 captures full low-resolution grayscale scene
 ```
 
 The FPGA should not be designed around receiving the full Camera 2 frame and cropping it internally for V1.
+
+V1 detector implementation: [[15_05_FPGA_START_ROI_DETECTOR]]. It uses a grayscale threshold and bright-run bands to produce Camera 2 `x`, `y`, `width`, and `height` without frame storage. Four-point perspective geometry is a later refinement, not a prerequisite for the V1 sensor crop.
 
 V1 starts with grayscale data-camera processing to prove the pipeline. V1.5 upgrades Camera 2 data symbols to RGB.
 
