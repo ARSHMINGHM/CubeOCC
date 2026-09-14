@@ -28,3 +28,5 @@ Open this directory as an Obsidian vault and begin with `00_HOME.md`.
 - ECC note contains multiple Hamming and BCH candidate tables.
 - Sender tools now cover bitstream generation, frame mapping, optional PNG image output, and fullscreen sender preview.
 - V3 extends grid benchmarks; V4 adds active grid-size detection and possible SCCB compatibility.
+- `15_06_SOURCES_AND_FPGA_UI.md` records the paper citation ledger and the current offline-UI versus physical-FPGA boundary.
+- `15_07_XSIM_RTL_ROI_REVIEW.md` explains how to label ROI coordinates emitted by actual RTL in XSim.

@@ -33,6 +33,7 @@ add_files -fileset sim_1 [list \
   [file join $script_dir tb i2c_cam_tb.sv] \
   [file join $script_dir tb axis_cam_tb.sv] \
   [file join $script_dir tb roi_start_detector_tb.sv] \
+  [file join $script_dir tb roi_start_detector_image_tb.sv] \
   [file join $script_dir tb cubeocc_top_tb.sv] \
 ]
 

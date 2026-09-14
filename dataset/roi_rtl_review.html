@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CubeOCC RTL ROI Review</title>
+  <style>
+    :root { color-scheme: dark; font-family: Segoe UI, Arial, sans-serif; background: #15191d; color: #edf2f4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { display: flex; align-items: center; gap: 18px; padding: 12px 18px; background: #20272c; border-bottom: 1px solid #3e4b53; }
+    h1 { font-size: 18px; font-weight: 600; margin: 0; }
+    button { background: #2a6f97; border: 1px solid #4a97c2; color: #fff; min-height: 32px; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: default; }
+    button.grade-true { background: #2f7d4a; border-color: #69b879; }
+    button.grade-mid { background: #8c6b20; border-color: #c4a64b; }
+    button.grade-false { background: #984244; border-color: #d87778; }
+    main { display: grid; grid-template-columns: minmax(640px, 1fr) 300px; min-height: calc(100vh - 58px); }
+    .viewer { display: grid; place-items: center; padding: 22px; background: #0d1114; overflow: auto; }
+    canvas { image-rendering: pixelated; border: 1px solid #667782; background: #000; }
+    aside { padding: 16px; border-left: 1px solid #3e4b53; background: #20272c; }
+    .status { color: #bcd0db; font-size: 13px; line-height: 1.45; margin: 0 0 18px; overflow-wrap: anywhere; }
+    .control { border-top: 1px solid #3e4b53; padding: 14px 0; }
+    .control:first-of-type { border-top: 0; padding-top: 0; }
+    .control label { display: block; font-size: 13px; color: #bcd0db; margin-bottom: 7px; }
+    input[type="range"] { width: 100%; accent-color: #57a4cc; }
+    .grade-grid { display: grid; gap: 8px; }
+    .grade-grid button { text-align: left; }
+    kbd { float: right; border: 1px solid #687982; padding: 0 4px; border-radius: 3px; background: #13191d; }
+    .muted { color: #91a4af; font-size: 12px; line-height: 1.45; }
+    .notice { color: #ffd166; font-size: 13px; white-space: pre-line; }
+    @media (max-width: 980px) {
+      header { align-items: flex-start; flex-wrap: wrap; }
+      main { grid-template-columns: 1fr; }
+      aside { border-left: 0; border-top: 1px solid #3e4b53; }
+      .viewer { min-height: 0; padding: 12px; }
+      canvas { max-width: 100%; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CubeOCC RTL ROI Review</h1>
+    <button id="choose">Choose RTL Result Folder</button>
+    <span id="top-status" class="muted">Choose a folder containing rtl_results.json.</span>
+  </header>
+  <main>
+    <section class="viewer"><canvas id="frame" width="640" height="480"></canvas></section>
+    <aside>
+      <p id="status" class="status">No RTL result manifest loaded.</p>
+      <div class="control">
+        <label for="zoom">Display zoom: <strong id="zoom-value">4x</strong></label>
+        <input id="zoom" type="range" min="1" max="6" value="4" step="1">
+        <div class="muted">Zoom changes only the display. Saved labels retain native XSim coordinates.</div>
+      </div>
+      <div class="control">
+        <div class="grade-grid">
+          <button id="true" class="grade-true" disabled>True: correct ROI <kbd>1</kbd></button>
+          <button id="mid" class="grade-mid" disabled>Mid: usable but imprecise <kbd>2</kbd></button>
+          <button id="false" class="grade-false" disabled>False: incorrect or no ROI <kbd>3</kbd></button>
+          <button id="skip" disabled>Skip <kbd>S</kbd></button>
+        </div>
+      </div>
+      <div class="control muted">A new folder selection starts a fresh review and replaces only its generated <code>roi_review</code> output folder.</div>
+      <p id="notice" class="notice"></p>
+    </aside>
+  </main>
+  <script>
+    const canvas = document.getElementById('frame');
+    const ctx = canvas.getContext('2d');
+    const chooseButton = document.getElementById('choose');
+    const status = document.getElementById('status');
+    const topStatus = document.getElementById('top-status');
+    const notice = document.getElementById('notice');
+    const zoomInput = document.getElementById('zoom');
+    const zoomValue = document.getElementById('zoom-value');
+    const actions = ['true', 'mid', 'false', 'skip'].map(id => document.getElementById(id));
+    const cornersOrder = ['tl', 'tr', 'br', 'bl'];
+    let rootHandle, reviewHandle, manifest, records = [], index = 0, labels = {}, activeImage;
+
+    function setActions(enabled) { actions.forEach(button => button.disabled = !enabled); }
+    function relativeParts(path) { return path.split('/').filter(Boolean); }
+    async function fileForRelativePath(relativePath) {
+      const parts = relativeParts(relativePath);
+      let directory = rootHandle;
+      for (const part of parts.slice(0, -1)) directory = await directory.getDirectoryHandle(part);
+      return directory.getFileHandle(parts.at(-1));
+    }
+    async function outputDirectory(relativePath) {
+      let directory = reviewHandle;
+      for (const part of relativeParts(relativePath).slice(0, -1)) directory = await directory.getDirectoryHandle(part, { create: true });
+      return directory;
+    }
+    async function writeFile(directory, name, body) {
+      const handle = await directory.getFileHandle(name, { create: true });
+      const writable = await handle.createWritable();
+      await writable.write(body);
+      await writable.close();
+    }
+    function currentRecord() { return records[index]; }
+    function cornerList(record) { return cornersOrder.map(name => record.camera_corners[name]); }
+    function validCorners(record) { return cornerList(record).every(point => Array.isArray(point)); }
+    function draw() {
+      const record = currentRecord();
+      if (!record || !activeImage) return;
+      const zoom = Number(zoomInput.value);
+      canvas.width = activeImage.naturalWidth * zoom;
+      canvas.height = activeImage.naturalHeight * zoom;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(activeImage, 0, 0, canvas.width, canvas.height);
+      const corners = cornerList(record);
+      if (validCorners(record)) {
+        ctx.strokeStyle = '#ff3131'; ctx.fillStyle = '#ff3131'; ctx.lineWidth = Math.max(2, zoom);
+        ctx.beginPath();
+        corners.forEach((point, cornerIndex) => {
+          const x = point[0] * zoom, y = point[1] * zoom;
+          if (!cornerIndex) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.closePath(); ctx.stroke();
+        corners.forEach((point, cornerIndex) => {
+          const x = point[0] * zoom, y = point[1] * zoom;
+          ctx.beginPath(); ctx.arc(x, y, 10 * zoom, 0, Math.PI * 2); ctx.stroke();
+          ctx.font = `${Math.max(13, 12 * zoom)}px Segoe UI`; ctx.fillText(String(cornerIndex + 1), x + 12 * zoom, y - 12 * zoom);
+        });
+      } else {
+        ctx.fillStyle = '#ff7b7b'; ctx.font = `${Math.max(14, 14 * zoom)}px Segoe UI`; ctx.fillText('RTL emitted no valid ROI', 8 * zoom, 20 * zoom);
+      }
+    }
+    async function loadCurrent() {
+      const record = currentRecord();
+      if (!record) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        status.textContent = `Finished. Saved ${Object.keys(labels).length} label(s) in roi_review/roi_review.json.`;
+        setActions(false); return;
+      }
+      const file = await fileForRelativePath(record.camera_gray_path);
+      const objectUrl = URL.createObjectURL(await file.getFile());
+      activeImage = new Image();
+      activeImage.onload = () => { URL.revokeObjectURL(objectUrl); draw(); };
+      activeImage.src = objectUrl;
+      const valid = record.fpga_roi_detector.valid ? 'valid RTL ROI' : 'no valid RTL ROI';
+      status.textContent = `${index + 1}/${records.length}  ${record.relative_path}\n${record.capture_set} | ${valid}`;
+    }
+    function reviewManifest() {
+      const grades = { true: 0, mid: 0, false: 0 };
+      Object.values(labels).forEach(entry => grades[entry.grade] += 1);
+      return {
+        format: 'cubeocc-roi-rtl-review-v1',
+        roi_source: 'rtl/roi_start_detector.sv executed by XSim',
+        rtl_results_manifest: 'rtl_results.json',
+        camera_model: manifest.camera_model,
+        summary: { labeled_count: Object.keys(labels).length, true_count: grades.true, mid_count: grades.mid, false_count: grades.false },
+        images: labels
+      };
+    }
+    async function saveLabel(grade) {
+      const record = currentRecord();
+      if (!record) return;
+      labels[record.relative_path] = {
+        grade,
+        source_path: record.source_path,
+        camera_gray_path: record.camera_gray_path,
+        camera_corners: record.camera_corners,
+        letterbox_transform: record.letterbox_transform,
+        fpga_roi_detector: record.fpga_roi_detector
+      };
+      const annotationDir = await outputDirectory(`annotated/${record.relative_path}`);
+      const annotatedName = relativeParts(record.relative_path).at(-1).replace(/\.[^.]+$/, '.png');
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      await writeFile(annotationDir, annotatedName, blob);
+      await writeFile(reviewHandle, 'roi_review.json', JSON.stringify(reviewManifest(), null, 2) + '\n');
+      index += 1;
+      await loadCurrent();
+    }
+    async function chooseFolder() {
+      if (!window.showDirectoryPicker) { notice.textContent = 'Use Chrome or Edge. This browser does not support choosing and writing the result folder.'; return; }
+      try {
+        rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const manifestFile = await rootHandle.getFileHandle('rtl_results.json');
+        manifest = JSON.parse(await (await manifestFile.getFile()).text());
+        if (manifest.format !== 'cubeocc-xsim-roi-results-v1') throw new Error('This folder does not contain a CubeOCC rtl_results.json manifest.');
+        await rootHandle.removeEntry('roi_review', { recursive: true }).catch(() => {});
+        reviewHandle = await rootHandle.getDirectoryHandle('roi_review', { create: true });
+        records = manifest.images; index = 0; labels = {}; activeImage = undefined;
+        topStatus.textContent = `${records.length} XSim image results loaded.`;
+        notice.textContent = '';
+        setActions(true);
+        await loadCurrent();
+      } catch (error) {
+        notice.textContent = `Could not start review: ${error.message}`;
+      }
+    }
+    zoomInput.addEventListener('input', () => { zoomValue.textContent = `${zoomInput.value}x`; draw(); });
+    chooseButton.addEventListener('click', chooseFolder);
+    document.getElementById('true').addEventListener('click', () => saveLabel('true'));
+    document.getElementById('mid').addEventListener('click', () => saveLabel('mid'));
+    document.getElementById('false').addEventListener('click', () => saveLabel('false'));
+    document.getElementById('skip').addEventListener('click', async () => { index += 1; await loadCurrent(); });
+    window.addEventListener('keydown', event => {
+      if (event.repeat || !rootHandle) return;
+      if (event.key === '1') saveLabel('true');
+      if (event.key === '2') saveLabel('mid');
+      if (event.key === '3') saveLabel('false');
+      if (event.key.toLowerCase() === 's') { index += 1; loadCurrent(); }
+    });
+  </script>
+</body>
+</html>

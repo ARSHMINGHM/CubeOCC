@@ -10,6 +10,7 @@ parent: 15_TASK_BACKLOG
 Parent task tree:
 
 - [[15_TASK_BACKLOG]]
+- [[15_07_XSIM_RTL_ROI_REVIEW]]
 
 Related notes:
 
@@ -68,11 +69,14 @@ DATA recovery when corner cells are black
 -> accept the footprint only when it spans at least 45 percent of both camera dimensions
 -> output its bounds as the new ROI
 
-END / blank frame
+END marker / incomplete geometry
 -> retain the most recent accepted ROI
+
+Full-off screen after END
+-> stop tracking and ignore frames until another full-white START
 ```
 
-The detector needs no manually clicked seed point. It is designed for the bright START frame / bright sender screen surrounded by a darker monitor border. DATA frames cannot be detected solely from white corner cells: valid payloads can have black corner cells. The model therefore tries four local corner-marker windows, then uses the full bright footprint if needed, and holds the last calibration on blank or END frames. It uses no full-frame storage, image warp, convolution, global edge accumulator, BRAM, DSP multiplier, or divider. The result is an axis-aligned ROI because Camera 2 sensor control needs `x`, `y`, `width`, and `height`.
+The detector needs no manually clicked seed point. It waits for the all-white START frame, then tracks the four mandatory DATA corner markers using the outside bright row/column combinations. The model keeps the previous accepted geometry when a marker is weak or the END pattern appears. Only a full-off screen returns it to waiting mode, where later frames are ignored until another all-white START. It uses no full-frame storage, convolution, global edge accumulator, BRAM, DSP multiplier, or divider. The DATA output is a four-point quadrilateral; the current V1 sensor-control output remains an axis-aligned `x`, `y`, `width`, and `height` box.
 
 The default threshold is `180`, but the model caps it at `brightest_pixel - 20` for a dim capture. This explains why the original fixed threshold missed `MLCAP_002_Near_30fps`: its brightest grayscale sample was only `168`.
 
@@ -95,7 +99,7 @@ It also stores the selected detector mode, configured and effective threshold, m
 
 ## Failure Analysis
 
-The first review found three distinct failure classes: a partial white payload band was mistaken for an ROI, dim frames fell below the fixed threshold, and DATA frames sometimes have black corner cells. The current two-stage model fixes those cases with START acquisition, data-footprint recovery, and hold-last-ROI behavior. On the current 807-image corpus it returns an ROI for every image; that is a software-model result, not yet a claim that the extension is synthesized in Vivado.
+The first review found three distinct failure classes: a partial white payload band was mistaken for an ROI, dim frames fell below the fixed threshold, and angled frames displaced the physical corner boxes from the axis-aligned bounding-box corners. The current stateful model fixes these with START acquisition, diagonal outside-corner extrema, previous-frame plausibility checks, and full-off reset behavior. This is a software-model result, not yet a claim that the extension is synthesized in Vivado.
 
 After review, share the remaining `false` and `mid` annotated images plus `roi_review.json`. We can compare them with the diagnostics to identify likely causes: distance, angle, glare, low contrast, blur, or a geometry change larger than the retained-ROI policy can tolerate.
 

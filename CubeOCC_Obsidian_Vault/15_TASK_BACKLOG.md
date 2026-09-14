@@ -115,11 +115,14 @@ Child note:
 - [[15_02_ROI_WARP_AND_DEGRADATION_TOOL]]
 - [[15_04_MANUAL_ROI_CORNER_REVIEW]]
 - [[15_05_FPGA_START_ROI_DETECTOR]]
+- [[15_06_SOURCES_AND_FPGA_UI]]
+- [[15_07_XSIM_RTL_ROI_REVIEW]]
 
 - [ ] Label each monitor-capture image set with distance.
 - [ ] Automatically detect and save Camera 1 ROI corners from the 640x480 grayscale review camera.
 - [ ] Grade each automatic ROI as `true`, `mid`, or `false` and retain annotated false cases for detector failure analysis.
 - [x] Implement the one-pass fixed-threshold, longest-bright-run-per-row ROI detector in RTL and verify it with XSim.
+- [x] Implement and XSim-test the START/DATA/full-off ROI tracker: outside-corner extrema, prior-ROI hold, idle DATA ignore, and START reacquisition.
 - [ ] Evaluate the V1 RTL-equivalent detector across monitor captures using `true`, `mid`, and `false` review labels.
 - [x] Keep V1 ROI detection to counters and min/max registers; do not use full-frame storage, BRAM, DSPs, or edge/Hough processing.
 - [ ] Label each monitor-capture image set with viewing angle.

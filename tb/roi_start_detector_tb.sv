@@ -1,17 +1,21 @@
 `timescale 1ns/1ps
 
 module roi_start_detector_tb;
+    localparam int FRAME_WIDTH = 64;
+    localparam int FRAME_HEIGHT = 48;
+
     logic pclk = 1'b0;
     logic rst_n = 1'b0;
     logic vsync = 1'b1;
     logic href = 1'b0;
     logic [7:0] pixel_data = 8'd0;
     logic roi_valid;
+    logic tracking_active;
     logic frame_done;
-    logic [9:0] roi_x;
-    logic [9:0] roi_y;
-    logic [9:0] roi_width;
-    logic [9:0] roi_height;
+    logic [9:0] roi_x, roi_width;
+    logic [9:0] roi_y, roi_height;
+    logic [9:0] roi_tl_x, roi_tr_x, roi_br_x, roi_bl_x;
+    logic [9:0] roi_tl_y, roi_tr_y, roi_br_y, roi_bl_y;
 
     always #5 pclk = ~pclk;
 
@@ -24,29 +28,59 @@ module roi_start_detector_tb;
         .bright_threshold(8'd180),
         .min_line_run(10'd20),
         .min_roi_height(10'd12),
+        .full_off_max_pixels(32'd0),
         .roi_valid,
+        .tracking_active,
         .frame_done,
         .roi_x,
         .roi_y,
         .roi_width,
-        .roi_height
+        .roi_height,
+        .roi_tl_x,
+        .roi_tl_y,
+        .roi_tr_x,
+        .roi_tr_y,
+        .roi_br_x,
+        .roi_br_y,
+        .roi_bl_x,
+        .roi_bl_y
     );
 
-    task automatic send_frame;
+    task automatic send_pixels(input int frame_kind);
         int row;
         int col;
+        bit is_start;
+        bit is_data_marker;
+        bit is_payload;
+        bit is_outlier;
+        bit is_tiny_noise;
         begin
             @(negedge pclk);
             vsync = 1'b0;
             href = 1'b0;
             pixel_data = 8'd0;
-            for (row = 0; row < 48; row++) begin
-                for (col = 0; col < 64; col++) begin
+            for (row = 0; row < FRAME_HEIGHT; row++) begin
+                for (col = 0; col < FRAME_WIDTH; col++) begin
                     @(negedge pclk);
                     href = 1'b1;
-                    // One-line reflection plus the tall sender START region.
-                    pixel_data = ((row == 2 && col >= 20 && col <= 45) ||
-                                  (row >= 8 && row <= 35 && col >= 10 && col <= 50)) ? 8'd255 : 8'd0;
+                    is_start = (row >= 8 && row <= 35 && col >= 10 && col <= 50);
+                    is_data_marker = ((row >= 8 && row <= 12 && col >= 10 && col <= 15) ||
+                                      (row >= 8 && row <= 12 && col >= 45 && col <= 50) ||
+                                      (row >= 31 && row <= 35 && col >= 45 && col <= 50) ||
+                                      (row >= 31 && row <= 35 && col >= 10 && col <= 15));
+                    is_payload = (row >= 16 && row <= 22 && col >= 24 && col <= 31);
+                    is_outlier = (row >= 2 && row <= 7 && col >= 54 && col <= 59);
+                    is_tiny_noise = (row >= 5 && row <= 6 && col >= 7 && col <= 8);
+                    case (frame_kind)
+                        0: pixel_data = is_start ? 8'd255 : 8'd0;                         // START
+                        1: pixel_data = (is_data_marker || is_payload) ? 8'd255 : 8'd0;   // DATA
+                        2: pixel_data = is_outlier ? 8'd255 : 8'd0;                       // bad DATA
+                        5: pixel_data = (is_data_marker || is_payload || is_tiny_noise) ? 8'd255 : 8'd0;
+                        4: pixel_data = (row >= 8 && row <= 35 &&
+                                          col >= 10 + ((row - 8) >> 2) &&
+                                          col <= 50 + ((row - 8) >> 2)) ? 8'd255 : 8'd0;     // angled START
+                        default: pixel_data = 8'd0;                                        // full-off
+                    endcase
                 end
                 @(negedge pclk);
                 href = 1'b0;
@@ -57,16 +91,78 @@ module roi_start_detector_tb;
         end
     endtask
 
+    task automatic wait_for_frame;
+        begin
+            @(posedge frame_done);
+            #1;
+        end
+    endtask
+
     initial begin
         repeat (4) @(posedge pclk);
         rst_n = 1'b1;
-        send_frame();
-        @(posedge frame_done);
-        $display("ROI x=%0d y=%0d width=%0d height=%0d", roi_x, roi_y, roi_width, roi_height);
-        if (roi_valid && roi_x == 10 && roi_y == 8 && roi_width == 41 && roi_height == 28) begin
-            $display("Result: ROI START DETECTOR PASS");
+
+        send_pixels(0);
+        wait_for_frame();
+        if (!tracking_active || !roi_valid || roi_x != 10 || roi_y != 8 || roi_width != 41 || roi_height != 28) begin
+            $display("Result: FAIL START acquisition");
+            $finish;
+        end
+
+        send_pixels(1);
+        wait_for_frame();
+        if (!tracking_active || !roi_valid || roi_tl_x != 10 || roi_tl_y != 8 || roi_br_x != 50 || roi_br_y != 35) begin
+            $display("Result: FAIL DATA outside-corner update");
+            $finish;
+        end
+
+        send_pixels(5);
+        wait_for_frame();
+        if (!tracking_active || !roi_valid || roi_tl_x != 10 || roi_tl_y != 8 || roi_br_x != 50 || roi_br_y != 35) begin
+            $display("Result: FAIL tiny-noise box rejection");
+            $finish;
+        end
+
+        send_pixels(2);
+        wait_for_frame();
+        if (!tracking_active || !roi_valid || roi_tl_x != 10 || roi_tl_y != 8 || roi_br_x != 50 || roi_br_y != 35) begin
+            $display("Result: FAIL prior-ROI hold");
+            $finish;
+        end
+
+        send_pixels(3);
+        wait_for_frame();
+        if (tracking_active || roi_valid) begin
+            $display("Result: FAIL full-off stop");
+            $finish;
+        end
+
+        send_pixels(1);
+        wait_for_frame();
+        if (tracking_active || roi_valid) begin
+            $display("Result: FAIL idle DATA ignore");
+            $finish;
+        end
+
+        send_pixels(0);
+        wait_for_frame();
+        if (tracking_active && roi_valid && roi_x == 10 && roi_y == 8 && roi_width == 41 && roi_height == 28) begin
+            $display("Result: ROI PROTOCOL TRACKER PASS");
         end else begin
-            $display("Result: ROI START DETECTOR FAIL");
+            $display("Result: FAIL START reacquisition");
+            $finish;
+        end
+
+        send_pixels(3);
+        wait_for_frame();
+        send_pixels(4);
+        wait_for_frame();
+        if (tracking_active && roi_valid &&
+            roi_tl_x == 10 && roi_tl_y == 8 && roi_tr_x == 50 && roi_tr_y == 8 &&
+            roi_br_x == 56 && roi_br_y == 35 && roi_bl_x == 16 && roi_bl_y == 35) begin
+            $display("Result: ANGLED START CORNER PASS");
+        end else begin
+            $display("Result: FAIL angled START corners");
         end
         $finish;
     end

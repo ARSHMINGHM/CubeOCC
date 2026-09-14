@@ -12,7 +12,22 @@ module cubeocc_top (
     output logic       m_axis_tvalid,
     input  logic       m_axis_tready,
     output logic       m_axis_tlast,
-    output logic       m_axis_tuser
+    output logic       m_axis_tuser,
+
+    output logic       roi_valid,
+    output logic       roi_tracking_active,
+    output logic [9:0] roi_x,
+    output logic [9:0] roi_y,
+    output logic [9:0] roi_width,
+    output logic [9:0] roi_height,
+    output logic [9:0] roi_tl_x,
+    output logic [9:0] roi_tl_y,
+    output logic [9:0] roi_tr_x,
+    output logic [9:0] roi_tr_y,
+    output logic [9:0] roi_br_x,
+    output logic [9:0] roi_br_y,
+    output logic [9:0] roi_bl_x,
+    output logic [9:0] roi_bl_y
 );
 
     logic [7:0] axis_cam_tdata;
@@ -159,6 +174,36 @@ module cubeocc_top (
     assign m_axis_tvalid = hls_axis_tvalid;
     assign m_axis_tlast = hls_axis_tvalid && (out_col_count == 7'd127);
     assign m_axis_tuser = hls_axis_tuser;
+
+    // Camera 1 tracking runs beside the DVP-to-AXIS data path. The current
+    // constants are V1 test defaults and become camera-control registers
+    // when Camera 2 ROI I2C programming is integrated.
+    roi_start_detector u_roi_tracker (
+        .pclk(pclk),
+        .rst_n(rst_n),
+        .vsync(cam_vsync),
+        .href(cam_href),
+        .pixel_data(cam_pixel_data),
+        .bright_threshold(8'd180),
+        .min_line_run(10'd20),
+        .min_roi_height(10'd12),
+        .full_off_max_pixels(32'd0),
+        .roi_valid,
+        .tracking_active(roi_tracking_active),
+        .frame_done(),
+        .roi_x,
+        .roi_y,
+        .roi_width,
+        .roi_height,
+        .roi_tl_x,
+        .roi_tl_y,
+        .roi_tr_x,
+        .roi_tr_y,
+        .roi_br_x,
+        .roi_br_y,
+        .roi_bl_x,
+        .roi_bl_y
+    );
 
     dvp_to_axis u_dvp_to_axis (
         .pclk(pclk),

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Manually mark and grade CubeOCC sender ROI corners in monitor captures.
+"""Manually grade CubeOCC sender ROI corners in monitor captures.
 
-The reviewer works on a small monochrome camera representation. It writes the
-four selected ROI points, a true/mid/false grade, and a red-dot annotation for
-every labeled image. This becomes ground truth for improving ROI detection.
+The reviewer displays a small monochrome camera representation, detector
+corners, a true/mid/false grade, and a red-dot annotation for every image. It
+can use the fast Python reference model or coordinates emitted by XSim from
+the actual roi_start_detector RTL.
 """
 
 from __future__ import annotations
@@ -99,28 +100,61 @@ def prepare_fresh_review_output(input_dir: Path, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
 
+def load_rtl_results(path: Path) -> dict[str, Any]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("format") != "cubeocc-xsim-roi-results-v1":
+        raise ValueError(f"not a CubeOCC XSim ROI result manifest: {path}")
+    camera = data.get("camera_model", {})
+    if not isinstance(data.get("images"), list) or not isinstance(camera.get("width"), int) or not isinstance(camera.get("height"), int):
+        raise ValueError(f"incomplete CubeOCC XSim ROI result manifest: {path}")
+    return data
+
+
 class RoiCornerLabeler(tk.Tk):
-    def __init__(self, input_dir: Path, output_dir: Path, threshold: int, min_run: int, min_roi_height: int) -> None:
+    def __init__(
+        self,
+        input_dir: Path,
+        output_dir: Path,
+        threshold: int,
+        min_run: int,
+        min_roi_height: int,
+        rtl_results: dict[str, Any] | None = None,
+        rtl_results_path: Path | None = None,
+    ) -> None:
         super().__init__()
         self.input_dir = input_dir.resolve()
         self.output_dir = output_dir.resolve()
+        self.rtl_results = rtl_results
+        self.rtl_results_path = rtl_results_path
+        self.rtl_records = {
+            str(record["relative_path"]): record
+            for record in rtl_results.get("images", [])
+        } if rtl_results is not None else {}
+        camera = rtl_results.get("camera_model", {}) if rtl_results is not None else {}
+        self.camera_size = (int(camera.get("width", CAMERA_SIZE[0])), int(camera.get("height", CAMERA_SIZE[1])))
         self.preview_dir = self.output_dir / "camera_gray"
         self.annotated_dir = self.output_dir / "annotated"
         self.manifest_path = self.output_dir / "roi_review.json"
         self.started_at = datetime.now(timezone.utc).isoformat()
         self.results: dict[str, Any] = {}
-        self.images = list(iter_images(self.input_dir, self.output_dir))
+        self.images = (
+            [self.input_dir / record["relative_path"] for record in rtl_results["images"]]
+            if rtl_results is not None
+            else list(iter_images(self.input_dir, self.output_dir))
+        )
         self.index = 0
         self.current_camera: Image.Image | None = None
         self.current_transform: dict[str, float] | None = None
         self.photo: ImageTk.PhotoImage | None = None
         self.detected_corners: list[tuple[int, int] | None] = [None, None, None, None]
         self.detector_diagnostics: dict[str, Any] = {}
-        self.tracking_roi: dict[str, int] | None = None
+        self.tracker_state: dict[str, Any] | None = None
+        self.pending_tracker_state: dict[str, Any] | None = None
         self.current_set: str | None = None
         self.threshold = tk.IntVar(value=threshold)
         self.min_run = tk.IntVar(value=min_run)
         self.min_roi_height = tk.IntVar(value=min_roi_height)
+        self.zoom = tk.IntVar(value=min(4, max(1, min(640 // self.camera_size[0], 480 // self.camera_size[1]))))
 
         self.title("CubeOCC ROI Corner Reviewer")
         self.resizable(False, False)
@@ -134,9 +168,16 @@ class RoiCornerLabeler(tk.Tk):
         self.bind("A", lambda _event: self.run_detector())
 
         self.status = tk.StringVar()
-        self.help_text = tk.StringVar(value="Automatic FPGA-style ROI shown in red. Press 1=true, 2=mid, or 3=false.")
+        initial_help = "XSim RTL ROI shown in red. Press 1=true, 2=mid, or 3=false." if rtl_results is not None else "Automatic FPGA-style ROI shown in red. Press 1=true, 2=mid, or 3=false."
+        self.help_text = tk.StringVar(value=initial_help)
         tk.Label(self, textvariable=self.status, anchor="w", padx=8).pack(fill="x", pady=(8, 0))
-        self.canvas = tk.Canvas(self, width=CAMERA_SIZE[0], height=CAMERA_SIZE[1], highlightthickness=1, highlightbackground="#777777")
+        self.canvas = tk.Canvas(
+            self,
+            width=self.camera_size[0] * self.zoom.get(),
+            height=self.camera_size[1] * self.zoom.get(),
+            highlightthickness=1,
+            highlightbackground="#777777",
+        )
         self.canvas.pack(padx=8, pady=8)
         controls = tk.Frame(self)
         controls.pack(fill="x", padx=8)
@@ -153,6 +194,24 @@ class RoiCornerLabeler(tk.Tk):
         tk.Label(tracker_controls, text="Minimum ROI height").pack(side="left")
         tk.Spinbox(tracker_controls, from_=1, to=480, width=5, textvariable=self.min_roi_height, command=self.run_detector).pack(side="left", padx=(5, 12))
         tk.Button(tracker_controls, text="A  Re-run ROI detector", command=self.run_detector).pack(side="left")
+        if rtl_results is not None:
+            for child in tracker_controls.winfo_children():
+                child.configure(state="disabled")
+        display_controls = tk.Frame(self)
+        display_controls.pack(fill="x", padx=8, pady=(6, 0))
+        tk.Label(display_controls, text="Display zoom").pack(side="left")
+        tk.Scale(
+            display_controls,
+            from_=1,
+            to=6,
+            orient="horizontal",
+            variable=self.zoom,
+            showvalue=True,
+            resolution=1,
+            command=lambda _value: self.apply_zoom(),
+            length=180,
+        ).pack(side="left", padx=(8, 0))
+        tk.Label(display_controls, text="Zoom changes the view only; labels keep the native RTL coordinates.").pack(side="left", padx=(12, 0))
         tk.Label(self, textvariable=self.help_text, anchor="w", padx=8, pady=8).pack(fill="x")
         self.load_current()
 
@@ -165,10 +224,12 @@ class RoiCornerLabeler(tk.Tk):
             for grade in ("true", "mid", "false")
         }
         data = {
-            "format": "cubeocc-roi-corner-review-v2",
+            "format": "cubeocc-roi-corner-review-v3",
             "review_started_utc": self.started_at,
             "input_dir": str(self.input_dir),
-            "camera_model": {"mode": "grayscale", "width": CAMERA_SIZE[0], "height": CAMERA_SIZE[1]},
+            "camera_model": {"mode": "grayscale", "width": self.camera_size[0], "height": self.camera_size[1]},
+            "roi_source": "XSim RTL output" if self.rtl_results is not None else "Python RTL-equivalent reference model",
+            "rtl_results_manifest": None if self.rtl_results_path is None else str(self.rtl_results_path),
             "dot_radius_pixels": DOT_RADIUS,
             "grade_definitions": {
                 "true": "automatic RTL-equivalent ROI accurately bounds the sender ROI",
@@ -198,9 +259,18 @@ class RoiCornerLabeler(tk.Tk):
         capture_set = path.parent.name
         if capture_set != self.current_set:
             self.current_set = capture_set
-            self.tracking_roi = None
-        with Image.open(path) as source:
-            self.current_camera, self.current_transform = letterbox_grayscale(source)
+            self.tracker_state = None
+            self.pending_tracker_state = None
+        if self.rtl_results is not None:
+            record = self.rtl_records[self.relative_name(path)]
+            assert self.rtl_results_path is not None
+            gray_path = self.rtl_results_path.parent / record["camera_gray_path"]
+            with Image.open(gray_path) as camera_gray:
+                self.current_camera = camera_gray.convert("L")
+            self.current_transform = record["letterbox_transform"]
+        else:
+            with Image.open(path) as source:
+                self.current_camera, self.current_transform = letterbox_grayscale(source)
         self.detected_corners = [None, None, None, None]
         self.detector_diagnostics = {}
         self.status.set(f"{self.index + 1}/{len(self.images)}  {self.relative_name(path)}")
@@ -211,25 +281,51 @@ class RoiCornerLabeler(tk.Tk):
         if self.current_camera is None:
             return
         display = annotated_image(self.current_camera, self.detected_corners)
+        zoom = max(1, min(6, int(self.zoom.get())))
+        if zoom != 1:
+            display = display.resize((display.width * zoom, display.height * zoom), Image.Resampling.NEAREST)
         self.photo = ImageTk.PhotoImage(display)
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, image=self.photo, anchor="nw")
 
+    def apply_zoom(self) -> None:
+        zoom = max(1, min(6, int(self.zoom.get())))
+        if zoom != self.zoom.get():
+            self.zoom.set(zoom)
+        self.canvas.configure(width=self.camera_size[0] * zoom, height=self.camera_size[1] * zoom)
+        self.redraw()
+
     def skip_current(self) -> None:
         if self.index < len(self.images):
+            self.commit_tracking_state(accept_data=True)
             self.index += 1
             self.load_current()
 
     def run_detector(self) -> None:
         if self.current_camera is None:
             return
+        if self.rtl_results is not None:
+            record = self.rtl_records[self.relative_name(self.images[self.index])]
+            corners = record["camera_corners"]
+            self.detected_corners = [
+                None if corners[name] is None else tuple(corners[name])
+                for name in CORNER_NAMES
+            ]
+            self.detector_diagnostics = record["fpga_roi_detector"]
+            self.pending_tracker_state = None
+            if all(point is not None for point in self.detected_corners):
+                self.help_text.set("XSim RTL ROI shown in red. Press 1=true, 2=mid, or 3=false.")
+            else:
+                self.help_text.set("XSim RTL did not emit a valid ROI. Press 3=false, or S to leave this image ungraded.")
+            self.redraw()
+            return
         try:
-            self.detected_corners, self.detector_diagnostics, _next_roi = detect_frame_roi(
+            self.detected_corners, self.detector_diagnostics, self.pending_tracker_state = detect_frame_roi(
                 self.current_camera,
                 int(self.threshold.get()),
                 int(self.min_run.get()),
                 int(self.min_roi_height.get()),
-                self.tracking_roi,
+                self.tracker_state,
             )
         except (tk.TclError, ValueError) as exc:
             self.bell()
@@ -241,6 +337,17 @@ class RoiCornerLabeler(tk.Tk):
         else:
             self.help_text.set("No valid ROI found. Press 3=false, or tune controls and press A.")
         self.redraw()
+
+    def commit_tracking_state(self, accept_data: bool) -> None:
+        if self.pending_tracker_state is None:
+            return
+        mode = self.detector_diagnostics.get("mode")
+        control_modes = {
+            "ignored-waiting-for-full-white-start",
+            "full-off-end",
+        }
+        if accept_data or mode in control_modes:
+            self.tracker_state = self.pending_tracker_state
 
     def grade_current(self, grade: str) -> None:
         if self.index >= len(self.images):
@@ -265,8 +372,7 @@ class RoiCornerLabeler(tk.Tk):
             "fpga_roi_detector": self.detector_diagnostics,
         }
         self.save_results()
-        if grade != "false" and self.detector_diagnostics.get("valid"):
-            self.tracking_roi = self.detector_diagnostics.get("roi_box")
+        self.commit_tracking_state(accept_data=grade != "false")
         self.index += 1
         self.load_current()
 
@@ -283,12 +389,24 @@ def main() -> int:
     parser.add_argument("--threshold", type=int, default=180, help="Fixed grayscale threshold for the FPGA-style ROI detector (0 to 255).")
     parser.add_argument("--min-run", type=int, default=32, help="RTL min_line_run: minimum bright pixels on a qualifying image row.")
     parser.add_argument("--min-roi-height", type=int, default=16, help="RTL min_roi_height: minimum height of the accepted bright band.")
+    parser.add_argument("--rtl-results", type=Path, help="Use rtl_results.json from run_roi_rtl_sim.py instead of the Python reference model.")
     args = parser.parse_args()
 
-    root = tk.Tk()
-    root.withdraw()
-    input_dir = args.input_dir or choose_input_dir()
-    root.destroy()
+    rtl_results: dict[str, Any] | None = None
+    rtl_results_path: Path | None = None
+    if args.rtl_results is not None:
+        rtl_results_path = args.rtl_results.resolve()
+        try:
+            rtl_results = load_rtl_results(rtl_results_path)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
+        input_dir = args.input_dir or Path(rtl_results["input_dir"])
+    else:
+        root = tk.Tk()
+        root.withdraw()
+        input_dir = args.input_dir or choose_input_dir()
+        root.destroy()
     if input_dir is None:
         return 0
     if not input_dir.is_dir():
@@ -297,13 +415,13 @@ def main() -> int:
     if not 0 <= args.threshold <= 255 or args.min_run < 1 or args.min_roi_height < 1:
         print("ERROR: threshold must be 0..255 and both minimum dimensions must be positive", file=sys.stderr)
         return 2
-    output_dir = args.out or input_dir / "roi_review"
+    output_dir = args.out or (rtl_results_path.parent / "roi_review" if rtl_results_path is not None else input_dir / "roi_review")
     try:
         prepare_fresh_review_output(input_dir.resolve(), output_dir.resolve())
     except ValueError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
-    app = RoiCornerLabeler(input_dir, output_dir, args.threshold, args.min_run, args.min_roi_height)
+    app = RoiCornerLabeler(input_dir, output_dir, args.threshold, args.min_run, args.min_roi_height, rtl_results, rtl_results_path)
     if not app.images:
         messagebox.showinfo("CubeOCC ROI Corner Reviewer", "No images found in the selected folder.")
         app.destroy()

@@ -4,6 +4,9 @@ vivado/CubeOCC/CubeOCC.ip_user_files/ipstatic/
 vivado/CubeOCC/CubeOCC.cache/wt/
 vivado/CubeOCC/CubeOCC.runs/.jobs/
 sim/image_test/
+sim/roi_rtl_*/
+xsim.dir/
+dataset/__pycache__/
 *.jou
 *.log
 *.pb

@@ -1,0 +1,1048 @@
+{
+  "format": "cubeocc-roi-corner-review-v2",
+  "review_started_utc": "2026-09-13T15:17:14.371006+00:00",
+  "input_dir": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures",
+  "camera_model": {
+    "mode": "grayscale",
+    "width": 640,
+    "height": 480
+  },
+  "dot_radius_pixels": 10,
+  "grade_definitions": {
+    "true": "automatic RTL-equivalent ROI accurately bounds the sender ROI",
+    "mid": "ROI is usable but corners or edges are noticeably imprecise",
+    "false": "points do not identify the sender ROI"
+  },
+  "summary": {
+    "labeled_count": 13,
+    "true_count": 13,
+    "mid_count": 0,
+    "false_count": 0,
+    "needs_check": []
+  },
+  "images": {
+    "MLCAP_001_Baseline_30fps/frame_00.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_00.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_00.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_00.png",
+      "camera_corners": {
+        "tl": [
+          112,
+          18
+        ],
+        "tr": [
+          533,
+          18
+        ],
+        "br": [
+          533,
+          435
+        ],
+        "bl": [
+          112,
+          435
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          80.17,
+          36.07
+        ],
+        "tr": [
+          923.92,
+          36.07
+        ],
+        "br": [
+          923.92,
+          871.81
+        ],
+        "bl": [
+          80.17,
+          871.81
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 994,
+        "source_height": 962,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.498960498960499,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 418,
+        "valid": true,
+        "roi_box": {
+          "left": 112,
+          "top": 18,
+          "right": 533,
+          "bottom": 435
+        },
+        "roi_width": 422,
+        "roi_height": 418,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_01.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_01.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_01.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_01.png",
+      "camera_corners": {
+        "tl": [
+          110,
+          25
+        ],
+        "tr": [
+          526,
+          25
+        ],
+        "br": [
+          526,
+          437
+        ],
+        "bl": [
+          110,
+          437
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          72.93,
+          56.98
+        ],
+        "tr": [
+          1021.07,
+          56.98
+        ],
+        "br": [
+          1021.07,
+          996.0
+        ],
+        "bl": [
+          72.93,
+          996.0
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 1104,
+        "source_height": 1094,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.43875685557586835,
+        "offset_x": 78,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 413,
+        "valid": true,
+        "roi_box": {
+          "left": 110,
+          "top": 25,
+          "right": 526,
+          "bottom": 437
+        },
+        "roi_width": 417,
+        "roi_height": 413,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_02.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_02.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_02.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_02.png",
+      "camera_corners": {
+        "tl": [
+          114,
+          14
+        ],
+        "tr": [
+          535,
+          14
+        ],
+        "br": [
+          535,
+          432
+        ],
+        "bl": [
+          114,
+          432
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          84.17,
+          28.06
+        ],
+        "tr": [
+          927.93,
+          28.06
+        ],
+        "br": [
+          927.93,
+          865.8
+        ],
+        "bl": [
+          84.17,
+          865.8
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 994,
+        "source_height": 962,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.498960498960499,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 419,
+        "valid": true,
+        "roi_box": {
+          "left": 114,
+          "top": 14,
+          "right": 535,
+          "bottom": 432
+        },
+        "roi_width": 422,
+        "roi_height": 419,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_03.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_03.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_03.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_03.png",
+      "camera_corners": {
+        "tl": [
+          99,
+          24
+        ],
+        "tr": [
+          531,
+          24
+        ],
+        "br": [
+          531,
+          452
+        ],
+        "bl": [
+          99,
+          452
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          39.52,
+          26.35
+        ],
+        "tr": [
+          513.83,
+          26.35
+        ],
+        "br": [
+          513.83,
+          496.26
+        ],
+        "bl": [
+          39.52,
+          496.26
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 563,
+        "source_height": 527,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.9108159392789373,
+        "offset_x": 63,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 429,
+        "valid": true,
+        "roi_box": {
+          "left": 99,
+          "top": 24,
+          "right": 531,
+          "bottom": 452
+        },
+        "roi_width": 433,
+        "roi_height": 429,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_04.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_04.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_04.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_04.png",
+      "camera_corners": {
+        "tl": [
+          114,
+          14
+        ],
+        "tr": [
+          535,
+          14
+        ],
+        "br": [
+          535,
+          432
+        ],
+        "bl": [
+          114,
+          432
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          84.17,
+          28.06
+        ],
+        "tr": [
+          927.93,
+          28.06
+        ],
+        "br": [
+          927.93,
+          865.8
+        ],
+        "bl": [
+          84.17,
+          865.8
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 994,
+        "source_height": 962,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.498960498960499,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 419,
+        "valid": true,
+        "roi_box": {
+          "left": 114,
+          "top": 14,
+          "right": 535,
+          "bottom": 432
+        },
+        "roi_width": 422,
+        "roi_height": 419,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_05.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_05.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_05.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_05.png",
+      "camera_corners": {
+        "tl": [
+          107,
+          24
+        ],
+        "tr": [
+          527,
+          24
+        ],
+        "br": [
+          527,
+          441
+        ],
+        "bl": [
+          107,
+          441
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          36.13,
+          27.1
+        ],
+        "tr": [
+          510.38,
+          27.1
+        ],
+        "br": [
+          510.38,
+          497.96
+        ],
+        "bl": [
+          36.13,
+          497.96
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 553,
+        "source_height": 542,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.8856088560885609,
+        "offset_x": 75,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 418,
+        "valid": true,
+        "roi_box": {
+          "left": 107,
+          "top": 24,
+          "right": 527,
+          "bottom": 441
+        },
+        "roi_width": 421,
+        "roi_height": 418,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_06.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_06.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_06.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_06.png",
+      "camera_corners": {
+        "tl": [
+          113,
+          14
+        ],
+        "tr": [
+          535,
+          14
+        ],
+        "br": [
+          535,
+          432
+        ],
+        "bl": [
+          113,
+          432
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          82.17,
+          28.06
+        ],
+        "tr": [
+          927.93,
+          28.06
+        ],
+        "br": [
+          927.93,
+          865.8
+        ],
+        "bl": [
+          82.17,
+          865.8
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 994,
+        "source_height": 962,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.498960498960499,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 419,
+        "valid": true,
+        "roi_box": {
+          "left": 113,
+          "top": 14,
+          "right": 535,
+          "bottom": 432
+        },
+        "roi_width": 423,
+        "roi_height": 419,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_07.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_07.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_07.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_07.png",
+      "camera_corners": {
+        "tl": [
+          111,
+          25
+        ],
+        "tr": [
+          526,
+          25
+        ],
+        "br": [
+          526,
+          438
+        ],
+        "bl": [
+          111,
+          438
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          44.36,
+          28.44
+        ],
+        "tr": [
+          516.42,
+          28.44
+        ],
+        "br": [
+          516.42,
+          498.23
+        ],
+        "bl": [
+          44.36,
+          498.23
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 563,
+        "source_height": 546,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.8791208791208791,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 414,
+        "valid": true,
+        "roi_box": {
+          "left": 111,
+          "top": 25,
+          "right": 526,
+          "bottom": 438
+        },
+        "roi_width": 416,
+        "roi_height": 414,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_08.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_08.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_08.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_08.png",
+      "camera_corners": {
+        "tl": [
+          104,
+          20
+        ],
+        "tr": [
+          526,
+          20
+        ],
+        "br": [
+          526,
+          440
+        ],
+        "bl": [
+          104,
+          440
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          22.42,
+          22.42
+        ],
+        "tr": [
+          495.41,
+          22.42
+        ],
+        "br": [
+          495.41,
+          493.17
+        ],
+        "bl": [
+          22.42,
+          493.17
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 529,
+        "source_height": 538,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.8921933085501859,
+        "offset_x": 84,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 421,
+        "valid": true,
+        "roi_box": {
+          "left": 104,
+          "top": 20,
+          "right": 526,
+          "bottom": 440
+        },
+        "roi_width": 423,
+        "roi_height": 421,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_09.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_09.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_09.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_09.png",
+      "camera_corners": {
+        "tl": [
+          114,
+          15
+        ],
+        "tr": [
+          535,
+          15
+        ],
+        "br": [
+          535,
+          432
+        ],
+        "bl": [
+          114,
+          432
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          84.17,
+          30.06
+        ],
+        "tr": [
+          927.93,
+          30.06
+        ],
+        "br": [
+          927.93,
+          865.8
+        ],
+        "bl": [
+          84.17,
+          865.8
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 994,
+        "source_height": 962,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.498960498960499,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 418,
+        "valid": true,
+        "roi_box": {
+          "left": 114,
+          "top": 15,
+          "right": 535,
+          "bottom": 432
+        },
+        "roi_width": 422,
+        "roi_height": 418,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_10.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_10.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_10.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_10.png",
+      "camera_corners": {
+        "tl": [
+          103,
+          21
+        ],
+        "tr": [
+          530,
+          21
+        ],
+        "br": [
+          530,
+          448
+        ],
+        "bl": [
+          103,
+          448
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          44.17,
+          23.19
+        ],
+        "tr": [
+          515.65,
+          23.19
+        ],
+        "br": [
+          515.65,
+          494.67
+        ],
+        "bl": [
+          44.17,
+          494.67
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 566,
+        "source_height": 530,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.9056603773584906,
+        "offset_x": 63,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "engine": "rtl/roi_start_detector.sv reference model",
+        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "threshold": 180,
+        "min_line_run": 32,
+        "min_roi_height": 16,
+        "max_row_gap": 2,
+        "qualifying_row_count": 428,
+        "valid": true,
+        "roi_box": {
+          "left": 103,
+          "top": 21,
+          "right": 530,
+          "bottom": 448
+        },
+        "roi_width": 428,
+        "roi_height": 428,
+        "mode": "start-acquisition",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_11.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_11.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_11.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_11.png",
+      "camera_corners": {
+        "tl": [
+          104,
+          22
+        ],
+        "tr": [
+          531,
+          22
+        ],
+        "br": [
+          531,
+          448
+        ],
+        "bl": [
+          104,
+          448
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          34.23,
+          24.29
+        ],
+        "tr": [
+          505.71,
+          24.29
+        ],
+        "br": [
+          505.71,
+          494.67
+        ],
+        "bl": [
+          34.23,
+          494.67
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 545,
+        "source_height": 530,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.9056603773584906,
+        "offset_x": 73,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "algorithm": "four-fixed-corner-marker-windows",
+        "threshold": 180,
+        "prior_roi": {
+          "left": 103,
+          "top": 21,
+          "right": 530,
+          "bottom": 448
+        },
+        "cell_width": 53,
+        "cell_height": 53,
+        "minimum_marker_pixels": 140,
+        "accumulators": [
+          {
+            "count": 2349,
+            "sum_x": 308826,
+            "sum_y": 115173
+          },
+          {
+            "count": 2605,
+            "sum_x": 1313100,
+            "sum_y": 127445
+          },
+          {
+            "count": 2546,
+            "sum_x": 1287101,
+            "sum_y": 1076864
+          },
+          {
+            "count": 2651,
+            "sum_x": 344655,
+            "sum_y": 1120073
+          }
+        ],
+        "marker_centers": {
+          "tl": [
+            131,
+            49
+          ],
+          "tr": [
+            504,
+            48
+          ],
+          "br": [
+            505,
+            422
+          ],
+          "bl": [
+            130,
+            422
+          ]
+        },
+        "valid": true,
+        "roi_box": {
+          "left": 104,
+          "top": 22,
+          "right": 531,
+          "bottom": 448
+        },
+        "roi_width": 428,
+        "roi_height": 427,
+        "engine": "rtl/roi_start_detector.sv reference model plus corner-marker tracker",
+        "mode": "data-marker-tracking",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    },
+    "MLCAP_001_Baseline_30fps/frame_12.jpg": {
+      "grade": "true",
+      "source_path": "C:\\Users\\arshm\\Desktop\\CubeOCC\\captures\\MLCAP_001_Baseline_30fps\\frame_12.jpg",
+      "camera_gray_path": "camera_gray/MLCAP_001_Baseline_30fps/frame_12.png",
+      "annotated_path": "annotated/MLCAP_001_Baseline_30fps/frame_12.png",
+      "camera_corners": {
+        "tl": [
+          108,
+          17
+        ],
+        "tr": [
+          532,
+          17
+        ],
+        "br": [
+          532,
+          440
+        ],
+        "bl": [
+          108,
+          440
+        ]
+      },
+      "original_corners": {
+        "tl": [
+          72.15,
+          34.07
+        ],
+        "tr": [
+          921.92,
+          34.07
+        ],
+        "br": [
+          921.92,
+          881.83
+        ],
+        "bl": [
+          72.15,
+          881.83
+        ]
+      },
+      "letterbox_transform": {
+        "source_width": 994,
+        "source_height": 962,
+        "camera_width": 640,
+        "camera_height": 480,
+        "scale": 0.498960498960499,
+        "offset_x": 72,
+        "offset_y": 0
+      },
+      "fpga_roi_detector": {
+        "algorithm": "four-fixed-corner-marker-windows",
+        "threshold": 180,
+        "prior_roi": {
+          "left": 104,
+          "top": 22,
+          "right": 531,
+          "bottom": 448
+        },
+        "cell_width": 53,
+        "cell_height": 53,
+        "minimum_marker_pixels": 140,
+        "accumulators": [
+          {
+            "count": 1800,
+            "sum_x": 245700,
+            "sum_y": 79200
+          },
+          {
+            "count": 2330,
+            "sum_x": 1177615,
+            "sum_y": 102300
+          },
+          {
+            "count": 0,
+            "sum_x": 0,
+            "sum_y": 0
+          },
+          {
+            "count": 1561,
+            "sum_x": 210449,
+            "sum_y": 645622
+          }
+        ],
+        "marker_centers": {
+          "tl": [
+            136,
+            44
+          ],
+          "tr": [
+            505,
+            43
+          ],
+          "br": null,
+          "bl": [
+            134,
+            413
+          ]
+        },
+        "valid": true,
+        "roi_box": {
+          "left": 108,
+          "top": 17,
+          "right": 532,
+          "bottom": 440
+        },
+        "roi_width": 425,
+        "roi_height": 424,
+        "engine": "rtl/roi_start_detector.sv reference model plus corner-marker tracker",
+        "mode": "data-marker-tracking",
+        "configured_threshold": 180,
+        "effective_threshold": 180
+      }
+    }
+  }
+}
