@@ -1,126 +1,71 @@
 import cv2
 import os
 import glob
-import re
 import numpy as np
 
 CAPTURES_DIR = "captures_rgb"
-NUM_FRAMES = 6  # برای دیتاست RGB؛ برای grayscale برگردون به 13
-
-
-def parse_fps_from_name(dataset_id):
-    """اگه اسم فایل شامل CamXX و OptYY باشه (مثل ...Cam60_Opt60...)،
-    نسبت camera_fps/optical_fps رو استخراج می‌کنه. اگه نبود None برمی‌گردونه."""
-    cam_match = re.search(r'Cam(\d+)', dataset_id)
-    opt_match = re.search(r'Opt(\d+)', dataset_id)
-    if cam_match and opt_match:
-        return int(cam_match.group(1)), int(opt_match.group(1))
-    return None, None
-
-
-def compute_diff_signal(video_path):
-    """کل ویدیو رو می‌خونه، هر فریم رو (رنگی، بدون تبدیل به خاکستری) بلور می‌کنه
-    و نگه می‌داره، و سیگنال تفاوت فریم‌به‌فریم رو روی هر ۳ کانال BGR حساب می‌کنه.
-    برای RGB این حیاتیه: تبدیل به grayscale می‌تونست دو نماد هم‌روشنایی/رنگ‌متفاوت
-    رو یکی نشون بده و کل تغییرشون از سیگنال diff حذف بشه."""
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        raise IOError(f"Could not open video {video_path}")
-
-    frames = []
-    blurred = []
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frames.append(frame)
-        blurred.append(cv2.GaussianBlur(frame, (5, 5), 0))
-    cap.release()
-
-    diffs = np.zeros(len(blurred))
-    for i in range(1, len(blurred)):
-        # cv2.mean روی تصویر ۳-کاناله میانگین هر کانال رو جدا میده؛ میانگین‌شون
-        # می‌کنیم تا یه عدد واحد diff داشته باشیم که هم روشنایی هم رنگ رو پوشش بده
-        per_channel = cv2.mean(cv2.absdiff(blurred[i], blurred[i - 1]))[:3]
-        diffs[i] = sum(per_channel) / 3.0
-
-    return frames, diffs
-
-
-def find_top_peaks(diffs, num_peaks, min_distance):
-    """بین کل فریم‌ها، num_peaks تا از قوی‌ترین تغییرات (بزرگ‌ترین diff) رو
-    انتخاب می‌کنه، طوری که هیچ‌کدوم به‌هم نزدیک‌تر از min_distance نباشن
-    (non-max suppression). این کار جای آستانه‌ی مطلق و ثابت رو می‌گیره،
-    پس مستقل از روشنایی/رنگ نمادهاست."""
-    order = np.argsort(diffs)[::-1]
-    selected = []
-    for idx in order:
-        idx = int(idx)
-        if all(abs(idx - s) >= min_distance for s in selected):
-            selected.append(idx)
-        if len(selected) == num_peaks:
-            break
-    return sorted(selected)
-
-
-def pick_stable_frame(diffs, start, end):
-    """داخل یک بازه‌ی بین دو تغییر، پایدارترین فریم (کمترین diff با فریم قبلی)
-    رو از دوسوم انتهایی بازه انتخاب می‌کنه، تا از تاری حرکت بلافاصله بعد از
-    تغییر دور بمونه؛ بدون نیاز به تعداد ثابت SETTLE_FRAMES."""
-    inner_start = start + max(1, (end - start) // 3)
-    if inner_start >= end:
-        inner_start = start
-    segment = diffs[inner_start:end]
-    if len(segment) == 0:
-        return max(start, end - 1)
-    return inner_start + int(np.argmin(segment))
-
+NUM_FRAMES = 6
 
 def extract_frames(video_path):
     dataset_id = os.path.splitext(os.path.basename(video_path))[0]
     output_dir = os.path.join(CAPTURES_DIR, dataset_id)
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Processing {dataset_id}...")
-
-    frames, diffs = compute_diff_signal(video_path)
-    total = len(frames)
-
-    if total < NUM_FRAMES:
-        print(f"  [Warning] video has only {total} frames, cannot extract {NUM_FRAMES}")
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print(f"Error: Could not open video {video_path}")
         return
 
-    num_transitions = NUM_FRAMES - 1
+    print(f"Processing {dataset_id} (Spike Detector Mode)...")
+    frames = []
+    grays = []
+    while True:
+        ret, frame = cap.read()
+        if not ret: break
+        frames.append(frame)
+        grays.append(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+    cap.release()
 
-    cam_fps, opt_fps = parse_fps_from_name(dataset_id)
-    if cam_fps and opt_fps:
-        # چند فریم دوربین به‌ازای هر نماد نوری واقعاً وجود داره (نه کل ویدیو با holdها)
-        frames_per_symbol = cam_fps / opt_fps
-        min_distance = max(1, int(frames_per_symbol * 0.4))
-    else:
-        # اسم فایل الگوی CamXX_OptYY نداشت -> برگرد به فرض قدیمی (توزیع یکنواخت کل ویدیو)
-        expected_gap = total / NUM_FRAMES
-        min_distance = max(1, int(expected_gap * 0.4))
+    total = len(frames)
+    if total < NUM_FRAMES * 2:
+        print("  [Error] Video too short.")
+        return
+    diffs = np.zeros(total)
+    for i in range(1, total):
+        g1 = cv2.GaussianBlur(grays[i], (5,5), 0)
+        g2 = cv2.GaussianBlur(grays[i-1], (5,5), 0)
+        diffs[i] = cv2.mean(cv2.absdiff(g1, g2))[0]
+    num_spikes = NUM_FRAMES - 1
+    expected_gap = total / NUM_FRAMES
+    min_distance = max(1, int(expected_gap * 0.3)) 
+    order = np.argsort(diffs)[::-1]
+    selected_spikes = []
+    
+    for idx in order:
+        idx = int(idx)
+        if all(abs(idx - s) >= min_distance for s in selected_spikes):
+            selected_spikes.append(idx)
+        if len(selected_spikes) == num_spikes:
+            break
 
-    peaks = find_top_peaks(diffs, num_transitions, min_distance)
-    boundaries = [0] + peaks + [total]
-
+    selected_spikes.sort() 
+    boundaries = [0] + selected_spikes + [total]
+    
     extracted = 0
     for i in range(NUM_FRAMES):
-        start, end = boundaries[i], boundaries[i + 1]
-        idx = pick_stable_frame(diffs, start, end)
+        start, end = boundaries[i], boundaries[i+1]
+        mid = start + max(1, (end - start) // 2)
+        
         fname = f"frame_{extracted:02d}.jpg"
-        cv2.imwrite(os.path.join(output_dir, fname), frames[idx])
-
-        print(f"  [Saved] {fname}  (frame index {idx}, segment {start}-{end})")
+        cv2.imwrite(os.path.join(output_dir, fname), frames[mid])
+        print(f"  [Saved] {fname} (from video frame {mid})")
         extracted += 1
 
     print(f"  -> Extracted {extracted} images to {output_dir}")
 
-
 def main():
-    print("=== CubeOCC Video Frame Extractor ===")
-
+    print("=== CubeOCC RGB Video Frame Extractor (Spike Detector) ===")
+    
     video_extensions = ['*.mp4', '*.avi', '*.mov', '*.mkv']
     video_files = []
     for ext in video_extensions:
@@ -135,7 +80,6 @@ def main():
         extract_frames(video_path)
 
     print("\nExtraction complete!")
-
 
 if __name__ == "__main__":
     main()
