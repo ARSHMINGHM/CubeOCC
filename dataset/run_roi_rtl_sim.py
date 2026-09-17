@@ -27,6 +27,9 @@ IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
 GENERATED_IMAGE_DIRS = {"roi_review", "camera_gray", "annotated", "xsim_build", "mem"}
 FRAME_WIDTH = 160
 FRAME_HEIGHT = 120
+CONFIGURED_THRESHOLD = 180
+THRESHOLD_MARGIN = 32
+MAX_CORNER_SHIFT = 10
 DEFAULT_VIVADO_BIN = Path(os.environ.get("VIVADO_BIN", "X:/xilinx/Vivado/2019.1/bin"))
 
 
@@ -43,7 +46,12 @@ def iter_images(input_dir: Path, excluded_dir: Path) -> Iterable[Path]:
     for path in sorted(input_dir.rglob("*")):
         if excluded_dir in path.parents:
             continue
-        if any(parent.name in GENERATED_IMAGE_DIRS for parent in path.parents):
+        # Ignore generated directories nested below the selected input, but
+        # allow selecting an existing camera_gray directory itself. This lets
+        # a later RTL revision replay the exact camera rasters even when the
+        # original photographs are no longer present.
+        relative_parent_parts = path.relative_to(input_dir).parts[:-1]
+        if any(part in GENERATED_IMAGE_DIRS for part in relative_parent_parts):
             continue
         if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES:
             yield path
@@ -206,7 +214,10 @@ def main() -> int:
                 "mode": "rtl-active" if row["tracking_active"] else "rtl-waiting-for-start",
                 "valid": bool(row["roi_valid"]),
                 "tracking_active": bool(row["tracking_active"]),
-                "threshold": 180,
+                "configured_threshold": CONFIGURED_THRESHOLD,
+                "detector_threshold": CONFIGURED_THRESHOLD - THRESHOLD_MARGIN,
+                "threshold_margin": THRESHOLD_MARGIN,
+                "max_corner_shift": MAX_CORNER_SHIFT,
                 "min_line_run": 8,
                 "min_roi_height": 4,
                 "roi_box": None if not row["roi_valid"] else {
@@ -232,7 +243,15 @@ def main() -> int:
             "rtl": "rtl/roi_start_detector.sv",
             "testbench": "tb/roi_start_detector_image_tb.sv",
             "simulator": "XSim / Vivado 2019.1",
-            "tracker_config": {"threshold": 180, "min_line_run": 8, "min_roi_height": 4, "full_off_max_pixels": 0},
+            "tracker_config": {
+                "configured_threshold": CONFIGURED_THRESHOLD,
+                "detector_threshold": CONFIGURED_THRESHOLD - THRESHOLD_MARGIN,
+                "threshold_margin": THRESHOLD_MARGIN,
+                "max_corner_shift": MAX_CORNER_SHIFT,
+                "min_line_run": 8,
+                "min_roi_height": 4,
+                "full_off_max_pixels": 0,
+            },
             "images": results,
         }
         (output_dir / "rtl_results.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

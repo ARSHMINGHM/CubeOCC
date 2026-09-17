@@ -54,16 +54,48 @@ min_roi_height
 full_off_max_pixels
 ```
 
-At each pixel clock, the unit compares `pixel_data >= bright_threshold`. Before
-START, every active row contributes to the longest-continuous-bright-run and
-tallest-band acquisition logic, while four diagonal extrema capture the white
-START quadrilateral. During DATA, each corner is updated only by bright pixels
-inside a bounded window around its last accepted location; this rejects bright
-payload cells, glare, and monitor edges elsewhere in the frame. The block
-keeps the prior geometry if a local corner is absent or the candidate moves too
-far. A frame with at most `full_off_max_pixels` bright pixels clears tracking.
+At each pixel clock, the unit compares against `bright_threshold - 32`; the
+margin lets dim or defocused white screens remain detectable without a
+histogram or frame buffer. Before START, each row finds its longest continuous
+white run. The first and last qualifying rows provide the top-left, top-right,
+bottom-left, and bottom-right bright-to-dark boundaries. This is the hardware
+form of searching from the white interior outward, and it preserves a slanted
+or trapezoidal START region. During DATA, each corner must form a small
+multi-row bright box within a fixed `10 px` window around the bounding corners
+captured from the START frame. The fixed START anchors prevent many individually
+small updates from accumulating into a large inward drift. The block keeps the
+prior geometry if a box is absent or leaves that window. A frame with at most
+`full_off_max_pixels` bright pixels
+clears tracking.
 
 ## Resource And Speed Profile
+
+Vivado 2019.1 technology mapping of `roi_start_detector` by itself for
+`xc7a35tcpg236-1` produced the following primitive usage:
+
+| Resource | Used | Device available | Approx. use |
+| --- | ---: | ---: | ---: |
+| LUT primitives | 2,115 | 20,800 | 10.17% |
+| Flip-flops | 912 | 41,600 | 2.19% |
+| BRAM tiles | 0 | 50 | 0% |
+| DSP blocks | 0 | 90 | 0% |
+| CARRY4 | 224 | - | - |
+| BUFG | 1 | - | - |
+
+These are standalone synthesis numbers for the ROI detector, not the complete
+CubeOCC top. The design stores counters, row-run state, four marker windows,
+and coordinates only; it does not infer a frame buffer. Vivado completed
+technology mapping with zero synthesis errors, but this Windows installation
+then reported a Vivado 2019.1 temporary-folder cleanup error before the normal
+packed-utilization and timing report commands could execute. Therefore the LUT
+figure above is the sum of mapped `LUT1..LUT6` primitives, not a post-place
+slice count. Re-run `vivado/report_roi_start_detector_resources.tcl` on a
+working Vivado installation before quoting final timing or placed utilization.
+
+The earlier detector mapped to 2,347 LUT primitives, 994 flip-flops, and 264
+`CARRY4` blocks. Removing redundant anchor-distance calculations and unused
+corner-scoring state saved 232 LUT primitives (about 9.9%), 82 flip-flops, and
+40 `CARRY4` blocks while improving the measured corner geometry.
 
 | Item | V1 RTL behavior |
 | --- | --- |

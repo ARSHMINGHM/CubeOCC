@@ -147,18 +147,135 @@ slanted START quadrilateral, and rejection of a preceding `2 x 2` noise spot.
 The revised RTL completed another all-capture XSim run:
 
 ```text
-sim/roi_rtl_all_v4_boxes/
+sim/roi_rtl_all_v7_bounded_edges/
   rtl_results.json
   camera_gray/
   mem/
   xsim_build/
 ```
 
-It processed all 808 input images and emitted 770 valid RTL ROIs. The box rule
-changes the geometry in difficult angled, reflected, and defocused sets. The
-older `true`/`mid`/`false` grades are **diagnostic only**, because they were
-applied to an earlier RTL output and must not be treated as the new accuracy
-score.
+The original photograph folders were no longer present during this replay, so
+the runner used the exact cached `160 x 120` grayscale camera rasters from the
+previous XSim run. It processed all 807 unique cached rasters and emitted 807
+valid RTL ROIs. The earlier 808-entry manifest contained two source images
+with the same converted basename, leaving 807 unique cached raster files.
+
+This run also fixed cumulative inward corner drift. Corner searches remain in
+a fixed `10 px` window around the full START-frame bounding edges instead of
+following each last accepted point. Across the final replay, ROI width was
+`63..129 px` with median `108 px`, and ROI height was `63..120 px` with median
+`111 px`. The prior experimental run had collapsed some angled ROIs to only
+`14 px` wide.
+
+The three formerly silent sets now each produce `13/13` valid outputs:
+
+| Capture set | Before | Inside-out revision |
+| --- | ---: | ---: |
+| `MLCAP_002_Near_30fps` | `0/13` | `13/13` |
+| `MLCAP_055_Cam60_Defocus_Opt60` | `1/13` | `13/13` |
+| `MLCAP_060_Locked_Bright` | `0/13` | `13/13` |
+
+Validity only means RTL emitted coordinates. The new corner placement still
+requires human `true`/`mid`/`false` review before it is an accuracy result.
+
+## Python Corner Reference And RTL Comparison
+
+`dataset/compare_roi_reference.py` provides an independent, higher-quality
+software reference. For each capture folder it selects the brightest START
+frame, applies an Otsu-derived threshold, closes small mask gaps, keeps the
+largest connected bright component, robustly fits its left/right/top/bottom
+edges, and intersects those edge lines to obtain four perspective-aware ROI
+corners. It freezes those START corners for the remaining frames in that
+capture set and compares them with the four points emitted by XSim.
+
+Run it after XSim and optional human labeling:
+
+```powershell
+$python = "C:\Users\arshm\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+& $python dataset\compare_roi_reference.py sim\roi_rtl_all_v7_bounded_edges
+```
+
+Outputs are written under `python_reference/` in the selected result folder:
+
+```text
+comparison.json       complete corners, metrics, thresholds, and summary
+comparison.csv        compact per-frame table
+annotated/             cyan Python corners overlaid with red RTL corners
+```
+
+The default problem rule is maximum corner error above `10 px` or bounding-box
+IoU below `0.80`. On the current 131 human-labeled frames, it flags 57 of 60
+`mid`/`false` labels and accepts 70 of 71 `true` labels. The four disagreements
+are `MLCAP_002_Near_30fps/frame_00.png`,
+`MLCAP_007_AngleNeg15_30fps/frame_01.png`,
+`MLCAP_007_AngleNeg15_30fps/frame_02.png`, and
+`MLCAP_011_DimRoom_30fps/frame_01.png`. Their overlays should be relabeled or
+confirmed manually rather than using them to tune either detector blindly.
+
+The comparison exposed the main RTL problem: `roi_x/y/width/height` can still
+bound the display while `roi_tl/tr/br/bl` come from a short bright scanline or
+corner-marker run and collapse toward the center. The next RTL algorithm should
+accumulate the longest qualifying run endpoints per START row, fit or
+piecewise-approximate the four outer edges, and use the resulting fixed START
+quadrilateral as the reference for bounded per-frame tracking.
+
+### Improved Low-LUT RTL Run
+
+The corrected detector initializes all four reported START points from the
+full detected START bounding edges. DATA marker searches remain constrained to
+fixed 10-pixel START-anchor windows. Because no collected marker can be outside
+those windows, the duplicated eight-coordinate anchor-distance calculation was
+removed.
+
+The new complete replay is:
+
+```text
+sim/roi_rtl_all_v8_python_compared/
+```
+
+Compared with V7 on the same 807 cached camera rasters:
+
+| Metric | V7 | V8 |
+| --- | ---: | ---: |
+| Mean maximum corner error | 29.13 px | 6.98 px |
+| Median maximum corner error | 4.18 px | 3.11 px |
+| Mean bounding-box IoU | 0.784 | 0.942 |
+| Automatically flagged frames | 326 | 264 |
+
+All 71 previously `true` labeled frames remain within the automatic limits.
+Eighteen previously `mid`/`false` frames changed from flagged to geometrically
+acceptable. They still require a new manual review because those labels describe
+the old V7 RTL output.
+
+Two more perspective experiments were measured and rejected as the active
+implementation. V9 used four diagonal endpoint scores and improved mean maximum
+corner error to `5.22 px`, but increased mapped LUT primitives to `2,443`, above
+the original detector. V10 replaced those sums with first/last edge spans, but
+performed worse on the real corpus with `486/807` frames flagged. V8 remains the
+selected balance: substantially better geometry than V7 and lower LUT use.
+
+### Review Python And FPGA Together
+
+Run the combined viewer:
+
+```powershell
+$python = "C:\Users\arshm\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+& $python dataset\serve_roi_comparison_review.py
+```
+
+Choose `sim\roi_rtl_all_v8_python_compared`. The viewer draws the Python
+reference in cyan and the FPGA/XSim result in red, displays all eight corner
+coordinates, per-corner distance, maximum error, IoU, and the automatic problem
+flag. Either outline can be hidden, and display zoom can be changed from 1x to
+8x. Rate the FPGA result with `1=true`, `2=mid`, `3=false`, or `S=skip`.
+
+Ratings and the visible combined overlays are saved under:
+
+```text
+sim/roi_rtl_all_v8_python_compared/comparison_review/
+  comparison_review.json
+  annotated/
+```
 
 Run a fresh human review before reporting an improvement:
 
@@ -166,7 +283,7 @@ Run a fresh human review before reporting an improvement:
 & $python dataset\serve_roi_rtl_review.py
 ```
 
-Choose `sim\roi_rtl_all_v4_boxes`, then label the output again with `1`, `2`, and
+Choose `sim\roi_rtl_all_v7_bounded_edges`, then label the output again with `1`, `2`, and
 `3`. Compare its generated `roi_review\roi_review.json` to the prior review;
 that is the valid before/after measurement.
 

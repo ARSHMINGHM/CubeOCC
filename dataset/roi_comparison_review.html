@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CubeOCC Python / FPGA ROI Comparison</title>
+  <style>
+    :root { color-scheme: dark; font-family: Segoe UI, Arial, sans-serif; background: #11161a; color: #edf2f4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { display: flex; align-items: center; gap: 16px; padding: 12px 18px; background: #20282e; border-bottom: 1px solid #45545e; }
+    h1 { margin: 0; font-size: 18px; }
+    button { min-height: 34px; padding: 5px 11px; border: 1px solid #529bc2; border-radius: 4px; color: white; background: #286b91; cursor: pointer; }
+    button:disabled { opacity: .4; cursor: default; }
+    .true { background: #2f7d4a; border-color: #69b879; }
+    .mid { background: #8c6b20; border-color: #c4a64b; }
+    .false { background: #984244; border-color: #d87778; }
+    main { display: grid; grid-template-columns: minmax(560px, 1fr) 370px; min-height: calc(100vh - 59px); }
+    .viewer { overflow: auto; display: grid; place-items: center; padding: 18px; background: #090d10; }
+    canvas { image-rendering: pixelated; border: 1px solid #667782; background: black; }
+    aside { overflow: auto; padding: 16px; border-left: 1px solid #45545e; background: #20282e; }
+    .panel { padding: 13px 0; border-bottom: 1px solid #45545e; }
+    .panel:first-child { padding-top: 0; }
+    .muted { color: #a9bbc5; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+    .status { white-space: pre-line; line-height: 1.5; font-size: 13px; }
+    .legend { display: flex; gap: 14px; font-size: 13px; }
+    .swatch { width: 13px; height: 13px; display: inline-block; margin-right: 5px; vertical-align: -2px; }
+    .cyan { background: #00e5ff; } .red { background: #ff3131; }
+    .toggles { display: flex; gap: 14px; margin-top: 10px; }
+    input[type="range"] { width: 100%; accent-color: #4eb3d3; }
+    .grades { display: grid; gap: 8px; }
+    .grades button { text-align: left; }
+    kbd { float: right; padding: 0 5px; border: 1px solid #6c7c85; border-radius: 3px; background: #12181c; }
+    table { width: 100%; border-collapse: collapse; font: 12px Consolas, monospace; }
+    td, th { padding: 4px; border-bottom: 1px solid #39464e; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    @media (max-width: 980px) {
+      header { flex-wrap: wrap; }
+      main { grid-template-columns: 1fr; }
+      aside { border-left: 0; border-top: 1px solid #45545e; }
+      canvas { max-width: 100%; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Python / FPGA ROI Comparison</h1>
+    <button id="choose">Choose XSim Result Folder</button>
+    <span id="top-status" class="muted">Choose a folder containing python_reference/comparison.json.</span>
+  </header>
+  <main>
+    <section class="viewer"><canvas id="frame" width="640" height="480"></canvas></section>
+    <aside>
+      <div class="panel">
+        <div class="legend">
+          <span><i class="swatch cyan"></i>Python reference</span>
+          <span><i class="swatch red"></i>FPGA / XSim</span>
+        </div>
+        <div class="toggles">
+          <label><input id="show-python" type="checkbox" checked> Python</label>
+          <label><input id="show-rtl" type="checkbox" checked> FPGA</label>
+        </div>
+      </div>
+      <div class="panel">
+        <label for="zoom">Display zoom: <strong id="zoom-value">4x</strong></label>
+        <input id="zoom" type="range" min="1" max="8" value="4" step="1">
+      </div>
+      <div class="panel">
+        <p id="status" class="status">No comparison loaded.</p>
+        <table>
+          <thead><tr><th>Corner</th><th>Python</th><th>FPGA</th><th>Error</th></tr></thead>
+          <tbody id="corner-table"></tbody>
+        </table>
+      </div>
+      <div class="panel grades">
+        <button id="true" class="true" disabled>True: FPGA ROI is correct <kbd>1</kbd></button>
+        <button id="mid" class="mid" disabled>Mid: usable, but imprecise <kbd>2</kbd></button>
+        <button id="false" class="false" disabled>False: FPGA ROI is wrong <kbd>3</kbd></button>
+        <button id="skip" disabled>Skip <kbd>S</kbd></button>
+      </div>
+      <div class="panel muted">The Python outline is a reference, not an automatic label. Judge both outlines against the actual screen. Selecting the folder starts a fresh <code>comparison_review</code>.</div>
+      <p id="notice" class="status"></p>
+    </aside>
+  </main>
+  <script>
+    const order = ['tl', 'tr', 'br', 'bl'];
+    const canvas = document.getElementById('frame');
+    const ctx = canvas.getContext('2d');
+    const zoom = document.getElementById('zoom');
+    const showPython = document.getElementById('show-python');
+    const showRtl = document.getElementById('show-rtl');
+    const actions = ['true', 'mid', 'false', 'skip'].map(id => document.getElementById(id));
+    let root, output, report, records = [], index = 0, labels = {}, image;
+
+    function parts(path) { return path.split('/').filter(Boolean); }
+    function enable(value) { actions.forEach(item => item.disabled = !value); }
+    async function getFile(path) {
+      let directory = root;
+      const split = parts(path);
+      for (const part of split.slice(0, -1)) directory = await directory.getDirectoryHandle(part);
+      return directory.getFileHandle(split.at(-1));
+    }
+    async function getOutputDirectory(path) {
+      let directory = output;
+      for (const part of parts(path).slice(0, -1)) directory = await directory.getDirectoryHandle(part, { create: true });
+      return directory;
+    }
+    async function writeFile(directory, name, body) {
+      const handle = await directory.getFileHandle(name, { create: true });
+      const writable = await handle.createWritable();
+      await writable.write(body); await writable.close();
+    }
+    function current() { return records[index]; }
+    function points(record, key) {
+      const value = record[key];
+      return value ? order.map(name => value[name]) : null;
+    }
+    function drawPolygon(list, color, prefix) {
+      if (!list) return;
+      const scale = Number(zoom.value);
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = Math.max(2, scale);
+      ctx.beginPath();
+      list.forEach((point, i) => i ? ctx.lineTo(point[0] * scale, point[1] * scale) : ctx.moveTo(point[0] * scale, point[1] * scale));
+      ctx.closePath(); ctx.stroke();
+      list.forEach((point, i) => {
+        const x = point[0] * scale, y = point[1] * scale;
+        ctx.beginPath(); ctx.arc(x, y, 4 * scale, 0, Math.PI * 2); ctx.stroke();
+        ctx.font = `${Math.max(12, 10 * scale)}px Segoe UI`; ctx.fillText(`${prefix}${i + 1}`, x + 5 * scale, y - 5 * scale);
+      });
+    }
+    function draw() {
+      const record = current(); if (!record || !image) return;
+      const scale = Number(zoom.value);
+      canvas.width = image.naturalWidth * scale; canvas.height = image.naturalHeight * scale;
+      ctx.imageSmoothingEnabled = false; ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      if (showPython.checked) drawPolygon(points(record, 'python_corners'), '#00e5ff', 'P');
+      if (showRtl.checked) drawPolygon(points(record, 'rtl_corners'), '#ff3131', 'F');
+    }
+    function updateDetails(record) {
+      const error = record.max_corner_error_px == null ? 'n/a' : record.max_corner_error_px.toFixed(2);
+      document.getElementById('status').textContent = `${index + 1}/${records.length}  ${record.relative_path}\nMaximum corner error: ${error} px\nBounding-box IoU: ${record.box_iou.toFixed(3)}\nAutomatic flag: ${record.problem ? 'CHECK' : 'within limits'}\nPrevious human grade: ${record.human_grade || 'none'}`;
+      const python = points(record, 'python_corners'), rtl = points(record, 'rtl_corners');
+      document.getElementById('corner-table').innerHTML = order.map((name, i) => {
+        const p = python?.[i], f = rtl?.[i];
+        const distance = p && f ? Math.hypot(p[0] - f[0], p[1] - f[1]).toFixed(2) : 'n/a';
+        const format = point => point ? `${point[0].toFixed(1)},${point[1].toFixed(1)}` : 'none';
+        return `<tr><td>${name.toUpperCase()}</td><td>${format(p)}</td><td>${format(f)}</td><td>${distance}</td></tr>`;
+      }).join('');
+    }
+    async function load() {
+      const record = current();
+      if (!record) { document.getElementById('status').textContent = `Finished. Saved ${Object.keys(labels).length} ratings.`; enable(false); return; }
+      const file = await getFile(`camera_gray/${record.relative_path}`);
+      const url = URL.createObjectURL(await file.getFile()); image = new Image();
+      image.onload = () => { URL.revokeObjectURL(url); draw(); }; image.src = url;
+      updateDetails(record);
+    }
+    function manifest() {
+      const counts = { true: 0, mid: 0, false: 0 };
+      Object.values(labels).forEach(value => counts[value.grade]++);
+      return { format: 'cubeocc-python-fpga-comparison-review-v1', source: 'python_reference/comparison.json', summary: { labeled_count: Object.keys(labels).length, true_count: counts.true, mid_count: counts.mid, false_count: counts.false }, images: labels };
+    }
+    async function save(grade) {
+      const record = current(); if (!record) return;
+      labels[record.relative_path] = { grade, python_corners: record.python_corners, rtl_corners: record.rtl_corners, mean_corner_error_px: record.mean_corner_error_px, max_corner_error_px: record.max_corner_error_px, box_iou: record.box_iou, automatic_problem: record.problem };
+      const directory = await getOutputDirectory(`annotated/${record.relative_path}`);
+      const filename = parts(record.relative_path).at(-1).replace(/\.[^.]+$/, '.png');
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      await writeFile(directory, filename, blob);
+      await writeFile(output, 'comparison_review.json', JSON.stringify(manifest(), null, 2) + '\n');
+      index++; await load();
+    }
+    async function choose() {
+      if (!window.showDirectoryPicker) { document.getElementById('notice').textContent = 'Use Chrome or Edge for folder access.'; return; }
+      try {
+        root = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const comparison = await getFile('python_reference/comparison.json');
+        report = JSON.parse(await (await comparison.getFile()).text());
+        if (report.format !== 'cubeocc-python-roi-reference-v1') throw new Error('Invalid comparison.json format.');
+        await root.removeEntry('comparison_review', { recursive: true }).catch(() => {});
+        output = await root.getDirectoryHandle('comparison_review', { create: true });
+        records = report.frames; index = 0; labels = {}; image = undefined;
+        document.getElementById('top-status').textContent = `${records.length} Python/FPGA comparisons loaded.`;
+        document.getElementById('notice').textContent = ''; enable(true); await load();
+      } catch (error) { document.getElementById('notice').textContent = `Could not start comparison review: ${error.message}`; }
+    }
+    document.getElementById('choose').addEventListener('click', choose);
+    zoom.addEventListener('input', () => { document.getElementById('zoom-value').textContent = `${zoom.value}x`; draw(); });
+    showPython.addEventListener('change', draw); showRtl.addEventListener('change', draw);
+    document.getElementById('true').addEventListener('click', () => save('true'));
+    document.getElementById('mid').addEventListener('click', () => save('mid'));
+    document.getElementById('false').addEventListener('click', () => save('false'));
+    document.getElementById('skip').addEventListener('click', async () => { index++; await load(); });
+    window.addEventListener('keydown', event => {
+      if (event.repeat || !root) return;
+      if (event.key === '1') save('true');
+      if (event.key === '2') save('mid');
+      if (event.key === '3') save('false');
+      if (event.key.toLowerCase() === 's') { index++; load(); }
+    });
+  </script>
+</body>
+</html>

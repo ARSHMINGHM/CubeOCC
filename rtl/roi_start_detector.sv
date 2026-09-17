@@ -49,20 +49,16 @@ module roi_start_detector #(
     logic band_active;
     logic [Y_BITS-1:0] band_last_y, band_top, band_bottom;
     logic [X_BITS-1:0] band_left, band_right;
-    logic [X_BITS-1:0] band_top_left, band_top_right, band_bottom_left, band_bottom_right;
     logic [Y_BITS-1:0] best_height, best_top, best_bottom;
     logic [X_BITS-1:0] best_left, best_right;
-    logic [X_BITS-1:0] best_top_left, best_top_right, best_bottom_left, best_bottom_right;
 
     // DATA-frame corner-marker state. Each marker is searched only in a
     // bounded window around its last accepted location. A marker must form a
     // short multi-row bright box; isolated bright pixels are not evidence.
     // This prevents payload cells, monitor edges, and reflections elsewhere
     // in the frame from becoming a false ROI corner without a frame buffer.
-    logic [3:0] start_corner_seen;
-    logic [SCORE_BITS-1:0] tl_score, tr_score, br_score, bl_score;
-    logic [X_BITS-1:0] cand_tl_x, cand_tr_x, cand_br_x, cand_bl_x;
-    logic [Y_BITS-1:0] cand_tl_y, cand_tr_y, cand_br_y, cand_bl_y;
+    logic [X_BITS-1:0] anchor_tl_x, anchor_tr_x, anchor_br_x, anchor_bl_x;
+    logic [Y_BITS-1:0] anchor_tl_y, anchor_tr_y, anchor_br_y, anchor_bl_y;
     logic [31:0] bright_pixel_count;
 
     logic [X_BITS-1:0] marker_run_start [0:3];
@@ -78,10 +74,7 @@ module roi_start_detector #(
     logic [X_BITS-1:0] marker_best_left [0:3], marker_best_right [0:3];
     logic [Y_BITS-1:0] marker_best_top [0:3], marker_best_bottom [0:3];
 
-    logic [SCORE_BITS-1:0] pixel_sum, pixel_tr, pixel_bl;
     logic [7:0] detector_threshold;
-    logic [X_BITS-1:0] start_left, start_right;
-    logic [Y_BITS-1:0] start_top, start_bottom;
     logic [X_BITS-1:0] marker_final_left [0:3], marker_final_right [0:3];
     logic [Y_BITS-1:0] marker_final_top [0:3], marker_final_bottom [0:3];
     logic [Y_BITS-1:0] marker_final_rows [0:3];
@@ -90,9 +83,10 @@ module roi_start_detector #(
     logic [3:0] marker_box_valid;
     logic [X_BITS-1:0] candidate_left, candidate_right;
     logic [Y_BITS-1:0] candidate_top, candidate_bottom;
-    logic [SCORE_BITS-1:0] candidate_max_shift, allowed_shift;
+    logic [SCORE_BITS-1:0] allowed_shift;
     logic candidate_plausible;
     logic [3:0] in_marker_window;
+    logic [X_BITS-1:0] line_right;
 
     function automatic logic [Y_BITS-1:0] height_of(
         input logic [Y_BITS-1:0] top,
@@ -145,25 +139,10 @@ module roi_start_detector #(
         abs_y_diff = (a >= b) ? a - b : b - a;
     endfunction
 
-    function automatic logic [SCORE_BITS-1:0] max4(input logic [SCORE_BITS-1:0] a, b, c, d);
-        logic [SCORE_BITS-1:0] high;
-        begin
-            high = (a > b) ? a : b;
-            high = (high > c) ? high : c;
-            max4 = (high > d) ? high : d;
-        end
-    endfunction
-
     always_comb begin : marker_combinational
         integer marker_index;
         detector_threshold = (bright_threshold > THRESHOLD_MARGIN) ? bright_threshold - THRESHOLD_MARGIN : 8'd1;
-        pixel_sum = {{(SCORE_BITS-X_BITS){1'b0}}, x} + {{(SCORE_BITS-Y_BITS){1'b0}}, y};
-        pixel_tr = {{(SCORE_BITS-X_BITS){1'b0}}, ({X_BITS{1'b1}} - x)} + {{(SCORE_BITS-Y_BITS){1'b0}}, y};
-        pixel_bl = {{(SCORE_BITS-X_BITS){1'b0}}, x} + {{(SCORE_BITS-Y_BITS){1'b0}}, ({Y_BITS{1'b1}} - y)};
-        start_left = min_x4(cand_tl_x, cand_tr_x, cand_br_x, cand_bl_x);
-        start_right = max_x4(cand_tl_x, cand_tr_x, cand_br_x, cand_bl_x);
-        start_top = min_y4(cand_tl_y, cand_tr_y, cand_br_y, cand_bl_y);
-        start_bottom = max_y4(cand_tl_y, cand_tr_y, cand_br_y, cand_bl_y);
+        line_right = longest_start + longest_length - 1'b1;
         for (marker_index = 0; marker_index < 4; marker_index = marker_index + 1) begin
             if (marker_band_active[marker_index] &&
                 (marker_band_rows[marker_index] >= marker_best_rows[marker_index])) begin
@@ -184,12 +163,6 @@ module roi_start_detector #(
         candidate_right = max_x4(marker_final_right[0], marker_final_right[1], marker_final_right[2], marker_final_right[3]);
         candidate_top = min_y4(marker_final_top[0], marker_final_top[1], marker_final_top[2], marker_final_top[3]);
         candidate_bottom = max_y4(marker_final_bottom[0], marker_final_bottom[1], marker_final_bottom[2], marker_final_bottom[3]);
-        candidate_max_shift = max4(
-            abs_x_diff(marker_final_left[0], roi_tl_x) + abs_y_diff(marker_final_top[0], roi_tl_y),
-            abs_x_diff(marker_final_right[1], roi_tr_x) + abs_y_diff(marker_final_top[1], roi_tr_y),
-            abs_x_diff(marker_final_right[2], roi_br_x) + abs_y_diff(marker_final_bottom[2], roi_br_y),
-            abs_x_diff(marker_final_left[3], roi_bl_x) + abs_y_diff(marker_final_bottom[3], roi_bl_y)
-        );
         allowed_shift = MAX_CORNER_SHIFT;
         marker_min_run = (roi_width < roi_height ? roi_width : roi_height) >> 5;
         if (marker_min_run < 3) marker_min_run = 3;
@@ -200,11 +173,13 @@ module roi_start_detector #(
                 (marker_final_right[marker_index] - marker_final_left[marker_index] + 1'b1 >= marker_min_run) &&
                 (marker_final_bottom[marker_index] - marker_final_top[marker_index] + 1'b1 >= marker_min_rows);
         end
-        candidate_plausible = (&marker_box_valid) && (candidate_max_shift <= allowed_shift);
-        in_marker_window[0] = (abs_x_diff(x, roi_tl_x) <= allowed_shift) && (abs_y_diff(y, roi_tl_y) <= allowed_shift);
-        in_marker_window[1] = (abs_x_diff(x, roi_tr_x) <= allowed_shift) && (abs_y_diff(y, roi_tr_y) <= allowed_shift);
-        in_marker_window[2] = (abs_x_diff(x, roi_br_x) <= allowed_shift) && (abs_y_diff(y, roi_br_y) <= allowed_shift);
-        in_marker_window[3] = (abs_x_diff(x, roi_bl_x) <= allowed_shift) && (abs_y_diff(y, roi_bl_y) <= allowed_shift);
+        // Every marker pixel was already collected inside a fixed START-anchor
+        // window, so repeating eight anchor-distance checks wastes LUTs.
+        candidate_plausible = &marker_box_valid;
+        in_marker_window[0] = (abs_x_diff(x, anchor_tl_x) <= allowed_shift) && (abs_y_diff(y, anchor_tl_y) <= allowed_shift);
+        in_marker_window[1] = (abs_x_diff(x, anchor_tr_x) <= allowed_shift) && (abs_y_diff(y, anchor_tr_y) <= allowed_shift);
+        in_marker_window[2] = (abs_x_diff(x, anchor_br_x) <= allowed_shift) && (abs_y_diff(y, anchor_br_y) <= allowed_shift);
+        in_marker_window[3] = (abs_x_diff(x, anchor_bl_x) <= allowed_shift) && (abs_y_diff(y, anchor_bl_y) <= allowed_shift);
     end
 
     always_ff @(posedge pclk or negedge rst_n) begin : marker_sequential
@@ -222,34 +197,21 @@ module roi_start_detector #(
             band_last_y <= '0;
             band_left <= '0;
             band_right <= '0;
-            band_top_left <= '0;
-            band_top_right <= '0;
-            band_bottom_left <= '0;
-            band_bottom_right <= '0;
             band_top <= '0;
             band_bottom <= '0;
             best_height <= '0;
             best_left <= '0;
             best_right <= '0;
-            best_top_left <= '0;
-            best_top_right <= '0;
-            best_bottom_left <= '0;
-            best_bottom_right <= '0;
             best_top <= '0;
             best_bottom <= '0;
-            start_corner_seen <= '0;
-            tl_score <= '0;
-            tr_score <= '0;
-            br_score <= '0;
-            bl_score <= '0;
-            cand_tl_x <= '0;
-            cand_tl_y <= '0;
-            cand_tr_x <= '0;
-            cand_tr_y <= '0;
-            cand_br_x <= '0;
-            cand_br_y <= '0;
-            cand_bl_x <= '0;
-            cand_bl_y <= '0;
+            anchor_tl_x <= '0;
+            anchor_tl_y <= '0;
+            anchor_tr_x <= '0;
+            anchor_tr_y <= '0;
+            anchor_br_x <= '0;
+            anchor_br_y <= '0;
+            anchor_bl_x <= '0;
+            anchor_bl_y <= '0;
             bright_pixel_count <= '0;
             roi_valid <= 1'b0;
             tracking_active <= 1'b0;
@@ -298,7 +260,6 @@ module roi_start_detector #(
                 longest_length <= '0;
                 band_active <= 1'b0;
                 best_height <= '0;
-                start_corner_seen <= '0;
                 bright_pixel_count <= '0;
                 for (marker_index = 0; marker_index < 4; marker_index = marker_index + 1) begin
                     marker_run_start[marker_index] <= '0;
@@ -320,30 +281,6 @@ module roi_start_detector #(
                         if (run_length >= longest_length) begin
                             longest_length <= run_length + 1'b1;
                             longest_start <= (run_length == '0) ? x : run_start;
-                        end
-                        if (!start_corner_seen[0] || pixel_sum < tl_score) begin
-                            start_corner_seen[0] <= 1'b1;
-                            tl_score <= pixel_sum;
-                            cand_tl_x <= x;
-                            cand_tl_y <= y;
-                        end
-                        if (!start_corner_seen[1] || pixel_tr < tr_score) begin
-                            start_corner_seen[1] <= 1'b1;
-                            tr_score <= pixel_tr;
-                            cand_tr_x <= x;
-                            cand_tr_y <= y;
-                        end
-                        if (!start_corner_seen[2] || pixel_sum > br_score) begin
-                            start_corner_seen[2] <= 1'b1;
-                            br_score <= pixel_sum;
-                            cand_br_x <= x;
-                            cand_br_y <= y;
-                        end
-                        if (!start_corner_seen[3] || pixel_bl < bl_score) begin
-                            start_corner_seen[3] <= 1'b1;
-                            bl_score <= pixel_bl;
-                            cand_bl_x <= x;
-                            cand_bl_y <= y;
                         end
                     end else begin
                         for (marker_index = 0; marker_index < 4; marker_index = marker_index + 1) begin
@@ -379,26 +316,16 @@ module roi_start_detector #(
                             best_right <= band_right;
                             best_top <= band_top;
                             best_bottom <= band_bottom;
-                            best_top_left <= band_top_left;
-                            best_top_right <= band_top_right;
-                            best_bottom_left <= band_bottom_left;
-                            best_bottom_right <= band_bottom_right;
                         end
                         band_active <= 1'b1;
                         band_left <= longest_start;
                         band_right <= longest_start + longest_length - 1'b1;
                         band_top <= y;
                         band_bottom <= y;
-                        band_top_left <= longest_start;
-                        band_top_right <= longest_start + longest_length - 1'b1;
-                        band_bottom_left <= longest_start;
-                        band_bottom_right <= longest_start + longest_length - 1'b1;
                     end else begin
                         if (longest_start < band_left) band_left <= longest_start;
-                        if (longest_start + longest_length - 1'b1 > band_right) band_right <= longest_start + longest_length - 1'b1;
+                        if (line_right > band_right) band_right <= line_right;
                         band_bottom <= y;
-                        band_bottom_left <= longest_start;
-                        band_bottom_right <= longest_start + longest_length - 1'b1;
                     end
                     band_last_y <= y;
                 end else if (band_active && y - band_last_y > MAX_ROW_GAP) begin
@@ -408,10 +335,6 @@ module roi_start_detector #(
                         best_right <= band_right;
                         best_top <= band_top;
                         best_bottom <= band_bottom;
-                        best_top_left <= band_top_left;
-                        best_top_right <= band_top_right;
-                        best_bottom_left <= band_bottom_left;
-                        best_bottom_right <= band_bottom_right;
                     end
                     band_active <= 1'b0;
                 end
@@ -479,14 +402,22 @@ module roi_start_detector #(
                         roi_y <= band_top;
                         roi_width <= band_right - band_left + 1'b1;
                         roi_height <= height_of(band_top, band_bottom);
-                        roi_tl_x <= band_top_left;
+                        roi_tl_x <= band_left;
                         roi_tl_y <= band_top;
-                        roi_tr_x <= band_top_right;
+                        roi_tr_x <= band_right;
                         roi_tr_y <= band_top;
-                        roi_br_x <= band_bottom_right;
+                        roi_br_x <= band_right;
                         roi_br_y <= band_bottom;
-                        roi_bl_x <= band_bottom_left;
+                        roi_bl_x <= band_left;
                         roi_bl_y <= band_bottom;
+                        anchor_tl_x <= band_left;
+                        anchor_tl_y <= band_top;
+                        anchor_tr_x <= band_right;
+                        anchor_tr_y <= band_top;
+                        anchor_br_x <= band_right;
+                        anchor_br_y <= band_bottom;
+                        anchor_bl_x <= band_left;
+                        anchor_bl_y <= band_bottom;
                     end else if (best_height >= min_roi_height) begin
                         tracking_active <= 1'b1;
                         roi_valid <= 1'b1;
@@ -494,14 +425,22 @@ module roi_start_detector #(
                         roi_y <= best_top;
                         roi_width <= best_right - best_left + 1'b1;
                         roi_height <= best_height;
-                        roi_tl_x <= best_top_left;
+                        roi_tl_x <= best_left;
                         roi_tl_y <= best_top;
-                        roi_tr_x <= best_top_right;
+                        roi_tr_x <= best_right;
                         roi_tr_y <= best_top;
-                        roi_br_x <= best_bottom_right;
+                        roi_br_x <= best_right;
                         roi_br_y <= best_bottom;
-                        roi_bl_x <= best_bottom_left;
+                        roi_bl_x <= best_left;
                         roi_bl_y <= best_bottom;
+                        anchor_tl_x <= best_left;
+                        anchor_tl_y <= best_top;
+                        anchor_tr_x <= best_right;
+                        anchor_tr_y <= best_top;
+                        anchor_br_x <= best_right;
+                        anchor_br_y <= best_bottom;
+                        anchor_bl_x <= best_left;
+                        anchor_bl_y <= best_bottom;
                     end
                 end else if (bright_pixel_count <= full_off_max_pixels) begin
                     tracking_active <= 1'b0;

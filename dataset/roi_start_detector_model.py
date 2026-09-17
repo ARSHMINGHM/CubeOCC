@@ -14,6 +14,8 @@ from PIL import Image
 
 
 MAX_ROW_GAP = 2
+MAX_CORNER_SHIFT = 10
+THRESHOLD_MARGIN = 32
 GRID_SIZE = 8
 
 
@@ -63,12 +65,19 @@ def detect_roi(
             line_right = longest_start + longest_length - 1
             if current_band is None or y - current_band["last_y"] > MAX_ROW_GAP + 1:
                 keep_tallest_band()
-                current_band = {"left": longest_start, "right": line_right, "top": y, "bottom": y, "last_y": y}
+                current_band = {
+                    "left": longest_start, "right": line_right,
+                    "top": y, "bottom": y, "last_y": y,
+                    "top_left": longest_start, "top_right": line_right,
+                    "bottom_left": longest_start, "bottom_right": line_right,
+                }
             else:
                 current_band["left"] = min(current_band["left"], longest_start)
                 current_band["right"] = max(current_band["right"], line_right)
                 current_band["bottom"] = y
                 current_band["last_y"] = y
+                current_band["bottom_left"] = longest_start
+                current_band["bottom_right"] = line_right
         elif current_band is not None and y - current_band["last_y"] > MAX_ROW_GAP:
             keep_tallest_band()
             current_band = None
@@ -76,7 +85,7 @@ def detect_roi(
     keep_tallest_band()
     diagnostics: dict[str, Any] = {
         "engine": "rtl/roi_start_detector.sv reference model",
-        "algorithm": "thresholded-longest-bright-run-largest-row-band",
+        "algorithm": "thresholded-longest-bright-run-inside-outside-boundaries",
         "threshold": threshold,
         "min_line_run": min_line_run,
         "min_roi_height": min_roi_height,
@@ -99,18 +108,17 @@ def detect_roi(
         "roi_height": best_band["bottom"] - best_band["top"] + 1,
     })
     return [
-        (best_band["left"], best_band["top"]),
-        (best_band["right"], best_band["top"]),
-        (best_band["right"], best_band["bottom"]),
-        (best_band["left"], best_band["bottom"]),
+        (best_band["top_left"], best_band["top"]),
+        (best_band["top_right"], best_band["top"]),
+        (best_band["bottom_right"], best_band["bottom"]),
+        (best_band["bottom_left"], best_band["bottom"]),
     ], diagnostics
 
 
-def effective_threshold(camera_image: Image.Image, configured_threshold: int, peak_margin: int = 20) -> int:
-    """Use half the observed peak when a dim capture cannot reach the configured level."""
-    peak = camera_image.convert("L").getextrema()[1]
-    del peak_margin
-    return max(1, min(configured_threshold, peak // 2))
+def effective_threshold(camera_image: Image.Image, configured_threshold: int, peak_margin: int = THRESHOLD_MARGIN) -> int:
+    """Mirror the RTL's fixed low-cost threshold margin, not image statistics."""
+    del camera_image
+    return max(1, configured_threshold - peak_margin)
 
 
 def _bright_mask(camera_image: Image.Image, threshold: int) -> Image.Image:
@@ -195,7 +203,7 @@ def _local_marker_corners(
     """
     image = camera_image.convert("L")
     pixels = image.load()
-    allowed_shift = max(4, (roi_box["right"] - roi_box["left"] + roi_box["bottom"] - roi_box["top"] + 2) // 8)
+    allowed_shift = MAX_CORNER_SHIFT
     marker_min_span = max(3, min(roi_box["right"] - roi_box["left"] + 1, roi_box["bottom"] - roi_box["top"] + 1) // 32)
 
     def largest_marker_band(old_x: int, old_y: int) -> dict[str, int] | None:
@@ -307,23 +315,12 @@ def _full_white_start(
         "spans_screen": spans_screen,
         "is_start": bool(diagnostics.get("valid") and coverage >= 0.75 and spans_screen),
     })
-    if diagnostics["is_start"]:
-        diagonal_corners, diagonal = _outside_corner_points(camera_image, threshold)
-        if diagonal_corners is not None:
-            # The hardware uses the dense band only to recognize START, then
-            # latches diagonal extrema as the four-corner geometry seed.
-            diagnostics["start_band_roi_box"] = diagnostics["roi_box"]
-            diagnostics["roi_box"] = diagonal["roi_box"]
-            diagnostics["roi_width"] = diagonal["roi_width"]
-            diagnostics["roi_height"] = diagonal["roi_height"]
-            diagnostics["start_diagonal_corners"] = diagonal["outside_corners"]
-            corners = diagonal_corners
     return corners, diagnostics
 
 
 def _full_off(camera_image: Image.Image, threshold: int, roi_box: dict[str, int]) -> bool:
-    crop = _bright_mask(camera_image, threshold).crop((roi_box["left"], roi_box["top"], roi_box["right"] + 1, roi_box["bottom"] + 1))
-    return crop.histogram()[255] <= max(4, (crop.width * crop.height) // 100)
+    del roi_box
+    return _bright_mask(camera_image, threshold).histogram()[255] == 0
 
 
 def _corners_from_box(roi_box: dict[str, int]) -> list[tuple[int, int]]:
@@ -347,26 +344,28 @@ def _cell_radius(corners: list[tuple[int, int]]) -> int:
 
 
 def _plausible_corner_update(previous: list[tuple[int, int]], current: list[tuple[int, int]]) -> tuple[bool, float, int]:
-    radius = _cell_radius(previous)
     largest_shift = max(hypot(current[index][0] - point[0], current[index][1] - point[1]) for index, point in enumerate(previous))
-    return largest_shift <= radius * 3, round(largest_shift, 2), radius
+    return largest_shift <= MAX_CORNER_SHIFT, round(largest_shift, 2), MAX_CORNER_SHIFT
 
 
 def _tracker_state(previous: dict[str, Any] | None) -> dict[str, Any]:
     if previous is None:
-        return {"phase": "waiting-for-start", "roi_box": None, "corners": None}
+        return {"phase": "waiting-for-start", "roi_box": None, "corners": None, "anchor_corners": None}
     if "phase" in previous:
         corners = previous.get("corners")
+        anchors = previous.get("anchor_corners", corners)
         return {
             "phase": previous["phase"],
             "roi_box": previous.get("roi_box"),
             "corners": None if corners is None else [tuple(point) for point in corners],
+            "anchor_corners": None if anchors is None else [tuple(point) for point in anchors],
         }
     # Compatibility with saved callers that previously passed only an ROI.
     if {"left", "top", "right", "bottom"}.issubset(previous):
         roi_box = dict(previous)
-        return {"phase": "active", "roi_box": roi_box, "corners": _corners_from_box(roi_box)}
-    return {"phase": "waiting-for-start", "roi_box": None, "corners": None}
+        corners = _corners_from_box(roi_box)
+        return {"phase": "active", "roi_box": roi_box, "corners": corners, "anchor_corners": corners}
+    return {"phase": "waiting-for-start", "roi_box": None, "corners": None, "anchor_corners": None}
 
 
 def detect_frame_roi(
@@ -404,7 +403,12 @@ def detect_frame_roi(
                 "mode": "start-acquisition",
                 "phase": "active",
             })
-            return corners, start, {"phase": "active", "roi_box": start["roi_box"], "corners": corners}
+            return corners, start, {
+                "phase": "active",
+                "roi_box": start["roi_box"],
+                "corners": corners,
+                "anchor_corners": _corners_from_box(start["roi_box"]),
+            }
         ignored = common | {
             "valid": False,
             "mode": "ignored-waiting-for-full-white-start",
@@ -412,11 +416,17 @@ def detect_frame_roi(
             "reason": "frame is ignored until a full-white START is detected",
             "start_attempt": start,
         }
-        return [None, None, None, None], ignored, {"phase": "waiting-for-start", "roi_box": None, "corners": None}
+        return [None, None, None, None], ignored, {
+            "phase": "waiting-for-start",
+            "roi_box": None,
+            "corners": None,
+            "anchor_corners": None,
+        }
 
     prior_roi = state["roi_box"]
     prior_corners = state["corners"]
-    assert prior_roi is not None and prior_corners is not None
+    anchor_corners = state["anchor_corners"]
+    assert prior_roi is not None and prior_corners is not None and anchor_corners is not None
     if _full_off(camera_image, threshold, prior_roi):
         stopped = common | {
             "valid": False,
@@ -425,17 +435,27 @@ def detect_frame_roi(
             "reason": "full-off frame ended the active transfer",
             "roi_box": prior_roi,
         }
-        return [None, None, None, None], stopped, {"phase": "waiting-for-start", "roi_box": None, "corners": None}
+        return [None, None, None, None], stopped, {
+            "phase": "waiting-for-start",
+            "roi_box": None,
+            "corners": None,
+            "anchor_corners": None,
+        }
 
-    corners, outer = _local_marker_corners(camera_image, threshold, prior_corners, prior_roi)
+    corners, outer = _local_marker_corners(camera_image, threshold, anchor_corners, prior_roi)
     outer.update(common)
     if corners is not None:
-        plausible, largest_shift, radius = _plausible_corner_update(prior_corners, corners)
-        outer.update({"largest_corner_shift": largest_shift, "previous_cell_radius": radius})
+        plausible, largest_shift, tolerance = _plausible_corner_update(anchor_corners, corners)
+        outer.update({"largest_anchor_shift": largest_shift, "anchor_tolerance": tolerance})
         if plausible:
             roi_box = outer["roi_box"]
             outer.update({"valid": True, "mode": "data-local-marker-corners", "phase": "active"})
-            return corners, outer, {"phase": "active", "roi_box": roi_box, "corners": corners}
+            return corners, outer, {
+                "phase": "active",
+                "roi_box": roi_box,
+                "corners": corners,
+                "anchor_corners": anchor_corners,
+            }
 
     held = dict(prior_roi)
     outer.update({
@@ -447,4 +467,9 @@ def detect_frame_roi(
         "roi_height": held["bottom"] - held["top"] + 1,
         "reason": "local marker-corner update was absent or implausible; retained the prior accepted ROI",
     })
-    return prior_corners, outer, {"phase": "active", "roi_box": held, "corners": prior_corners}
+    return prior_corners, outer, {
+        "phase": "active",
+        "roi_box": held,
+        "corners": prior_corners,
+        "anchor_corners": anchor_corners,
+    }

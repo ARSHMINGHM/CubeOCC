@@ -54,6 +54,8 @@ module roi_start_detector_tb;
         bit is_payload;
         bit is_outlier;
         bit is_tiny_noise;
+        bit is_marker_shift6;
+        bit is_marker_shift12;
         begin
             @(negedge pclk);
             vsync = 1'b0;
@@ -71,11 +73,21 @@ module roi_start_detector_tb;
                     is_payload = (row >= 16 && row <= 22 && col >= 24 && col <= 31);
                     is_outlier = (row >= 2 && row <= 7 && col >= 54 && col <= 59);
                     is_tiny_noise = (row >= 5 && row <= 6 && col >= 7 && col <= 8);
+                    is_marker_shift6 = ((row >= 14 && row <= 18 && col >= 16 && col <= 21) ||
+                                        (row >= 14 && row <= 18 && col >= 39 && col <= 44) ||
+                                        (row >= 25 && row <= 29 && col >= 39 && col <= 44) ||
+                                        (row >= 25 && row <= 29 && col >= 16 && col <= 21));
+                    is_marker_shift12 = ((row >= 20 && row <= 24 && col >= 22 && col <= 27) ||
+                                         (row >= 20 && row <= 24 && col >= 33 && col <= 38) ||
+                                         (row >= 19 && row <= 23 && col >= 33 && col <= 38) ||
+                                         (row >= 19 && row <= 23 && col >= 22 && col <= 27));
                     case (frame_kind)
                         0: pixel_data = is_start ? 8'd255 : 8'd0;                         // START
                         1: pixel_data = (is_data_marker || is_payload) ? 8'd255 : 8'd0;   // DATA
                         2: pixel_data = is_outlier ? 8'd255 : 8'd0;                       // bad DATA
                         5: pixel_data = (is_data_marker || is_payload || is_tiny_noise) ? 8'd255 : 8'd0;
+                        6: pixel_data = (is_marker_shift6 || is_payload) ? 8'd255 : 8'd0;
+                        7: pixel_data = (is_marker_shift12 || is_payload) ? 8'd255 : 8'd0;
                         4: pixel_data = (row >= 8 && row <= 35 &&
                                           col >= 10 + ((row - 8) >> 2) &&
                                           col <= 50 + ((row - 8) >> 2)) ? 8'd255 : 8'd0;     // angled START
@@ -123,9 +135,23 @@ module roi_start_detector_tb;
             $finish;
         end
 
+        send_pixels(6);
+        wait_for_frame();
+        if (!tracking_active || !roi_valid || roi_tl_x != 16 || roi_tl_y != 14 || roi_br_x != 44 || roi_br_y != 29) begin
+            $display("Result: FAIL in-tolerance anchor movement");
+            $finish;
+        end
+
+        send_pixels(7);
+        wait_for_frame();
+        if (!tracking_active || !roi_valid || roi_tl_x != 16 || roi_tl_y != 14 || roi_br_x != 44 || roi_br_y != 29) begin
+            $display("Result: FAIL cumulative anchor drift rejection");
+            $finish;
+        end
+
         send_pixels(2);
         wait_for_frame();
-        if (!tracking_active || !roi_valid || roi_tl_x != 10 || roi_tl_y != 8 || roi_br_x != 50 || roi_br_y != 35) begin
+        if (!tracking_active || !roi_valid || roi_tl_x != 16 || roi_tl_y != 14 || roi_br_x != 44 || roi_br_y != 29) begin
             $display("Result: FAIL prior-ROI hold");
             $finish;
         end
@@ -158,11 +184,13 @@ module roi_start_detector_tb;
         send_pixels(4);
         wait_for_frame();
         if (tracking_active && roi_valid &&
-            roi_tl_x == 10 && roi_tl_y == 8 && roi_tr_x == 50 && roi_tr_y == 8 &&
-            roi_br_x == 56 && roi_br_y == 35 && roi_bl_x == 16 && roi_bl_y == 35) begin
+            roi_tl_x == 10 && roi_tl_y == 8 && roi_tr_x == 56 && roi_tr_y == 8 &&
+            roi_br_x == 56 && roi_br_y == 35 && roi_bl_x == 10 && roi_bl_y == 35) begin
             $display("Result: ANGLED START CORNER PASS");
         end else begin
-            $display("Result: FAIL angled START corners");
+            $display("Result: FAIL angled START corners TL=(%0d,%0d) TR=(%0d,%0d) BR=(%0d,%0d) BL=(%0d,%0d)",
+                roi_tl_x, roi_tl_y, roi_tr_x, roi_tr_y,
+                roi_br_x, roi_br_y, roi_bl_x, roi_bl_y);
         end
         $finish;
     end
