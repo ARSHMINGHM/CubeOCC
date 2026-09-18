@@ -10,7 +10,14 @@ file mkdir $out_dir
 set_param general.maxThreads 1
 
 read_verilog -sv [file join $repo_dir rtl roi_start_detector.sv]
-synth_design -top roi_start_detector -part xc7a35tcpg236-1 -flatten_hierarchy rebuilt
+set synth_options [list -top roi_start_detector -part xc7a35tcpg236-1 -flatten_hierarchy rebuilt]
+if {[info exists ::env(ROI_X_BITS)]} {
+    lappend synth_options -generic "X_BITS=$::env(ROI_X_BITS)"
+}
+if {[info exists ::env(ROI_Y_BITS)]} {
+    lappend synth_options -generic "Y_BITS=$::env(ROI_Y_BITS)"
+}
+synth_design {*}$synth_options
 create_clock -name pclk -period 10.000 [get_ports pclk]
 
 report_utilization -hierarchical -file [file join $out_dir utilization_hierarchical.rpt]

@@ -303,6 +303,13 @@ coordinates, per-corner distance, maximum error, IoU, and the automatic problem
 flag. Either outline can be hidden, and display zoom can be changed from 1x to
 8x. Rate the FPGA result with `1=true`, `2=mid`, `3=false`, or `S=skip`.
 
+Fast review mode is enabled by default. It opens only the 44 automatically
+flagged V11 frames, preloads the next five images, advances immediately after
+each rating, and checkpoints the JSON after a short pause or every 20 labels.
+Uncheck **Only automatically flagged frames** before choosing the folder to
+review all 807 frames. PNG encoding is no longer performed for every label;
+press `E` only when a particular combined overlay should be saved.
+
 Ratings and the visible combined overlays are saved under:
 
 ```text

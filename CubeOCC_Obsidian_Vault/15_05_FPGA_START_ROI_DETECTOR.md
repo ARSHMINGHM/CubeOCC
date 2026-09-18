@@ -83,6 +83,15 @@ Vivado 2019.1 technology mapping of `roi_start_detector` by itself for
 | CARRY4 | 291 | - | - |
 | BUFG | 1 | - | - |
 
+The table uses the conservative default `X_BITS=10`, `Y_BITS=10`. If Camera 1
+is permanently reduced to `160x120`, synthesizing with the minimum safe widths
+`X_BITS=8`, `Y_BITS=7` maps to 1,953 LUT primitives, 791 flip-flops, and 167
+`CARRY4` blocks: about 25.9% fewer LUT primitives than the default. A
+`320x240`-capable `X_BITS=9`, `Y_BITS=8` build maps to 2,312 LUT primitives,
+890 flip-flops, and 248 `CARRY4` blocks. Coordinate-width reduction does not
+change the detection algorithm or its one-pixel-per-clock throughput. Do not
+use a reduced width if the real Camera 1 raster can exceed that coordinate.
+
 These are standalone synthesis numbers for the ROI detector, not the complete
 CubeOCC top. The design stores counters, row-run state, four marker windows,
 and coordinates only; it does not infer a frame buffer. Vivado completed
@@ -109,6 +118,14 @@ that perspective tracking is free.
 | DSP multipliers | None. |
 | Division | None. |
 | Main logic | START/DATA threshold comparators, run-length counters, two coherent edge trackers, four local marker windows, prior-corner registers, bright-pixel counter, and state logic. |
+
+For the `160x120` XSim camera, the testbench sends 160 active pixels plus one
+line-blank cycle for each of 120 rows. The four corner trackers run in parallel,
+so one frame takes about 19,321 clocks from frame start through the frame-end
+decision. That is approximately `193.21 us` at a `100 MHz` pixel clock. On a
+physical camera, blanking and the configured sensor frame rate dominate: the
+next ROI result is available at the end of each frame, approximately every
+`33.3 ms` at 30 FPS or `16.7 ms` at 60 FPS.
 
 More FPGA arithmetic cannot make a one-pixel-per-clock DVP camera deliver a completed full-frame ROI before the final pixel arrives. To reduce end-to-end latency, Camera 1 should use a lower resolution or higher frame/pixel clock, for example `320 x 240` grayscale when its ROI accuracy is sufficient.
 

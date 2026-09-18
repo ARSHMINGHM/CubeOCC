@@ -46,6 +46,7 @@
   <header>
     <h1>Python / FPGA ROI Comparison</h1>
     <button id="choose">Choose XSim Result Folder</button>
+    <label><input id="problem-only" type="checkbox" checked> Only automatically flagged frames</label>
     <span id="top-status" class="muted">Choose a folder containing python_reference/comparison.json.</span>
   </header>
   <main>
@@ -77,8 +78,9 @@
         <button id="mid" class="mid" disabled>Mid: usable, but imprecise <kbd>2</kbd></button>
         <button id="false" class="false" disabled>False: FPGA ROI is wrong <kbd>3</kbd></button>
         <button id="skip" disabled>Skip <kbd>S</kbd></button>
+        <button id="export" disabled>Save current overlay <kbd>E</kbd></button>
       </div>
-      <div class="panel muted">The Python outline is a reference, not an automatic label. Judge both outlines against the actual screen. Selecting the folder starts a fresh <code>comparison_review</code>.</div>
+      <div class="panel muted">Labels advance immediately and save to JSON in short batches. PNG overlays are optional: press <code>E</code> only for frames you want to preserve. The Python outline is a reference, not an automatic label.</div>
       <p id="notice" class="status"></p>
     </aside>
   </main>
@@ -89,8 +91,11 @@
     const zoom = document.getElementById('zoom');
     const showPython = document.getElementById('show-python');
     const showRtl = document.getElementById('show-rtl');
-    const actions = ['true', 'mid', 'false', 'skip'].map(id => document.getElementById(id));
+    const actions = ['true', 'mid', 'false', 'skip', 'export'].map(id => document.getElementById(id));
     let root, output, report, records = [], index = 0, labels = {}, image;
+    let loadGeneration = 0, saveTimer, saveChain = Promise.resolve(), saveDirty = false;
+    let queuedLabels = 0, lastFlush = performance.now();
+    const imageCache = new Map();
 
     function parts(path) { return path.split('/').filter(Boolean); }
     function enable(value) { actions.forEach(item => item.disabled = !value); }
@@ -131,7 +136,7 @@
     function draw() {
       const record = current(); if (!record || !image) return;
       const scale = Number(zoom.value);
-      canvas.width = image.naturalWidth * scale; canvas.height = image.naturalHeight * scale;
+      canvas.width = image.width * scale; canvas.height = image.height * scale;
       ctx.imageSmoothingEnabled = false; ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       if (showPython.checked) drawPolygon(points(record, 'python_corners'), '#00e5ff', 'P');
       if (showRtl.checked) drawPolygon(points(record, 'rtl_corners'), '#ff3131', 'F');
@@ -147,28 +152,72 @@
         return `<tr><td>${name.toUpperCase()}</td><td>${format(p)}</td><td>${format(f)}</td><td>${distance}</td></tr>`;
       }).join('');
     }
+    async function loadBitmap(relativePath) {
+      if (!imageCache.has(relativePath)) {
+        imageCache.set(relativePath, (async () => {
+          const file = await getFile(`camera_gray/${relativePath}`);
+          return createImageBitmap(await file.getFile());
+        })());
+      }
+      return imageCache.get(relativePath);
+    }
+    function trimCache() {
+      const keep = new Set(records.slice(Math.max(0, index - 2), index + 7).map(record => record.relative_path));
+      for (const [key, promise] of imageCache) {
+        if (!keep.has(key)) {
+          promise.then(bitmap => bitmap.close()).catch(() => {});
+          imageCache.delete(key);
+        }
+      }
+    }
+    function preload() {
+      records.slice(index + 1, index + 6).forEach(record => loadBitmap(record.relative_path).catch(() => {}));
+      trimCache();
+    }
     async function load() {
       const record = current();
       if (!record) { document.getElementById('status').textContent = `Finished. Saved ${Object.keys(labels).length} ratings.`; enable(false); return; }
-      const file = await getFile(`camera_gray/${record.relative_path}`);
-      const url = URL.createObjectURL(await file.getFile()); image = new Image();
-      image.onload = () => { URL.revokeObjectURL(url); draw(); }; image.src = url;
+      const generation = ++loadGeneration;
       updateDetails(record);
+      const loadedImage = await loadBitmap(record.relative_path);
+      if (generation !== loadGeneration) return;
+      image = loadedImage;
+      draw(); preload();
     }
     function manifest() {
       const counts = { true: 0, mid: 0, false: 0 };
       Object.values(labels).forEach(value => counts[value.grade]++);
       return { format: 'cubeocc-python-fpga-comparison-review-v1', source: 'python_reference/comparison.json', summary: { labeled_count: Object.keys(labels).length, true_count: counts.true, mid_count: counts.mid, false_count: counts.false }, images: labels };
     }
-    async function save(grade) {
+    function flushManifest() {
+      if (!saveDirty || !output) return saveChain;
+      saveDirty = false;
+      queuedLabels = 0;
+      lastFlush = performance.now();
+      const body = JSON.stringify(manifest(), null, 2) + '\n';
+      saveChain = saveChain.then(() => writeFile(output, 'comparison_review.json', body));
+      return saveChain;
+    }
+    function queueManifestSave() {
+      saveDirty = true;
+      queuedLabels++;
+      clearTimeout(saveTimer);
+      if (queuedLabels >= 20 || performance.now() - lastFlush >= 2000) flushManifest();
+      else saveTimer = setTimeout(flushManifest, 350);
+    }
+    function save(grade) {
       const record = current(); if (!record) return;
       labels[record.relative_path] = { grade, python_corners: record.python_corners, rtl_corners: record.rtl_corners, mean_corner_error_px: record.mean_corner_error_px, max_corner_error_px: record.max_corner_error_px, box_iou: record.box_iou, automatic_problem: record.problem };
+      queueManifestSave();
+      index++; load();
+    }
+    async function exportCurrent() {
+      const record = current(); if (!record) return;
       const directory = await getOutputDirectory(`annotated/${record.relative_path}`);
       const filename = parts(record.relative_path).at(-1).replace(/\.[^.]+$/, '.png');
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       await writeFile(directory, filename, blob);
-      await writeFile(output, 'comparison_review.json', JSON.stringify(manifest(), null, 2) + '\n');
-      index++; await load();
+      document.getElementById('notice').textContent = `Saved overlay: annotated/${record.relative_path}`;
     }
     async function choose() {
       if (!window.showDirectoryPicker) { document.getElementById('notice').textContent = 'Use Chrome or Edge for folder access.'; return; }
@@ -179,7 +228,10 @@
         if (report.format !== 'cubeocc-python-roi-reference-v1') throw new Error('Invalid comparison.json format.');
         await root.removeEntry('comparison_review', { recursive: true }).catch(() => {});
         output = await root.getDirectoryHandle('comparison_review', { create: true });
-        records = report.frames; index = 0; labels = {}; image = undefined;
+        records = document.getElementById('problem-only').checked
+          ? report.frames.filter(record => record.problem)
+          : report.frames;
+        index = 0; labels = {}; image = undefined; imageCache.clear();
         document.getElementById('top-status').textContent = `${records.length} Python/FPGA comparisons loaded.`;
         document.getElementById('notice').textContent = ''; enable(true); await load();
       } catch (error) { document.getElementById('notice').textContent = `Could not start comparison review: ${error.message}`; }
@@ -190,14 +242,17 @@
     document.getElementById('true').addEventListener('click', () => save('true'));
     document.getElementById('mid').addEventListener('click', () => save('mid'));
     document.getElementById('false').addEventListener('click', () => save('false'));
-    document.getElementById('skip').addEventListener('click', async () => { index++; await load(); });
+    document.getElementById('skip').addEventListener('click', () => { index++; load(); });
+    document.getElementById('export').addEventListener('click', exportCurrent);
     window.addEventListener('keydown', event => {
       if (event.repeat || !root) return;
       if (event.key === '1') save('true');
       if (event.key === '2') save('mid');
       if (event.key === '3') save('false');
       if (event.key.toLowerCase() === 's') { index++; load(); }
+      if (event.key.toLowerCase() === 'e') exportCurrent();
     });
+    window.addEventListener('pagehide', () => flushManifest());
   </script>
 </body>
 </html>
