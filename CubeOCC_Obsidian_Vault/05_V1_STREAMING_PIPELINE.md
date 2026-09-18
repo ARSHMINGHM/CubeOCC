@@ -2,7 +2,7 @@
 project: CubeOCC
 type: architecture
 status: v1
-last_reviewed: 2026-08-22
+last_reviewed: 2026-09-19
 ---
 
 # V1 Streaming Pipeline
@@ -10,6 +10,8 @@ last_reviewed: 2026-08-22
 ## Core rule
 
 **Do not store full raw frames in V1 unless a specific stage proves it unavoidable.**
+
+The current FPGA projective-warp implementation is the documented exception: it stores one 160x120 GRAY8 frame (19,200 bytes) in eight RAMB36 tiles because inverse source lookups are not sequential. It also uses one 160-byte row buffer so the iterative mapper can still emit a continuous DVP line. The ROI detector and 8x8 grid mapper remain streaming.
 
 ```mermaid
 flowchart LR
@@ -82,3 +84,25 @@ Possible implementations:
 ## Output ordering
 
 With one V1 pipeline, frames are inherently in order. Therefore no input scheduler, reorder buffer or waiting FIFO is needed unless benchmarking proves otherwise.
+
+## Implemented RTL checkpoint
+
+See [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]] for commands, files, and review instructions.
+
+Verified direct XSim chain:
+
+```text
+roi_start_detector
+  -> projective_warp_160x120
+  -> grayscale_grid_8x8
+```
+
+- 807 real grayscale capture frames completed;
+- 19,200 warped output pixels per frame;
+- 64 grid cells per frame and 300 pixels per cell;
+- 51,648 total cell records;
+- approximately 269,000 clocks per frame for capture plus the iterative projective warp;
+- approximately 2.69 ms at 100 MHz or 11.2 ms at 24 MHz, before camera blanking;
+- standalone projective-warp synthesis produced 5,206 LUT primitives, 887 flip-flops, 8 RAMB36 tiles, and 14 DSP48E1 blocks on `xc7a35tcpg236-1`.
+
+The next image-processing stage is the per-cell circular sampler, grayscale averaging, and on/off classifier. Structural completion does not replace manual review of corner and grid geometry.

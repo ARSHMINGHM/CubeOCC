@@ -2,7 +2,7 @@
 project: CubeOCC
 type: task-backlog
 status: active
-last_reviewed: 2026-08-28
+last_reviewed: 2026-09-19
 ---
 
 # Task Backlog
@@ -117,6 +117,7 @@ Child note:
 - [[15_05_FPGA_START_ROI_DETECTOR]]
 - [[15_06_SOURCES_AND_FPGA_UI]]
 - [[15_07_XSIM_RTL_ROI_REVIEW]]
+- [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]]
 
 - [ ] Label each monitor-capture image set with distance.
 - [ ] Automatically detect and save Camera 1 ROI corners from the 640x480 grayscale review camera.
@@ -135,12 +136,14 @@ Child note:
 #### Input and geometry
 
 - [ ] Receive Camera 2 cropped ROI pixels as the V1 image-processing input stream.
-- [ ] Use four detected corners to map the active grid.
-- [ ] Implement warp or coordinate mapping from marker geometry.
-- [ ] Extract the static 8x8 grid from the ROI.
+- [x] Use live FPGA-detected four-corner signals to map the active grid in the direct XSim pipeline.
+- [x] Implement and synthesize the 160x120 nearest-neighbor FPGA perspective warp from marker geometry.
+- [x] Extract and synthesize the static 8x8 grid from the rectified grayscale stream.
 - [ ] Find each cell center and estimate average cell size.
 
 #### Circular sampling and averaging
+
+Current checkpoint: the RTL emits correct structural cell tags and the testbench reports whole-cell averages for review. The final circular center sampler and classifier below are still open.
 
 - [ ] Test small, medium, and large circular sampling regions around each cell center:
   - find the center of each detected grid cell

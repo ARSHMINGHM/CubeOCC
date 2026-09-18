@@ -1,8 +1,8 @@
 ---
 project: CubeOCC
 type: implementation-and-review
-status: active
-last_reviewed: 2026-09-18
+status: verified-simulation
+last_reviewed: 2026-09-19
 ---
 
 # FPGA Camera 2 Grayscale Grid Review
@@ -17,7 +17,7 @@ Camera 1 four corners
   -> rtl/camera2_roi_programmer.sv
   -> I2C HSTART, VSTART, HSIZE, VSIZE, stream-enable writes
   -> Camera 2 emits only the selected grayscale ROI bounding box
-  -> rtl/perspective_warp_160x120.sv
+  -> rtl/projective_warp_160x120.sv
   -> FPGA four-corner rectification to a regular 160x120 rectangle
   -> rtl/grayscale_grid_8x8.sv
   -> one grayscale pixel and one 8x8 cell tag per clock
@@ -25,7 +25,7 @@ Camera 1 four corners
   -> browser review with 1 / 2 / 3 labels
 ```
 
-The preferred verification path is now directly connected in `rtl/roi_warp_grid_pipeline.sv`. The same XSim snapshot receives a camera frame, computes its four corners with `roi_start_detector`, passes those live FPGA signals to `perspective_warp_160x120`, and sends the resulting pixel stream directly into `grayscale_grid_8x8`. It does not read corners from JSON.
+The preferred verification path is directly connected in `rtl/roi_warp_grid_pipeline.sv`. The same XSim snapshot receives a camera frame, computes its four corners with `roi_start_detector`, passes those live FPGA signals to `projective_warp_160x120`, and sends the resulting pixel stream directly into `grayscale_grid_8x8`. It does not read corners from JSON.
 
 The START detector also includes a conservative fragmented-edge repair. If one detected vertical edge is more than 28 pixels shorter than the opposite edge, its top and bottom Y extent is copied from the reliable edge while its own X positions are retained. This fixes severe reflection/defocus fragmentation without changing ordinary 15-degree and 30-degree perspective cases.
 
@@ -42,18 +42,22 @@ The START detector also includes a conservative fragmented-edge repair. If one d
 > [!important]
 > Camera 1 coordinates cannot be copied directly to a physical Camera 2 unless the cameras are aligned. The calibration/mapping stage must convert the four points into Camera 2 sensor coordinates first. The current grid simulation assumes that conversion has already happened.
 
-## FPGA perspective warp
+## FPGA projective warp
 
-`rtl/perspective_warp_160x120.sv` is the synthesizable warp stage. It:
+`rtl/projective_warp_160x120.sv` is the active synthesizable warp stage. It:
 
 - captures one 160x120 GRAY8 raster in inferred block RAM;
 - accepts the `TL`, `TR`, `BR`, and `BL` points from the FPGA ROI detector;
-- walks the left and right quadrilateral edges with Q16 fixed-point accumulators;
-- walks between those edges for every output row;
+- computes a Q16 square-to-quadrilateral homography from the four corners;
+- uses one 32-cycle signed divider for the two frame-level projective coefficients;
+- uses two parallel eight-step coordinate dividers for each output source location;
 - performs nearest-neighbor source lookup in FPGA block RAM;
+- stores one calculated 160-pixel row, then emits that row continuously;
 - emits a regular 160x120 DVP-style grayscale stream for the grid mapper.
 
-This is a four-corner bilinear quadrilateral rectifier designed for inexpensive FPGA arithmetic. It is not a floating-point Python/OpenCV homography. Python only serializes the real grayscale images into `.mem` files and converts XSim's emitted hex pixels into PNG files for human review; it does not crop or warp the image.
+The previous `rtl/perspective_warp_160x120.sv` used bilinear corner interpolation. Manual labels proved that approximation does not preserve a planar screen's projective grid: many wrong frames had less than two pixels of corner error but still crossed cell boundaries after warping. That module is retained only as a legacy comparison and is no longer instantiated by the direct pipeline.
+
+The active module is a fixed-point FPGA homography, not a floating-point Python/OpenCV warp. Python only serializes real grayscale images into `.mem` files and converts XSim's emitted hex pixels into PNG files for human review.
 
 The frame buffer is intentional. A perspective output scan requests source pixels in a non-sequential order, so this implementation stores one low-resolution 160x120 frame. This is an explicit exception to the no-full-raw-frame-buffer V1 baseline, limited to 19,200 grayscale bytes.
 
@@ -68,7 +72,7 @@ The frame buffer is intentional. A perspective output scan requests source pixel
 - stores no full frame;
 - assigns a cell in scan order as `floor(x*8/width)` and `floor(y*8/height)`.
 
-Before the RTL grid mapper, `perspective_warp_160x120` applies nearest-neighbor rectification in `TL`, `TR`, `BR`, `BL` order. The regular output is 160x120, so every 8x8 cell is 20x15 pixels, or 300 pixels. Grayscale averages in the JSON are testbench diagnostics computed from the RTL cell tags. They are not yet the final FPGA circular sampler/classifier.
+Before the RTL grid mapper, `projective_warp_160x120` applies nearest-neighbor homography rectification in `TL`, `TR`, `BR`, `BL` order. The regular output is 160x120, so every 8x8 cell is 20x15 pixels, or 300 pixels. Grayscale averages in the JSON are testbench diagnostics computed from the RTL cell tags. They are not yet the final FPGA circular sampler/classifier.
 
 > [!important]
 > The V11 regression feeds the real 160x120 Camera 1 grayscale captures and their FPGA-detected corners into the warp. For a physical Camera 2 sensor crop, rebase the four corners to the crop's local origin and either configure a 160x120 output or parameterize the frame dimensions before connecting the stream to this module.
@@ -81,7 +85,7 @@ This is the run to use for end-to-end FPGA verification:
 
 ```powershell
 cd C:\Users\arshm\Desktop\CubeOCC
-python dataset\run_roi_warp_grid_rtl_sim.py --out sim\roi_warp_grid_direct_rtl
+python dataset\run_roi_warp_grid_rtl_sim.py --out sim\roi_warp_grid_projective_rtl
 ```
 
 Input pixels come from the real 160x120 grayscale capture set. Python writes those pixels to `.mem`; inside one XSim design the data path is:
@@ -90,7 +94,7 @@ Input pixels come from the real 160x120 grayscale capture set. Python writes tho
 camera pixels -> ROI RTL -> live corner signals -> warp RTL -> grid RTL
 ```
 
-Open `sim\roi_warp_grid_direct_rtl` in the review GUI. Its status panel must show `Mode: direct-connected-rtl` and displays the four corners produced inside that run.
+Open `sim\roi_warp_grid_projective_rtl` in the review GUI. Its status panel must show `Mode: direct-connected-rtl` and displays the four corners produced inside that run.
 
 ### Saved-corner regression
 
@@ -123,7 +127,7 @@ python dataset\serve_grayscale_grid_review.py
 In Chrome or Edge:
 
 1. Click **Open XSim result folder**.
-2. Choose `sim\grayscale_grid_rtl_results`.
+2. For the current end-to-end result, choose `sim\roi_warp_grid_projective_rtl`. Use `sim\roi_warp_grid_direct_rtl` only to inspect the old labeled bilinear result.
 3. Inspect the FPGA-warped image, red 8x8 boundaries, and 64 average-grayscale swatches.
 4. Press `1` for correct, `2` for mostly correct, or `3` for wrong.
 5. Press `S` to skip.
@@ -143,18 +147,34 @@ On 2026-09-18, the directly connected XSim pipeline processed all 807 frames fro
 - the cropped real monitor captures preserved their grayscale black/white cell levels;
 - the Camera 2 ROI programmer test emitted the expected four crop writes and stream-enable write.
 
+On 2026-09-19, the new projective RTL also emitted all 807 frames with zero rejected frames. Comparing the same central cell regions before re-labeling:
+
+| Previous label | Frames | Bilinear center variation | Projective center variation | Frames improved |
+|---|---:|---:|---:|---:|
+| `correct` | 621 | 3.77 | 2.16 | 397 |
+| `mostly correct` | 74 | 24.87 | 2.59 | 73 |
+| `wrong` | 112 | 25.73 | 9.25 | 86 |
+| **All** | **807** | **8.75** | **3.18** | **556** |
+
+The metric is the mean grayscale standard deviation inside the central region of each of the 64 cells; lower means cell content is leaking across the fixed grid less often. It is a regression metric, not a replacement for manual labels. Saturated dark/bright cases that did not improve remain ROI detector or exposure problems.
+
+> [!warning]
+> These counts prove that every simulation completed and produced a structurally complete warped grid. They do not prove that every detected quadrilateral is geometrically correct. Grade the direct result in the browser and use the saved `correct`, `mostly correct`, and `wrong` labels to drive the next ROI-detector adjustment.
+
 Vivado 2019.1 out-of-context synthesis for `xc7a35tcpg236-1` also passed:
 
 | RTL unit | Slice LUTs | Slice registers | BRAM | DSP |
 |---|---:|---:|---:|---:|
-| Direct `roi_warp_grid_pipeline` top | 4,764 | 1,502 | 8 RAMB36 tiles | 0 |
-| `perspective_warp_160x120` | 2,608 | 389 | 8 RAMB36 tiles | 0 |
+| Legacy bilinear direct top | 4,764 | 1,502 | 8 RAMB36 tiles | 0 |
+| Legacy `perspective_warp_160x120` | 2,608 | 389 | 8 RAMB36 tiles | 0 |
 | `grayscale_grid_8x8` | 118 | 86 | 0 | 0 |
 | `camera2_roi_programmer` | 282 | 57 | 0 | 0 |
 
-The warp emits one pixel per clock after buffering and adds one setup/gap clock per row. Capture plus warp takes about 38,520 clocks: about 0.385 ms at 100 MHz or 1.605 ms at 24 MHz, before camera blanking. The downstream grid consumes the warp stream at the same rate and does not add another frame-length wait.
+The active projective warp's standalone synthesized cell report contains 5,206 LUT primitives, 887 flip-flops, 8 RAMB36E1 tiles, and 14 DSP48E1 blocks. The exact-divider prototype was rejected because it required roughly 23,000 LUT primitives. The iterative version takes approximately 269,000 clocks per frame: about 2.69 ms at 100 MHz or 11.2 ms at 24 MHz, before camera blanking.
 
-The combined resource row is a real out-of-context synthesis of the connected detector, warp, and grid top, not a sum of separate reports.
+The legacy combined row remains for comparison only. A fresh combined utilization report for detector plus projective warp plus grid still needs to be finalized; Vivado 2019.1 currently completes synthesis but then raises a temporary-folder cleanup error before writing the report file.
+
+Repository checkpoint: commit `70d96ec` (`Connect FPGA ROI detection to perspective grid pipeline`) on `main`.
 
 Resource reports can be regenerated with:
 

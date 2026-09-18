@@ -64,7 +64,7 @@ module roi_warp_grid_pipeline #(
         .roi_br_x, .roi_br_y, .roi_bl_x, .roi_bl_y
     );
 
-    perspective_warp_160x120 #(.X_BITS(X_BITS), .Y_BITS(Y_BITS)) warp (
+    projective_warp_160x120 #(.X_BITS(X_BITS), .Y_BITS(Y_BITS)) warp (
         .pclk, .rst_n,
         .in_vsync(delayed_vsync), .in_href(delayed_href), .in_gray(delayed_gray),
         .rectify_enable(roi_valid),

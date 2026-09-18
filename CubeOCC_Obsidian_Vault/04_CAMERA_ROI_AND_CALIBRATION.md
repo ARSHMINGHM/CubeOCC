@@ -2,7 +2,7 @@
 project: CubeOCC
 type: camera
 status: confirmed-draft
-last_reviewed: 2026-08-22
+last_reviewed: 2026-09-19
 ---
 
 # Camera ROI and Calibration
@@ -59,6 +59,17 @@ V1 detector implementation: [[15_05_FPGA_START_ROI_DETECTOR]]. It uses a graysca
 V1 starts with grayscale data-camera processing to prove the pipeline. V1.5 upgrades Camera 2 data symbols to RGB.
 
 Camera 2 FPGA implementation and grayscale 8x8 review: [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]].
+
+## Current RTL status
+
+Simulation now has a direct FPGA path from Camera 1 pixels through ROI detection, four-corner projective rectification, and 8x8 grayscale grid tagging. The Camera 2 ROI programmer also generates the expected `HSTART`, `VSTART`, `HSIZE`, `VSIZE`, and stream-enable register transactions in its testbench.
+
+Still open before physical Camera 2 use:
+
+- calibrate Camera 1 coordinates into Camera 2 sensor coordinates;
+- connect the ROI programmer command interface to `i2c_master.sv`;
+- replace the generic register assumptions with the selected sensor's real register map and timing;
+- verify that the chosen sensor applies ROI/windowing and emits only the requested pixels.
 
 ## Startup mapping
 

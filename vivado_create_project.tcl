@@ -22,6 +22,7 @@ add_files -fileset sources_1 [list \
   [file join $script_dir rtl roi_start_detector.sv] \
   [file join $script_dir rtl camera2_roi_programmer.sv] \
   [file join $script_dir rtl perspective_warp_160x120.sv] \
+  [file join $script_dir rtl projective_warp_160x120.sv] \
   [file join $script_dir rtl grayscale_grid_8x8.sv] \
   [file join $script_dir rtl roi_warp_grid_pipeline.sv] \
   [file join $script_dir rtl cubeocc_top.sv] \

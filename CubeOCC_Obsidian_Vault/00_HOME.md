@@ -2,7 +2,7 @@
 project: CubeOCC
 type: hub
 status: active
-last_reviewed: 2026-08-22
+last_reviewed: 2026-09-19
 ---
 
 # CubeOCC — Source of Truth
@@ -64,6 +64,23 @@ flowchart LR
 4. Keep reduced information whenever possible: per-cell sums/averages, symbols, decoded bits.
 5. Benchmark first; add parallel workers only if one pipeline cannot keep up.
 6. Treat glare as a channel impairment to measure, not something V1 promises to correct.
+
+## Current implementation checkpoint
+
+The latest verified FPGA simulation milestone is documented in [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]]. The directly connected XSim path now runs:
+
+```text
+real GRAY8 camera frame
+  -> FPGA ROI detector
+  -> live four-corner signals
+  -> FPGA projective warp
+  -> FPGA 8x8 grid mapper
+  -> browser review and manual labels
+```
+
+All 807 dataset frames completed structurally in the corrected projective XSim run, producing 51,648 cell records. Analysis of the original labels showed that the previous bilinear warp, not only ROI corner error, caused most angled-grid failures. The browser review remains the source of truth for `correct`, `mostly correct`, and `wrong` ROI/grid quality.
+
+Commit checkpoint: `70d96ec` (`Connect FPGA ROI detection to perspective grid pipeline`).
 
 ## Version Direction
 

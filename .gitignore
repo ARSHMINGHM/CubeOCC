@@ -7,6 +7,10 @@ sim/image_test/
 sim/roi_rtl_*/
 sim/grayscale_grid_rtl_*/
 sim/roi_warp_grid_direct_*/
+sim/roi_warp_grid_projective_*/
+sim/warp_diagnostic/
+sim/projective_vivado_*/
+sim/projective_pipeline_vivado/
 sim/camera2_roi_programmer_*/
 sim/camera2_resource_reports/
 xsim.dir/

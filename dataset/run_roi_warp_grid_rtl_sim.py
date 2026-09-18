@@ -20,7 +20,7 @@ HEIGHT = 120
 PIXELS = WIDTH * HEIGHT
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
 DEFAULT_INPUT = Path("sim/roi_rtl_all_v11_independent_edges/camera_gray")
-DEFAULT_OUTPUT = Path("sim/roi_warp_grid_direct_rtl")
+DEFAULT_OUTPUT = Path("sim/roi_warp_grid_projective_rtl")
 DEFAULT_VIVADO_BIN = Path(os.environ.get("VIVADO_BIN", "X:/xilinx/Vivado/2019.1/bin"))
 
 
@@ -76,6 +76,10 @@ def main() -> int:
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--limit", type=int, default=0, help="Optional frame limit; zero means all frames.")
+    parser.add_argument(
+        "--capture-set", action="append", default=[],
+        help="Only run a named capture-set folder; repeat for multiple sets.",
+    )
     parser.add_argument("--vivado-bin", type=Path, default=DEFAULT_VIVADO_BIN)
     args = parser.parse_args()
 
@@ -86,6 +90,12 @@ def main() -> int:
         if not input_dir.is_dir():
             raise ValueError(f"input folder does not exist: {input_dir}")
         source_paths = images_in(input_dir)
+        if args.capture_set:
+            selected = set(args.capture_set)
+            source_paths = [
+                path for path in source_paths
+                if path.relative_to(input_dir).parts[0] in selected
+            ]
         if args.limit > 0:
             source_paths = source_paths[: args.limit]
         if not source_paths:
@@ -127,7 +137,7 @@ def main() -> int:
         run([
             str(executable(args.vivado_bin, "xvlog")), "-sv",
             str(root / "rtl" / "roi_start_detector.sv"),
-            str(root / "rtl" / "perspective_warp_160x120.sv"),
+            str(root / "rtl" / "projective_warp_160x120.sv"),
             str(root / "rtl" / "grayscale_grid_8x8.sv"),
             str(root / "rtl" / "roi_warp_grid_pipeline.sv"),
             str(root / "tb" / "roi_warp_grid_pipeline_image_tb.sv"),
@@ -176,7 +186,7 @@ def main() -> int:
                 **base,
                 "camera_gray_path": output_path.relative_to(output).as_posix(),
                 "perspective_rectified": True,
-                "perspective_engine": "rtl/roi_warp_grid_pipeline.sv",
+                "perspective_engine": "rtl/projective_warp_160x120.sv",
                 "cells": cells,
             })
         if warped_file.readline():
@@ -202,11 +212,11 @@ def main() -> int:
             "rejected_frame_count": len(rejected),
             "camera_model": {
                 "format": "GRAY8", "width": WIDTH, "height": HEIGHT,
-                "perspective_rectified": True, "perspective_engine": "rtl/roi_warp_grid_pipeline.sv",
-                "warp_resampling": "nearest",
+                "perspective_rectified": True, "perspective_engine": "rtl/projective_warp_160x120.sv",
+                "warp_resampling": "projective-nearest",
             },
             "rtl": [
-                "rtl/roi_start_detector.sv", "rtl/perspective_warp_160x120.sv",
+                "rtl/roi_start_detector.sv", "rtl/projective_warp_160x120.sv",
                 "rtl/grayscale_grid_8x8.sv", "rtl/roi_warp_grid_pipeline.sv",
             ],
             "testbench": "tb/roi_warp_grid_pipeline_image_tb.sv",
