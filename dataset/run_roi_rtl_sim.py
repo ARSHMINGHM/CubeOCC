@@ -29,6 +29,7 @@ FRAME_WIDTH = 160
 FRAME_HEIGHT = 120
 CONFIGURED_THRESHOLD = 180
 THRESHOLD_MARGIN = 32
+START_THRESHOLD_MARGIN = 68
 MAX_CORNER_SHIFT = 10
 DEFAULT_VIVADO_BIN = Path(os.environ.get("VIVADO_BIN", "X:/xilinx/Vivado/2019.1/bin"))
 
@@ -217,6 +218,8 @@ def main() -> int:
                 "configured_threshold": CONFIGURED_THRESHOLD,
                 "detector_threshold": CONFIGURED_THRESHOLD - THRESHOLD_MARGIN,
                 "threshold_margin": THRESHOLD_MARGIN,
+                "start_detector_threshold": CONFIGURED_THRESHOLD - START_THRESHOLD_MARGIN,
+                "start_threshold_margin": START_THRESHOLD_MARGIN,
                 "max_corner_shift": MAX_CORNER_SHIFT,
                 "min_line_run": 8,
                 "min_roi_height": 4,
@@ -247,6 +250,8 @@ def main() -> int:
                 "configured_threshold": CONFIGURED_THRESHOLD,
                 "detector_threshold": CONFIGURED_THRESHOLD - THRESHOLD_MARGIN,
                 "threshold_margin": THRESHOLD_MARGIN,
+                "start_detector_threshold": CONFIGURED_THRESHOLD - START_THRESHOLD_MARGIN,
+                "start_threshold_margin": START_THRESHOLD_MARGIN,
                 "max_corner_shift": MAX_CORNER_SHIFT,
                 "min_line_run": 8,
                 "min_roi_height": 4,

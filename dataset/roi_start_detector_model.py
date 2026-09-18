@@ -1,8 +1,8 @@
 """Software reference model for rtl/roi_start_detector.sv.
 
 This model intentionally mirrors the V1 RTL state machine: thresholded pixel
-runs, largest bright row band, and an axis-aligned ROI. It is used by the GUI
-so human labels apply to the FPGA design, not a separate vision algorithm.
+runs, independent coherent left/right edge tracks, and local DATA markers. It
+is used by the GUI so labels apply to the FPGA design, not another detector.
 """
 
 from __future__ import annotations
@@ -14,8 +14,10 @@ from PIL import Image
 
 
 MAX_ROW_GAP = 2
+MAX_EDGE_STEP = 2
 MAX_CORNER_SHIFT = 10
 THRESHOLD_MARGIN = 32
+START_THRESHOLD_MARGIN = 68
 GRID_SIZE = 8
 
 
@@ -33,16 +35,36 @@ def detect_roi(
     image = camera_image.convert("L")
     pixels = image.load()
     qualifying_rows = 0
-    current_band: dict[str, int] | None = None
-    best_band: dict[str, int] | None = None
+    current_edges: dict[str, dict[str, int] | None] = {"left": None, "right": None}
+    best_edges: dict[str, dict[str, int] | None] = {"left": None, "right": None}
 
-    def keep_tallest_band() -> None:
-        nonlocal best_band
-        if current_band is None:
+    def keep_longest_edge(side: str) -> None:
+        candidate = current_edges[side]
+        if candidate is None:
             return
-        height = current_band["bottom"] - current_band["top"] + 1
-        if best_band is None or height > best_band["bottom"] - best_band["top"] + 1:
-            best_band = current_band.copy()
+        best = best_edges[side]
+        height = candidate["bottom_y"] - candidate["top_y"] + 1
+        if best is None or height > best["bottom_y"] - best["top_y"] + 1:
+            best_edges[side] = candidate.copy()
+
+    def update_edge(side: str, edge_x: int, y: int) -> None:
+        current = current_edges[side]
+        coherent = (
+            current is not None
+            and y - current["last_y"] <= MAX_ROW_GAP + 1
+            and abs(edge_x - current["bottom_x"]) <= MAX_EDGE_STEP
+        )
+        if not coherent:
+            keep_longest_edge(side)
+            current_edges[side] = {
+                "top_x": edge_x, "top_y": y,
+                "bottom_x": edge_x, "bottom_y": y,
+                "last_y": y,
+            }
+        else:
+            current["bottom_x"] = edge_x
+            current["bottom_y"] = y
+            current["last_y"] = y
 
     for y in range(image.height):
         run_start = 0
@@ -63,56 +85,57 @@ def detect_roi(
         if longest_length >= min_line_run:
             qualifying_rows += 1
             line_right = longest_start + longest_length - 1
-            if current_band is None or y - current_band["last_y"] > MAX_ROW_GAP + 1:
-                keep_tallest_band()
-                current_band = {
-                    "left": longest_start, "right": line_right,
-                    "top": y, "bottom": y, "last_y": y,
-                    "top_left": longest_start, "top_right": line_right,
-                    "bottom_left": longest_start, "bottom_right": line_right,
-                }
-            else:
-                current_band["left"] = min(current_band["left"], longest_start)
-                current_band["right"] = max(current_band["right"], line_right)
-                current_band["bottom"] = y
-                current_band["last_y"] = y
-                current_band["bottom_left"] = longest_start
-                current_band["bottom_right"] = line_right
-        elif current_band is not None and y - current_band["last_y"] > MAX_ROW_GAP:
-            keep_tallest_band()
-            current_band = None
+            update_edge("left", longest_start, y)
+            update_edge("right", line_right, y)
+        else:
+            for side in ("left", "right"):
+                current = current_edges[side]
+                if current is not None and y - current["last_y"] > MAX_ROW_GAP:
+                    keep_longest_edge(side)
+                    current_edges[side] = None
 
-    keep_tallest_band()
+    keep_longest_edge("left")
+    keep_longest_edge("right")
+    left_edge = best_edges["left"]
+    right_edge = best_edges["right"]
     diagnostics: dict[str, Any] = {
         "engine": "rtl/roi_start_detector.sv reference model",
-        "algorithm": "thresholded-longest-bright-run-inside-outside-boundaries",
+        "algorithm": "independent-coherent-left-right-edge-tracks",
         "threshold": threshold,
         "min_line_run": min_line_run,
         "min_roi_height": min_roi_height,
         "max_row_gap": MAX_ROW_GAP,
+        "max_edge_step": MAX_EDGE_STEP,
         "qualifying_row_count": qualifying_rows,
     }
     if (
-        best_band is None
-        or best_band["right"] <= best_band["left"]
-        or best_band["bottom"] - best_band["top"] + 1 < min_roi_height
+        left_edge is None
+        or right_edge is None
+        or right_edge["top_x"] <= left_edge["top_x"]
+        or left_edge["bottom_y"] - left_edge["top_y"] + 1 < min_roi_height
+        or right_edge["bottom_y"] - right_edge["top_y"] + 1 < min_roi_height
     ):
         diagnostics["valid"] = False
         diagnostics["reason"] = "no tall enough continuous bright row band"
         return [None, None, None, None], diagnostics
 
+    corners = [
+        (left_edge["top_x"], left_edge["top_y"]),
+        (right_edge["top_x"], right_edge["top_y"]),
+        (right_edge["bottom_x"], right_edge["bottom_y"]),
+        (left_edge["bottom_x"], left_edge["bottom_y"]),
+    ]
+    left = min(point[0] for point in corners)
+    right = max(point[0] for point in corners)
+    top = min(point[1] for point in corners)
+    bottom = max(point[1] for point in corners)
     diagnostics.update({
         "valid": True,
-        "roi_box": {"left": best_band["left"], "top": best_band["top"], "right": best_band["right"], "bottom": best_band["bottom"]},
-        "roi_width": best_band["right"] - best_band["left"] + 1,
-        "roi_height": best_band["bottom"] - best_band["top"] + 1,
+        "roi_box": {"left": left, "top": top, "right": right, "bottom": bottom},
+        "roi_width": right - left + 1,
+        "roi_height": bottom - top + 1,
     })
-    return [
-        (best_band["top_left"], best_band["top"]),
-        (best_band["top_right"], best_band["top"]),
-        (best_band["bottom_right"], best_band["bottom"]),
-        (best_band["bottom_left"], best_band["bottom"]),
-    ], diagnostics
+    return corners, diagnostics
 
 
 def effective_threshold(camera_image: Image.Image, configured_threshold: int, peak_margin: int = THRESHOLD_MARGIN) -> int:
@@ -381,8 +404,9 @@ def detect_frame_roi(
     While active, the extrema of the four outside white marker boxes define
     the grid, and the prior accepted ROI is retained if a frame is ambiguous.
     """
-    threshold = effective_threshold(camera_image, configured_threshold)
     state = _tracker_state(previous_state)
+    margin = START_THRESHOLD_MARGIN if state["phase"] != "active" else THRESHOLD_MARGIN
+    threshold = effective_threshold(camera_image, configured_threshold, margin)
     start_corners, start = _full_white_start(camera_image, threshold, min_line_run, min_roi_height)
     common = {
         "engine": "START/DATA/END protocol-state outer-marker reference model",
@@ -407,7 +431,7 @@ def detect_frame_roi(
                 "phase": "active",
                 "roi_box": start["roi_box"],
                 "corners": corners,
-                "anchor_corners": _corners_from_box(start["roi_box"]),
+                "anchor_corners": corners,
             }
         ignored = common | {
             "valid": False,

@@ -54,13 +54,14 @@ min_roi_height
 full_off_max_pixels
 ```
 
-At each pixel clock, the unit compares against `bright_threshold - 32`; the
-margin lets dim or defocused white screens remain detectable without a
-histogram or frame buffer. Before START, each row finds its longest continuous
-white run. The first and last qualifying rows provide the top-left, top-right,
-bottom-left, and bottom-right bright-to-dark boundaries. This is the hardware
-form of searching from the white interior outward, and it preserves a slanted
-or trapezoidal START region. During DATA, each corner must form a small
+At each pixel clock, START acquisition compares against
+`bright_threshold - 68`, while DATA marker tracking uses the stricter
+`bright_threshold - 32`. Before START, each row finds its longest continuous
+white run. The left and right run endpoints are tracked independently while
+each edge moves by at most two pixels per row. This rejects short partial rows
+from glare, blur, or the monitor stand, while allowing the two perspective
+edges to begin and end on different rows. Their four endpoints preserve a
+slanted or trapezoidal START region without a frame buffer. During DATA, each corner must form a small
 multi-row bright box within a fixed `10 px` window around the bounding corners
 captured from the START frame. The fixed START anchors prevent many individually
 small updates from accumulating into a large inward drift. The block keeps the
@@ -75,11 +76,11 @@ Vivado 2019.1 technology mapping of `roi_start_detector` by itself for
 
 | Resource | Used | Device available | Approx. use |
 | --- | ---: | ---: | ---: |
-| LUT primitives | 2,115 | 20,800 | 10.17% |
-| Flip-flops | 912 | 41,600 | 2.19% |
+| LUT primitives | 2,635 | 20,800 | 12.67% |
+| Flip-flops | 1,035 | 41,600 | 2.49% |
 | BRAM tiles | 0 | 50 | 0% |
 | DSP blocks | 0 | 90 | 0% |
-| CARRY4 | 224 | - | - |
+| CARRY4 | 291 | - | - |
 | BUFG | 1 | - | - |
 
 These are standalone synthesis numbers for the ROI detector, not the complete
@@ -92,10 +93,12 @@ figure above is the sum of mapped `LUT1..LUT6` primitives, not a post-place
 slice count. Re-run `vivado/report_roi_start_detector_resources.tcl` on a
 working Vivado installation before quoting final timing or placed utilization.
 
-The earlier detector mapped to 2,347 LUT primitives, 994 flip-flops, and 264
-`CARRY4` blocks. Removing redundant anchor-distance calculations and unused
-corner-scoring state saved 232 LUT primitives (about 9.9%), 82 flip-flops, and
-40 `CARRY4` blocks while improving the measured corner geometry.
+The low-LUT V8 rectangle detector used 2,115 LUT primitives, 912 flip-flops,
+and 224 `CARRY4` blocks. The perspective-aware V11 detector therefore costs
+520 more LUT primitives, 123 more flip-flops, and 67 more `CARRY4` blocks. The
+measured benefit is a reduction from 264 to 44 automatically flagged real
+capture frames. This is an explicit accuracy/resource tradeoff, not a claim
+that perspective tracking is free.
 
 | Item | V1 RTL behavior |
 | --- | --- |
@@ -105,7 +108,7 @@ corner-scoring state saved 232 LUT primitives (about 9.9%), 82 flip-flops, and
 | BRAM | None. |
 | DSP multipliers | None. |
 | Division | None. |
-| Main logic | Threshold comparator, run-length counters, diagonal extrema registers, local-window comparisons, prior-corner registers, bright-pixel counter, and state logic. |
+| Main logic | START/DATA threshold comparators, run-length counters, two coherent edge trackers, four local marker windows, prior-corner registers, bright-pixel counter, and state logic. |
 
 More FPGA arithmetic cannot make a one-pixel-per-clock DVP camera deliver a completed full-frame ROI before the final pixel arrives. To reduce end-to-end latency, Camera 1 should use a lower resolution or higher frame/pixel clock, for example `320 x 240` grayscale when its ROI accuracy is sufficient.
 
@@ -134,8 +137,9 @@ For the paper citation ledger and the precise boundary between the offline Pytho
 
 ## Limits
 
-This V1 detector outputs an enclosing rectangular sensor crop. It does not
-warp pixels, and strong glare, severe blur, or very large motion between frames
+This V1 detector outputs four perspective corners plus their enclosing
+rectangular sensor crop. It does not warp pixels itself, and strong glare,
+severe blur, or very large motion between frames
 can still defeat its thresholded local markers. The actual RTL `true`, `mid`,
 and `false` labels from [[15_07_XSIM_RTL_ROI_REVIEW]] determine whether this
 low-resource baseline is sufficient before adding a more advanced mode.

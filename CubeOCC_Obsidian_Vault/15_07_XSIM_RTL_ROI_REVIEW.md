@@ -247,12 +247,46 @@ Eighteen previously `mid`/`false` frames changed from flagged to geometrically
 acceptable. They still require a new manual review because those labels describe
 the old V7 RTL output.
 
-Two more perspective experiments were measured and rejected as the active
+Two earlier perspective experiments were measured and rejected as the active
 implementation. V9 used four diagonal endpoint scores and improved mean maximum
 corner error to `5.22 px`, but increased mapped LUT primitives to `2,443`, above
 the original detector. V10 replaced those sums with first/last edge spans, but
 performed worse on the real corpus with `486/807` frames flagged. V8 remains the
-selected balance: substantially better geometry than V7 and lower LUT use.
+low-resource comparison point.
+
+### V11 Independent Perspective Edges
+
+The warped-image failure was caused by V8 reporting an axis-aligned START
+rectangle even when the monitor was a trapezoid. V11 tracks the left and right
+longest-run endpoints as separate coherent vertical edges. Each side may start
+and stop on a different row, so the four outputs retain perspective. A looser
+START-only threshold recovers dim and defocused boundaries; DATA markers keep
+the stricter threshold and fixed START-anchor windows.
+
+The complete XSim replay and Python overlays are in:
+
+```text
+sim/roi_rtl_all_v11_independent_edges/
+```
+
+| Metric | V8 | V11 |
+| --- | ---: | ---: |
+| Valid RTL outputs | 807/807 | 807/807 |
+| Mean maximum corner error | 6.98 px | 3.83 px |
+| Median maximum corner error | 3.11 px | 1.94 px |
+| Mean bounding-box IoU | 0.942 | 0.948 |
+| Automatically flagged frames | 264 | 44 |
+| Mapped LUT primitives | 2,115 | 2,635 |
+| Flip-flops | 912 | 1,035 |
+| CARRY4 | 224 | 291 |
+| BRAM / DSP | 0 / 0 | 0 / 0 |
+
+Of the 203 V8 frames previously graded `mid` or `false`, 182 now fall within
+the automatic V11 geometry limits. Those old grades describe the V8 red
+outline, so this is evidence of changed geometry, not a substitute for a new
+human V11 review. The remaining dominant outliers are
+`MLCAP_036_Angle15_SlightDefocus` and
+`MLCAP_038_Dark_SlightDefocus`.
 
 ### Review Python And FPGA Together
 
@@ -263,7 +297,7 @@ $python = "C:\Users\arshm\.cache\codex-runtimes\codex-primary-runtime\dependenci
 & $python dataset\serve_roi_comparison_review.py
 ```
 
-Choose `sim\roi_rtl_all_v8_python_compared`. The viewer draws the Python
+Choose `sim\roi_rtl_all_v11_independent_edges`. The viewer draws the Python
 reference in cyan and the FPGA/XSim result in red, displays all eight corner
 coordinates, per-corner distance, maximum error, IoU, and the automatic problem
 flag. Either outline can be hidden, and display zoom can be changed from 1x to
@@ -272,7 +306,7 @@ flag. Either outline can be hidden, and display zoom can be changed from 1x to
 Ratings and the visible combined overlays are saved under:
 
 ```text
-sim/roi_rtl_all_v8_python_compared/comparison_review/
+sim/roi_rtl_all_v11_independent_edges/comparison_review/
   comparison_review.json
   annotated/
 ```

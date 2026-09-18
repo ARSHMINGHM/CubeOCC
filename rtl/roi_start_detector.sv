@@ -9,8 +9,10 @@ module roi_start_detector #(
     parameter int X_BITS = 10,
     parameter int Y_BITS = 10,
     parameter int MAX_ROW_GAP = 2,
+    parameter int MAX_EDGE_STEP = 2,
     parameter int MAX_CORNER_SHIFT = 10,
-    parameter int THRESHOLD_MARGIN = 32
+    parameter int THRESHOLD_MARGIN = 32,
+    parameter int START_THRESHOLD_MARGIN = 68
 ) (
     input  logic                   pclk,
     input  logic                   rst_n,
@@ -46,11 +48,19 @@ module roi_start_detector #(
 
     // START-frame longest-run/tallest-band acquisition state.
     logic [X_BITS-1:0] run_start, run_length, longest_start, longest_length;
-    logic band_active;
-    logic [Y_BITS-1:0] band_last_y, band_top, band_bottom;
-    logic [X_BITS-1:0] band_left, band_right;
-    logic [Y_BITS-1:0] best_height, best_top, best_bottom;
-    logic [X_BITS-1:0] best_left, best_right;
+    // Left and right screen edges are tracked independently. Under
+    // perspective their top and bottom endpoints occur on different rows.
+    logic left_edge_active, right_edge_active;
+    logic [Y_BITS-1:0] left_edge_last_y, right_edge_last_y;
+    logic [Y_BITS-1:0] left_edge_top_y, left_edge_bottom_y;
+    logic [Y_BITS-1:0] right_edge_top_y, right_edge_bottom_y;
+    logic [X_BITS-1:0] left_edge_top_x, left_edge_bottom_x;
+    logic [X_BITS-1:0] right_edge_top_x, right_edge_bottom_x;
+    logic [Y_BITS-1:0] best_left_height, best_right_height;
+    logic [Y_BITS-1:0] best_left_top_y, best_left_bottom_y;
+    logic [Y_BITS-1:0] best_right_top_y, best_right_bottom_y;
+    logic [X_BITS-1:0] best_left_top_x, best_left_bottom_x;
+    logic [X_BITS-1:0] best_right_top_x, best_right_bottom_x;
 
     // DATA-frame corner-marker state. Each marker is searched only in a
     // bounded window around its last accepted location. A marker must form a
@@ -87,6 +97,15 @@ module roi_start_detector #(
     logic candidate_plausible;
     logic [3:0] in_marker_window;
     logic [X_BITS-1:0] line_right;
+    logic left_edge_coherent, right_edge_coherent;
+    logic [Y_BITS-1:0] final_left_height, final_right_height;
+    logic [Y_BITS-1:0] final_left_top_y, final_left_bottom_y;
+    logic [Y_BITS-1:0] final_right_top_y, final_right_bottom_y;
+    logic [X_BITS-1:0] final_left_top_x, final_left_bottom_x;
+    logic [X_BITS-1:0] final_right_top_x, final_right_bottom_x;
+    logic [X_BITS-1:0] start_candidate_left, start_candidate_right;
+    logic [Y_BITS-1:0] start_candidate_top, start_candidate_bottom;
+    logic start_candidate_valid;
 
     function automatic logic [Y_BITS-1:0] height_of(
         input logic [Y_BITS-1:0] top,
@@ -141,8 +160,49 @@ module roi_start_detector #(
 
     always_comb begin : marker_combinational
         integer marker_index;
-        detector_threshold = (bright_threshold > THRESHOLD_MARGIN) ? bright_threshold - THRESHOLD_MARGIN : 8'd1;
+        detector_threshold = !tracking_active
+            ? ((bright_threshold > START_THRESHOLD_MARGIN) ? bright_threshold - START_THRESHOLD_MARGIN : 8'd1)
+            : ((bright_threshold > THRESHOLD_MARGIN) ? bright_threshold - THRESHOLD_MARGIN : 8'd1);
         line_right = longest_start + longest_length - 1'b1;
+        left_edge_coherent = left_edge_active &&
+            (y - left_edge_last_y <= MAX_ROW_GAP + 1) &&
+            (abs_x_diff(longest_start, left_edge_bottom_x) <= MAX_EDGE_STEP);
+        right_edge_coherent = right_edge_active &&
+            (y - right_edge_last_y <= MAX_ROW_GAP + 1) &&
+            (abs_x_diff(line_right, right_edge_bottom_x) <= MAX_EDGE_STEP);
+
+        if (left_edge_active && height_of(left_edge_top_y, left_edge_bottom_y) >= best_left_height) begin
+            final_left_height = height_of(left_edge_top_y, left_edge_bottom_y);
+            final_left_top_x = left_edge_top_x;
+            final_left_top_y = left_edge_top_y;
+            final_left_bottom_x = left_edge_bottom_x;
+            final_left_bottom_y = left_edge_bottom_y;
+        end else begin
+            final_left_height = best_left_height;
+            final_left_top_x = best_left_top_x;
+            final_left_top_y = best_left_top_y;
+            final_left_bottom_x = best_left_bottom_x;
+            final_left_bottom_y = best_left_bottom_y;
+        end
+        if (right_edge_active && height_of(right_edge_top_y, right_edge_bottom_y) >= best_right_height) begin
+            final_right_height = height_of(right_edge_top_y, right_edge_bottom_y);
+            final_right_top_x = right_edge_top_x;
+            final_right_top_y = right_edge_top_y;
+            final_right_bottom_x = right_edge_bottom_x;
+            final_right_bottom_y = right_edge_bottom_y;
+        end else begin
+            final_right_height = best_right_height;
+            final_right_top_x = best_right_top_x;
+            final_right_top_y = best_right_top_y;
+            final_right_bottom_x = best_right_bottom_x;
+            final_right_bottom_y = best_right_bottom_y;
+        end
+        start_candidate_left = min_x4(final_left_top_x, final_right_top_x, final_right_bottom_x, final_left_bottom_x);
+        start_candidate_right = max_x4(final_left_top_x, final_right_top_x, final_right_bottom_x, final_left_bottom_x);
+        start_candidate_top = min_y4(final_left_top_y, final_right_top_y, final_right_bottom_y, final_left_bottom_y);
+        start_candidate_bottom = max_y4(final_left_top_y, final_right_top_y, final_right_bottom_y, final_left_bottom_y);
+        start_candidate_valid = (final_left_height >= min_roi_height) &&
+            (final_right_height >= min_roi_height) && (final_right_top_x > final_left_top_x);
         for (marker_index = 0; marker_index < 4; marker_index = marker_index + 1) begin
             if (marker_band_active[marker_index] &&
                 (marker_band_rows[marker_index] >= marker_best_rows[marker_index])) begin
@@ -193,17 +253,6 @@ module roi_start_detector #(
             run_length <= '0;
             longest_start <= '0;
             longest_length <= '0;
-            band_active <= 1'b0;
-            band_last_y <= '0;
-            band_left <= '0;
-            band_right <= '0;
-            band_top <= '0;
-            band_bottom <= '0;
-            best_height <= '0;
-            best_left <= '0;
-            best_right <= '0;
-            best_top <= '0;
-            best_bottom <= '0;
             anchor_tl_x <= '0;
             anchor_tl_y <= '0;
             anchor_tr_x <= '0;
@@ -246,6 +295,28 @@ module roi_start_detector #(
                 marker_best_top[marker_index] <= '0;
                 marker_best_bottom[marker_index] <= '0;
             end
+            left_edge_active <= 1'b0;
+            right_edge_active <= 1'b0;
+            left_edge_last_y <= '0;
+            right_edge_last_y <= '0;
+            left_edge_top_y <= '0;
+            left_edge_bottom_y <= '0;
+            right_edge_top_y <= '0;
+            right_edge_bottom_y <= '0;
+            left_edge_top_x <= '0;
+            left_edge_bottom_x <= '0;
+            right_edge_top_x <= '0;
+            right_edge_bottom_x <= '0;
+            best_left_height <= '0;
+            best_right_height <= '0;
+            best_left_top_y <= '0;
+            best_left_bottom_y <= '0;
+            best_right_top_y <= '0;
+            best_right_bottom_y <= '0;
+            best_left_top_x <= '0;
+            best_left_bottom_x <= '0;
+            best_right_top_x <= '0;
+            best_right_bottom_x <= '0;
         end else begin
             vsync_d <= vsync;
             href_d <= href;
@@ -258,9 +329,11 @@ module roi_start_detector #(
                 run_length <= '0;
                 longest_start <= '0;
                 longest_length <= '0;
-                band_active <= 1'b0;
-                best_height <= '0;
                 bright_pixel_count <= '0;
+                left_edge_active <= 1'b0;
+                right_edge_active <= 1'b0;
+                best_left_height <= '0;
+                best_right_height <= '0;
                 for (marker_index = 0; marker_index < 4; marker_index = marker_index + 1) begin
                     marker_run_start[marker_index] <= '0;
                     marker_run_length[marker_index] <= '0;
@@ -309,34 +382,63 @@ module roi_start_detector #(
 
             if (!tracking_active && !vsync && href_d && !href) begin
                 if (longest_length >= min_line_run) begin
-                    if (!band_active || y - band_last_y > MAX_ROW_GAP + 1) begin
-                        if (band_active && height_of(band_top, band_bottom) > best_height) begin
-                            best_height <= height_of(band_top, band_bottom);
-                            best_left <= band_left;
-                            best_right <= band_right;
-                            best_top <= band_top;
-                            best_bottom <= band_bottom;
+                    if (!left_edge_coherent) begin
+                        if (left_edge_active && height_of(left_edge_top_y, left_edge_bottom_y) > best_left_height) begin
+                            best_left_height <= height_of(left_edge_top_y, left_edge_bottom_y);
+                            best_left_top_x <= left_edge_top_x;
+                            best_left_top_y <= left_edge_top_y;
+                            best_left_bottom_x <= left_edge_bottom_x;
+                            best_left_bottom_y <= left_edge_bottom_y;
                         end
-                        band_active <= 1'b1;
-                        band_left <= longest_start;
-                        band_right <= longest_start + longest_length - 1'b1;
-                        band_top <= y;
-                        band_bottom <= y;
+                        left_edge_active <= 1'b1;
+                        left_edge_top_x <= longest_start;
+                        left_edge_top_y <= y;
+                        left_edge_bottom_x <= longest_start;
+                        left_edge_bottom_y <= y;
                     end else begin
-                        if (longest_start < band_left) band_left <= longest_start;
-                        if (line_right > band_right) band_right <= line_right;
-                        band_bottom <= y;
+                        left_edge_bottom_x <= longest_start;
+                        left_edge_bottom_y <= y;
                     end
-                    band_last_y <= y;
-                end else if (band_active && y - band_last_y > MAX_ROW_GAP) begin
-                    if (height_of(band_top, band_bottom) > best_height) begin
-                        best_height <= height_of(band_top, band_bottom);
-                        best_left <= band_left;
-                        best_right <= band_right;
-                        best_top <= band_top;
-                        best_bottom <= band_bottom;
+                    left_edge_last_y <= y;
+                    if (!right_edge_coherent) begin
+                        if (right_edge_active && height_of(right_edge_top_y, right_edge_bottom_y) > best_right_height) begin
+                            best_right_height <= height_of(right_edge_top_y, right_edge_bottom_y);
+                            best_right_top_x <= right_edge_top_x;
+                            best_right_top_y <= right_edge_top_y;
+                            best_right_bottom_x <= right_edge_bottom_x;
+                            best_right_bottom_y <= right_edge_bottom_y;
+                        end
+                        right_edge_active <= 1'b1;
+                        right_edge_top_x <= line_right;
+                        right_edge_top_y <= y;
+                        right_edge_bottom_x <= line_right;
+                        right_edge_bottom_y <= y;
+                    end else begin
+                        right_edge_bottom_x <= line_right;
+                        right_edge_bottom_y <= y;
                     end
-                    band_active <= 1'b0;
+                    right_edge_last_y <= y;
+                end else begin
+                    if (left_edge_active && y - left_edge_last_y > MAX_ROW_GAP) begin
+                        if (height_of(left_edge_top_y, left_edge_bottom_y) > best_left_height) begin
+                            best_left_height <= height_of(left_edge_top_y, left_edge_bottom_y);
+                            best_left_top_x <= left_edge_top_x;
+                            best_left_top_y <= left_edge_top_y;
+                            best_left_bottom_x <= left_edge_bottom_x;
+                            best_left_bottom_y <= left_edge_bottom_y;
+                        end
+                        left_edge_active <= 1'b0;
+                    end
+                    if (right_edge_active && y - right_edge_last_y > MAX_ROW_GAP) begin
+                        if (height_of(right_edge_top_y, right_edge_bottom_y) > best_right_height) begin
+                            best_right_height <= height_of(right_edge_top_y, right_edge_bottom_y);
+                            best_right_top_x <= right_edge_top_x;
+                            best_right_top_y <= right_edge_top_y;
+                            best_right_bottom_x <= right_edge_bottom_x;
+                            best_right_bottom_y <= right_edge_bottom_y;
+                        end
+                        right_edge_active <= 1'b0;
+                    end
                 end
                 x <= '0;
                 y <= y + 1'b1;
@@ -395,52 +497,29 @@ module roi_start_detector #(
             if (!vsync_d && vsync) begin
                 frame_done <= 1'b1;
                 if (!tracking_active) begin
-                    if (band_active && height_of(band_top, band_bottom) >= best_height && height_of(band_top, band_bottom) >= min_roi_height) begin
+                    if (start_candidate_valid) begin
                         tracking_active <= 1'b1;
                         roi_valid <= 1'b1;
-                        roi_x <= band_left;
-                        roi_y <= band_top;
-                        roi_width <= band_right - band_left + 1'b1;
-                        roi_height <= height_of(band_top, band_bottom);
-                        roi_tl_x <= band_left;
-                        roi_tl_y <= band_top;
-                        roi_tr_x <= band_right;
-                        roi_tr_y <= band_top;
-                        roi_br_x <= band_right;
-                        roi_br_y <= band_bottom;
-                        roi_bl_x <= band_left;
-                        roi_bl_y <= band_bottom;
-                        anchor_tl_x <= band_left;
-                        anchor_tl_y <= band_top;
-                        anchor_tr_x <= band_right;
-                        anchor_tr_y <= band_top;
-                        anchor_br_x <= band_right;
-                        anchor_br_y <= band_bottom;
-                        anchor_bl_x <= band_left;
-                        anchor_bl_y <= band_bottom;
-                    end else if (best_height >= min_roi_height) begin
-                        tracking_active <= 1'b1;
-                        roi_valid <= 1'b1;
-                        roi_x <= best_left;
-                        roi_y <= best_top;
-                        roi_width <= best_right - best_left + 1'b1;
-                        roi_height <= best_height;
-                        roi_tl_x <= best_left;
-                        roi_tl_y <= best_top;
-                        roi_tr_x <= best_right;
-                        roi_tr_y <= best_top;
-                        roi_br_x <= best_right;
-                        roi_br_y <= best_bottom;
-                        roi_bl_x <= best_left;
-                        roi_bl_y <= best_bottom;
-                        anchor_tl_x <= best_left;
-                        anchor_tl_y <= best_top;
-                        anchor_tr_x <= best_right;
-                        anchor_tr_y <= best_top;
-                        anchor_br_x <= best_right;
-                        anchor_br_y <= best_bottom;
-                        anchor_bl_x <= best_left;
-                        anchor_bl_y <= best_bottom;
+                        roi_x <= start_candidate_left;
+                        roi_y <= start_candidate_top;
+                        roi_width <= start_candidate_right - start_candidate_left + 1'b1;
+                        roi_height <= start_candidate_bottom - start_candidate_top + 1'b1;
+                        roi_tl_x <= final_left_top_x;
+                        roi_tl_y <= final_left_top_y;
+                        roi_tr_x <= final_right_top_x;
+                        roi_tr_y <= final_right_top_y;
+                        roi_br_x <= final_right_bottom_x;
+                        roi_br_y <= final_right_bottom_y;
+                        roi_bl_x <= final_left_bottom_x;
+                        roi_bl_y <= final_left_bottom_y;
+                        anchor_tl_x <= final_left_top_x;
+                        anchor_tl_y <= final_left_top_y;
+                        anchor_tr_x <= final_right_top_x;
+                        anchor_tr_y <= final_right_top_y;
+                        anchor_br_x <= final_right_bottom_x;
+                        anchor_br_y <= final_right_bottom_y;
+                        anchor_bl_x <= final_left_bottom_x;
+                        anchor_bl_y <= final_left_bottom_y;
                     end
                 end else if (bright_pixel_count <= full_off_max_pixels) begin
                     tracking_active <= 1'b0;

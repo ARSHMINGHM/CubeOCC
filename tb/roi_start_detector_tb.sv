@@ -184,8 +184,8 @@ module roi_start_detector_tb;
         send_pixels(4);
         wait_for_frame();
         if (tracking_active && roi_valid &&
-            roi_tl_x == 10 && roi_tl_y == 8 && roi_tr_x == 56 && roi_tr_y == 8 &&
-            roi_br_x == 56 && roi_br_y == 35 && roi_bl_x == 10 && roi_bl_y == 35) begin
+            roi_tl_x == 10 && roi_tl_y == 8 && roi_tr_x == 50 && roi_tr_y == 8 &&
+            roi_br_x == 56 && roi_br_y == 35 && roi_bl_x == 16 && roi_bl_y == 35) begin
             $display("Result: ANGLED START CORNER PASS");
         end else begin
             $display("Result: FAIL angled START corners TL=(%0d,%0d) TR=(%0d,%0d) BR=(%0d,%0d) BL=(%0d,%0d)",
