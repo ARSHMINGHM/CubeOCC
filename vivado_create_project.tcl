@@ -20,6 +20,10 @@ add_files -fileset sources_1 [list \
   [file join $script_dir rtl i2c_master.sv] \
   [file join $script_dir rtl dvp_to_axis.sv] \
   [file join $script_dir rtl roi_start_detector.sv] \
+  [file join $script_dir rtl camera2_roi_programmer.sv] \
+  [file join $script_dir rtl perspective_warp_160x120.sv] \
+  [file join $script_dir rtl grayscale_grid_8x8.sv] \
+  [file join $script_dir rtl roi_warp_grid_pipeline.sv] \
   [file join $script_dir rtl cubeocc_top.sv] \
 ]
 
@@ -34,6 +38,9 @@ add_files -fileset sim_1 [list \
   [file join $script_dir tb axis_cam_tb.sv] \
   [file join $script_dir tb roi_start_detector_tb.sv] \
   [file join $script_dir tb roi_start_detector_image_tb.sv] \
+  [file join $script_dir tb camera2_roi_programmer_tb.sv] \
+  [file join $script_dir tb grayscale_grid_8x8_image_tb.sv] \
+  [file join $script_dir tb roi_warp_grid_pipeline_image_tb.sv] \
   [file join $script_dir tb cubeocc_top_tb.sv] \
 ]
 

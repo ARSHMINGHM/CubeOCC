@@ -10,6 +10,7 @@ module roi_start_detector #(
     parameter int Y_BITS = 10,
     parameter int MAX_ROW_GAP = 2,
     parameter int MAX_EDGE_STEP = 2,
+    parameter int MAX_EDGE_HEIGHT_DELTA = 28,
     parameter int MAX_CORNER_SHIFT = 10,
     parameter int THRESHOLD_MARGIN = 32,
     parameter int START_THRESHOLD_MARGIN = 68
@@ -105,6 +106,7 @@ module roi_start_detector #(
     logic [X_BITS-1:0] final_right_top_x, final_right_bottom_x;
     logic [X_BITS-1:0] start_candidate_left, start_candidate_right;
     logic [Y_BITS-1:0] start_candidate_top, start_candidate_bottom;
+    logic [Y_BITS-1:0] start_tl_y, start_tr_y, start_br_y, start_bl_y;
     logic start_candidate_valid;
 
     function automatic logic [Y_BITS-1:0] height_of(
@@ -197,10 +199,21 @@ module roi_start_detector #(
             final_right_bottom_x = best_right_bottom_x;
             final_right_bottom_y = best_right_bottom_y;
         end
+        start_tl_y = final_left_top_y;
+        start_bl_y = final_left_bottom_y;
+        start_tr_y = final_right_top_y;
+        start_br_y = final_right_bottom_y;
+        if (final_left_height + MAX_EDGE_HEIGHT_DELTA < final_right_height) begin
+            start_tl_y = final_right_top_y;
+            start_bl_y = final_right_bottom_y;
+        end else if (final_right_height + MAX_EDGE_HEIGHT_DELTA < final_left_height) begin
+            start_tr_y = final_left_top_y;
+            start_br_y = final_left_bottom_y;
+        end
         start_candidate_left = min_x4(final_left_top_x, final_right_top_x, final_right_bottom_x, final_left_bottom_x);
         start_candidate_right = max_x4(final_left_top_x, final_right_top_x, final_right_bottom_x, final_left_bottom_x);
-        start_candidate_top = min_y4(final_left_top_y, final_right_top_y, final_right_bottom_y, final_left_bottom_y);
-        start_candidate_bottom = max_y4(final_left_top_y, final_right_top_y, final_right_bottom_y, final_left_bottom_y);
+        start_candidate_top = min_y4(start_tl_y, start_tr_y, start_br_y, start_bl_y);
+        start_candidate_bottom = max_y4(start_tl_y, start_tr_y, start_br_y, start_bl_y);
         start_candidate_valid = (final_left_height >= min_roi_height) &&
             (final_right_height >= min_roi_height) && (final_right_top_x > final_left_top_x);
         for (marker_index = 0; marker_index < 4; marker_index = marker_index + 1) begin
@@ -505,21 +518,21 @@ module roi_start_detector #(
                         roi_width <= start_candidate_right - start_candidate_left + 1'b1;
                         roi_height <= start_candidate_bottom - start_candidate_top + 1'b1;
                         roi_tl_x <= final_left_top_x;
-                        roi_tl_y <= final_left_top_y;
+                        roi_tl_y <= start_tl_y;
                         roi_tr_x <= final_right_top_x;
-                        roi_tr_y <= final_right_top_y;
+                        roi_tr_y <= start_tr_y;
                         roi_br_x <= final_right_bottom_x;
-                        roi_br_y <= final_right_bottom_y;
+                        roi_br_y <= start_br_y;
                         roi_bl_x <= final_left_bottom_x;
-                        roi_bl_y <= final_left_bottom_y;
+                        roi_bl_y <= start_bl_y;
                         anchor_tl_x <= final_left_top_x;
-                        anchor_tl_y <= final_left_top_y;
+                        anchor_tl_y <= start_tl_y;
                         anchor_tr_x <= final_right_top_x;
-                        anchor_tr_y <= final_right_top_y;
+                        anchor_tr_y <= start_tr_y;
                         anchor_br_x <= final_right_bottom_x;
-                        anchor_br_y <= final_right_bottom_y;
+                        anchor_br_y <= start_br_y;
                         anchor_bl_x <= final_left_bottom_x;
-                        anchor_bl_y <= final_left_bottom_y;
+                        anchor_bl_y <= start_bl_y;
                     end
                 end else if (bright_pixel_count <= full_off_max_pixels) begin
                     tracking_active <= 1'b0;

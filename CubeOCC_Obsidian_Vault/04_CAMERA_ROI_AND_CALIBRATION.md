@@ -54,9 +54,11 @@ Camera 1 captures full low-resolution grayscale scene
 
 The FPGA should not be designed around receiving the full Camera 2 frame and cropping it internally for V1.
 
-V1 detector implementation: [[15_05_FPGA_START_ROI_DETECTOR]]. It uses a grayscale threshold and bright-run bands to produce Camera 2 `x`, `y`, `width`, and `height` without frame storage. Four-point perspective geometry is a later refinement, not a prerequisite for the V1 sensor crop.
+V1 detector implementation: [[15_05_FPGA_START_ROI_DETECTOR]]. It uses a grayscale threshold and bright-run bands to produce four corner points and an enclosing Camera 2 `x`, `y`, `width`, and `height` without frame storage. The sensor crop remains axis-aligned; the implemented FPGA four-point rectifier is documented in [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]].
 
 V1 starts with grayscale data-camera processing to prove the pipeline. V1.5 upgrades Camera 2 data symbols to RGB.
+
+Camera 2 FPGA implementation and grayscale 8x8 review: [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]].
 
 ## Startup mapping
 

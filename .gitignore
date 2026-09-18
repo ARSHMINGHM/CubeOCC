@@ -5,6 +5,10 @@ vivado/CubeOCC/CubeOCC.cache/wt/
 vivado/CubeOCC/CubeOCC.runs/.jobs/
 sim/image_test/
 sim/roi_rtl_*/
+sim/grayscale_grid_rtl_*/
+sim/roi_warp_grid_direct_*/
+sim/camera2_roi_programmer_*/
+sim/camera2_resource_reports/
 xsim.dir/
 dataset/__pycache__/
 *.jou

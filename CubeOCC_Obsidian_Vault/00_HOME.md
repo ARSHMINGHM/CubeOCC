@@ -31,6 +31,9 @@ This vault is the living project specification. It separates **confirmed decisio
 - [[15_TASK_BACKLOG]]
 - [[16_VERSION_ROADMAP]]
 - [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]]
+- [[15_05_FPGA_START_ROI_DETECTOR]]
+- [[15_07_XSIM_RTL_ROI_REVIEW]]
+- [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]]
 
 ## Current V1 concept
 
@@ -56,7 +59,7 @@ flowchart LR
 ## V1 philosophy
 
 1. One streaming pipeline first.
-2. No full raw-frame buffering in the baseline.
+2. No full raw-frame buffering in the baseline, except the explicit low-resolution BRAM buffer used by the FPGA perspective-warp experiment.
 3. Camera 2 uses sensor-level ROI windowing.
 4. Keep reduced information whenever possible: per-cell sums/averages, symbols, decoded bits.
 5. Benchmark first; add parallel workers only if one pipeline cannot keep up.
