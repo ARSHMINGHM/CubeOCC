@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CubeOCC Symbol Classification Review</title>
+  <style>
+    :root { color-scheme: dark; font: 15px Segoe UI, sans-serif; background:#101317; color:#edf1f5; }
+    * { box-sizing:border-box; } body { margin:0; } header { padding:14px 20px; border-bottom:1px solid #38414b; display:flex; gap:12px; align-items:center; }
+    button { padding:10px 14px; border:1px solid #59636e; background:#252b32; color:inherit; cursor:pointer; }
+    button:disabled { opacity:.45; } main { display:grid; grid-template-columns:minmax(0,1fr) 340px; min-height:calc(100vh - 64px); }
+    .viewer { overflow:auto; display:grid; place-items:center; background:#080a0d; padding:20px; }
+    canvas { image-rendering:pixelated; max-width:none; box-shadow:0 0 0 1px #39424c; }
+    aside { padding:18px; border-left:1px solid #38414b; overflow:auto; } .panel { margin-bottom:14px; padding:12px; background:#1a1f25; border:1px solid #343d47; }
+    .grades { display:grid; gap:8px; } .true { border-color:#25b76b; } .mid { border-color:#e0a126; } .false { border-color:#e34e55; }
+    .status { white-space:pre-wrap; line-height:1.5; } kbd { padding:2px 6px; border:1px solid #65717e; background:#0e1115; }
+    input[type=range] { width:100%; }
+  </style>
+</head>
+<body>
+  <header><button id="choose">Open cubeocc_top_image results folder</button><strong>CubeOCC Symbol Classification Review</strong><span id="top-status"></span></header>
+  <main>
+    <section class="viewer"><canvas id="frame"></canvas></section>
+    <aside>
+      <div class="panel"><label>Zoom <span id="zoom-value">4x</span></label><input id="zoom" type="range" min="1" max="7" value="4"></div>
+      <div class="panel status" id="status">Choose the folder written by run_cubeocc_top_image_sim.py (it contains results.json).</div>
+      <div class="panel grades">
+        <button id="true" class="true" disabled>Symbols correct <kbd>1</kbd></button>
+        <button id="mid" class="mid" disabled>Mostly correct <kbd>2</kbd></button>
+        <button id="false" class="false" disabled>Wrong <kbd>3</kbd></button>
+        <button id="skip" disabled>Skip <kbd>S</kbd></button>
+      </div>
+      <div class="panel status" id="notice">Green outline = classified 1 (bright). Red outline = classified 0 (dark). Compare against what the sender actually displayed for that frame. Labels save to symbols_review/symbols_review.json.</div>
+    </aside>
+  </main>
+  <script>
+    const canvas=document.getElementById('frame'),ctx=canvas.getContext('2d'),zoom=document.getElementById('zoom');
+    const actions=['true','mid','false','skip'].map(id=>document.getElementById(id));
+    let root,output,report,records=[],index=0,labels={},image,saveTimer,saveDirty=false,cache=new Map();
+    const CELL_W=20,CELL_H=15;
+    function enable(v){actions.forEach(x=>x.disabled=!v)} function current(){return records[index]}
+    async function getFile(path){let d=root,p=path.split('/');for(const n of p.slice(0,-1))d=await d.getDirectoryHandle(n);return d.getFileHandle(p.at(-1))}
+    async function write(name,text){const h=await output.getFileHandle(name,{create:true}),w=await h.createWritable();await w.write(text);await w.close()}
+    // symbols_data_binary is printed MSB..LSB (%b of a 64-bit vector), and
+    // bit[cell] was assigned directly from grid_cell in the RTL, so the
+    // character for cell N sits at string index (63 - N).
+    function bitAt(bits,cell){return bits.charAt(63-cell)}
+    function draw(){
+      const r=current(); if(!r||!image) return;
+      const z=+zoom.value; canvas.width=image.width*z; canvas.height=image.height*z;
+      ctx.imageSmoothingEnabled=false; ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      ctx.lineWidth=Math.max(1,z/2); ctx.font=`${Math.max(10,8*z)}px Segoe UI`;
+      for(let cell=0;cell<64;cell++){
+        const row=Math.floor(cell/8), col=cell%8;
+        const bit=bitAt(r.symbols_bits,cell);
+        const left=col*CELL_W*z, top=row*CELL_H*z, w=CELL_W*z, h=CELL_H*z;
+        ctx.strokeStyle = bit==='1' ? '#3cdc5a' : '#e0424a';
+        ctx.strokeRect(left,top,w,h);
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.fillText(bit,left+4,top+8*z);
+      }
+    }
+    async function bitmap(r){if(!cache.has(r.camera_gray_path))cache.set(r.camera_gray_path,(async()=>createImageBitmap(await(await getFile(r.camera_gray_path)).getFile()))());return cache.get(r.camera_gray_path)}
+    async function load(){
+      const r=current();
+      if(!r){document.getElementById('status').textContent=`Finished. ${Object.keys(labels).length} frames labeled.`;enable(false);flush();return}
+      document.getElementById('status').textContent=`${index+1}/${records.length}\n${r.relative_path}\ncapture set: ${r.capture_set}\nsampler_state: ${r.sampler_state} (1=threshold learned on this frame, 2=using frozen threshold)\ndynamic_thresh: ${r.dynamic_thresh}\nroi box: ${r.roi_box ? JSON.stringify(r.roi_box) : 'n/a'}`;
+      image=await bitmap(r); draw();
+      records.slice(index+1,index+6).forEach(x=>bitmap(x).catch(()=>{}));
+    }
+    function manifest(){const counts={true:0,mid:0,false:0};Object.values(labels).forEach(v=>counts[v.grade]++);return{format:'cubeocc-symbols-review-v1',source:'results.json',summary:{labeled_count:Object.keys(labels).length,...counts},frames:labels}}
+    async function flush(){if(!saveDirty||!output)return;saveDirty=false;await write('symbols_review.json',JSON.stringify(manifest(),null,2)+'\n')}
+    function grade(value){const r=current();if(!r)return;labels[r.relative_path]={grade:value,capture_set:r.capture_set,symbols_bits:r.symbols_bits,dynamic_thresh:r.dynamic_thresh,sampler_state:r.sampler_state};saveDirty=true;clearTimeout(saveTimer);saveTimer=setTimeout(flush,300);index++;load()}
+    async function choose(){
+      try{
+        root=await window.showDirectoryPicker({mode:'readwrite'});
+        report=JSON.parse(await(await getFile('results.json')).getFile().then(f=>f.text()));
+        if(report.format!=='cubeocc-top-image-tb-v1')throw Error('This is not a cubeocc_top_image_tb result folder.');
+        await root.removeEntry('symbols_review',{recursive:true}).catch(()=>{});
+        output=await root.getDirectoryHandle('symbols_review',{create:true});
+        records=report.frames; index=0; labels={}; cache.clear(); enable(true);
+        document.getElementById('top-status').textContent=`${records.length} frames`;
+        load();
+      }catch(e){document.getElementById('notice').textContent=e.message}
+    }
+    document.getElementById('choose').onclick=choose;
+    zoom.oninput=()=>{document.getElementById('zoom-value').textContent=zoom.value+'x';draw()};
+    document.getElementById('true').onclick=()=>grade('true');
+    document.getElementById('mid').onclick=()=>grade('mid');
+    document.getElementById('false').onclick=()=>grade('false');
+    document.getElementById('skip').onclick=()=>{index++;load()};
+    window.addEventListener('keydown',e=>{if(e.repeat||!root)return;if(e.key==='1')grade('true');if(e.key==='2')grade('mid');if(e.key==='3')grade('false');if(e.key.toLowerCase()==='s'){index++;load()}});
+    window.addEventListener('pagehide',flush);
+  </script>
+</body>
+</html>

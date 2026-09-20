@@ -50,15 +50,17 @@ module cubeocc_top (
         .grid_col(grid_col), .grid_row(grid_row), .grid_cell(grid_cell),
         .grid_pixel_x(grid_pixel_x), .grid_pixel_y(grid_pixel_y), .grid_frame_done(grid_frame_done)
     );
+
     dynamic_threshold_sampler u_sampler (
         .clk(pclk), .rst_n(rst_n),
         .grid_pixel_valid(grid_pixel_valid), .grid_pixel_gray(grid_pixel_gray),
         .grid_cell(grid_cell), .grid_col(grid_col), .grid_row(grid_row),
         .grid_pixel_x(grid_pixel_x), .grid_pixel_y(grid_pixel_y), .grid_frame_done(grid_frame_done),
+        .roi_valid(roi_valid),
         .m_axis_tvalid(symbols_valid), .m_axis_tready(sampler_tready),
         .m_axis_tdata(symbols_data), .m_axis_tlast(sampler_tlast)
     );
 
-    assign sampler_tready = 1'b1; 
+    assign sampler_tready = 1'b1;
 
 endmodule

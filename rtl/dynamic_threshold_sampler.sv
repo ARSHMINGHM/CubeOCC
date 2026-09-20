@@ -12,11 +12,12 @@ module dynamic_threshold_sampler (
     input  logic [9:0] grid_pixel_x,
     input  logic [9:0] grid_pixel_y,
     input  logic       grid_frame_done,
+    input  logic       roi_valid,          // NEW: gate learning/accumulation on a locked ROI
 
-    output logic       m_axis_tvalid,
-    input  logic       m_axis_tready,
+    output logic        m_axis_tvalid,
+    input  logic        m_axis_tready,
     output logic [63:0] m_axis_tdata,
-    output logic       m_axis_tlast
+    output logic        m_axis_tlast
 );
     logic [1:0] state;
     localparam STATE_IDLE       = 2'd0;
@@ -29,8 +30,9 @@ module dynamic_threshold_sampler (
     logic [31:0] corner_count;
     logic [15:0] dynamic_thresh;
 
-    logic [9:0] col_origin; 
-    logic [9:0] row_origin; 
+    logic [9:0] col_origin;
+    logic [9:0] row_origin;
+
     logic [4:0] lx;
     logic [3:0] ly;
     logic [4:0] abs_dx;
@@ -39,7 +41,8 @@ module dynamic_threshold_sampler (
 
     assign col_origin = grid_col * 10'd20;
     assign row_origin = grid_row * 10'd15;
-    assign lx = (grid_pixel_x - col_origin) & 5'h1f; 
+    assign lx = (grid_pixel_x - col_origin) & 5'h1f;
+
     assign ly = (grid_pixel_y - row_origin) & 4'h0f;
     assign abs_dx = (lx >= 5'd10) ? (lx - 5'd10) : (5'd10 - lx);
     assign abs_dy = (ly >= 4'd7)  ? (ly - 4'd7)  : (4'd7 - ly);
@@ -67,17 +70,24 @@ module dynamic_threshold_sampler (
         end else begin
             if (valid_out && m_axis_tready) valid_out <= 1'b0;
 
-            if (grid_pixel_valid && state == STATE_IDLE) begin
+            // Only start learning once the ROI tracker has actually locked on.
+            // Without this gate, a pre-lock / transient frame could become the
+            // calibration reference and dynamic_thresh would stay wrong forever
+            // (there is no path back to STATE_LEARNING except a full reset).
+            if (grid_pixel_valid && roi_valid && state == STATE_IDLE) begin
                 state <= STATE_LEARNING;
             end
 
-            // LEARNING: Accumulate brightness ONLY for the 4 corner cells
-            if (grid_pixel_valid && state == STATE_LEARNING && is_corner) begin
+            // LEARNING: Accumulate brightness ONLY for the 4 corner cells,
+            // and only while the ROI is actually valid.
+            if (grid_pixel_valid && roi_valid && state == STATE_LEARNING && is_corner) begin
                 corner_sum <= corner_sum + grid_pixel_gray;
                 corner_count <= corner_count + 1;
             end
 
-            if (grid_pixel_valid && dist_sq <= 25) begin
+            // Per-cell circular-sampling accumulation, gated the same way:
+            // pixel coordinates are meaningless if the ROI isn't locked.
+            if (grid_pixel_valid && roi_valid && dist_sq <= 25) begin
                 sum_acc[grid_cell] <= sum_acc[grid_cell] + grid_pixel_gray;
             end
 

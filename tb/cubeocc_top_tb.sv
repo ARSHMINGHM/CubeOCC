@@ -21,7 +21,11 @@ module cubeocc_top_tb;
   logic [9:0] roi_x, roi_y, roi_width, roi_height;
   logic [9:0] roi_tl_x, roi_tl_y, roi_tr_x, roi_tr_y, roi_br_x, roi_br_y, roi_bl_x, roi_bl_y;
 
-  dvp_camera_model cam (
+    dvp_camera_model #(
+    .IMAGE_FILE  ("sim/roi_rtl_step1/mem/MLCAP_001_Baseline_30fps/frame_00.mem"),
+    .IMAGE_WIDTH (160),
+    .IMAGE_HEIGHT(120)
+  ) cam (
     .clk(clk), .rst_n(rst_n),
     .reg_wr_en(reg_wr_en), .reg_addr(reg_addr), .reg_wdata(reg_wdata),
     .reg_rd_en(reg_rd_en), .reg_raddr(reg_raddr), .reg_rdata(reg_rdata),
