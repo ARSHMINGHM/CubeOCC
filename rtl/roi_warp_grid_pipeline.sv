@@ -38,7 +38,21 @@ module roi_warp_grid_pipeline #(
     output logic [5:0]        grid_cell,
     output logic [X_BITS-1:0] grid_pixel_x,
     output logic [Y_BITS-1:0] grid_pixel_y,
-    output logic              grid_frame_done
+    output logic              grid_frame_done,
+    output logic              guard_transfer_active,
+    output logic              guard_frame_checked,
+    output logic              guard_start_learned,
+    output logic              guard_data_valid,
+    output logic              guard_frame_discarded,
+    output logic              guard_end_detected,
+    output logic              guard_frame_ignored,
+    output logic [2:0]        guard_discard_reason,
+    output logic [7:0]        guard_learned_white,
+    output logic [7:0]        guard_white_threshold,
+    output logic [7:0]        guard_tl_average,
+    output logic [7:0]        guard_tr_average,
+    output logic [7:0]        guard_bl_average,
+    output logic [7:0]        guard_br_average
 );
     logic delayed_vsync, delayed_href;
     logic [7:0] delayed_gray;
@@ -81,5 +95,23 @@ module roi_warp_grid_pipeline #(
         .grid_pixel_gray, .grid_col, .grid_row, .grid_cell,
         .pixel_x(grid_pixel_x), .pixel_y(grid_pixel_y),
         .frame_done(grid_frame_done)
+    );
+
+    grid_corner_frame_guard guard (
+        .pclk, .rst_n, .grid_pixel_valid, .grid_pixel_gray, .grid_cell,
+        .grid_frame_done, .transfer_active(guard_transfer_active),
+        .frame_checked(guard_frame_checked),
+        .start_frame_learned(guard_start_learned),
+        .data_frame_valid(guard_data_valid),
+        .frame_discarded(guard_frame_discarded),
+        .end_frame_detected(guard_end_detected),
+        .frame_ignored(guard_frame_ignored),
+        .discard_reason(guard_discard_reason),
+        .learned_white_level(guard_learned_white),
+        .dynamic_white_threshold(guard_white_threshold),
+        .corner_tl_average(guard_tl_average),
+        .corner_tr_average(guard_tr_average),
+        .corner_bl_average(guard_bl_average),
+        .corner_br_average(guard_br_average)
     );
 endmodule

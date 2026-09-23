@@ -34,6 +34,7 @@ This vault is the living project specification. It separates **confirmed decisio
 - [[15_05_FPGA_START_ROI_DETECTOR]]
 - [[15_07_XSIM_RTL_ROI_REVIEW]]
 - [[15_08_FPGA_CAMERA2_GRAYSCALE_GRID_REVIEW]]
+- [[17_V2_IMAGE_PROCESSING_ANSWERS_FOR_MOHSEN]]
 
 ## Current V1 concept
 

@@ -19,12 +19,17 @@ module roi_warp_grid_pipeline_image_tb;
     logic [2:0] grid_col, grid_row;
     logic [5:0] grid_cell;
     logic [9:0] grid_pixel_x, grid_pixel_y;
+    logic guard_transfer_active, guard_frame_checked, guard_start_learned;
+    logic guard_data_valid, guard_frame_discarded, guard_end_detected, guard_frame_ignored;
+    logic [2:0] guard_discard_reason;
+    logic [7:0] guard_learned_white, guard_white_threshold;
+    logic [7:0] guard_tl_average, guard_tr_average, guard_bl_average, guard_br_average;
     logic [7:0] frame_mem [0:PIXELS-1];
 
     integer min_x[0:63], min_y[0:63], max_x[0:63], max_y[0:63];
     integer count[0:63], sum_gray[0:63];
     integer i, row, col, frame_index, emitted_index;
-    integer list_file, frame_file, grid_file, warped_file, parsed;
+    integer list_file, frame_file, grid_file, guard_file, warped_file, parsed;
     string line, mem_path;
 
     always #5 pclk = ~pclk;
@@ -39,7 +44,12 @@ module roi_warp_grid_pipeline_image_tb;
         .roi_br_x, .roi_br_y, .roi_bl_x, .roi_bl_y,
         .warp_busy, .warp_vsync, .warp_href, .warp_gray, .warp_frame_done,
         .grid_pixel_valid, .grid_pixel_gray, .grid_col, .grid_row, .grid_cell,
-        .grid_pixel_x, .grid_pixel_y, .grid_frame_done
+        .grid_pixel_x, .grid_pixel_y, .grid_frame_done,
+        .guard_transfer_active, .guard_frame_checked, .guard_start_learned,
+        .guard_data_valid, .guard_frame_discarded, .guard_end_detected,
+        .guard_frame_ignored, .guard_discard_reason, .guard_learned_white,
+        .guard_white_threshold, .guard_tl_average, .guard_tr_average,
+        .guard_bl_average, .guard_br_average
     );
 
     always @(posedge pclk) begin
@@ -58,6 +68,14 @@ module roi_warp_grid_pipeline_image_tb;
             count[grid_cell] = count[grid_cell] + 1;
             sum_gray[grid_cell] = sum_gray[grid_cell] + grid_pixel_gray;
         end
+        if (guard_frame_checked)
+            $fwrite(guard_file,
+                "%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d\n",
+                frame_index, guard_transfer_active, guard_start_learned,
+                guard_data_valid, guard_frame_discarded, guard_end_detected,
+                guard_frame_ignored, guard_discard_reason, guard_learned_white,
+                guard_white_threshold, guard_tl_average, guard_tr_average,
+                guard_bl_average, guard_br_average);
     end
 
     task automatic clear_stats;
@@ -110,12 +128,15 @@ module roi_warp_grid_pipeline_image_tb;
         list_file = $fopen("frame_list.txt", "r");
         frame_file = $fopen("pipeline_frames.csv", "w");
         grid_file = $fopen("grid_results.csv", "w");
+        guard_file = $fopen("frame_guard.csv", "w");
         warped_file = $fopen("warped_pixels.hex", "w");
-        if (!list_file || !frame_file || !grid_file || !warped_file)
+        if (!list_file || !frame_file || !grid_file || !guard_file || !warped_file)
             $fatal(1, "Cannot open direct-pipeline files");
         $fwrite(frame_file,
             "frame,roi_valid,tracking_active,roi_x,roi_y,roi_width,roi_height,tl_x,tl_y,tr_x,tr_y,br_x,br_y,bl_x,bl_y,grid_emitted\n");
         $fwrite(grid_file, "frame,cell,row,col,left,top,right,bottom,pixels,avg_gray\n");
+        $fwrite(guard_file,
+            "frame,transfer_active,start_learned,data_valid,discarded,end_detected,ignored,reason,learned_white,threshold,tl_avg,tr_avg,bl_avg,br_avg\n");
         reset_pipeline(); frame_index = 0; emitted_index = 0;
         while (!$feof(list_file)) begin
             line = ""; void'($fgets(line, list_file)); parsed = $sscanf(line, "%s", mem_path);
@@ -128,7 +149,7 @@ module roi_warp_grid_pipeline_image_tb;
                 end
             end
         end
-        $fclose(list_file); $fclose(frame_file); $fclose(grid_file); $fclose(warped_file);
+        $fclose(list_file); $fclose(frame_file); $fclose(grid_file); $fclose(guard_file); $fclose(warped_file);
         $display("DIRECT FPGA ROI + WARP + GRID PASS: %0d frames, %0d emitted", frame_index, emitted_index);
         $finish;
     end

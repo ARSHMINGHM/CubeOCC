@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 import sys
+import re
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -49,7 +50,13 @@ def prepare_output(output: Path) -> None:
 
 
 def images_in(input_dir: Path) -> list[Path]:
-    return sorted(path for path in input_dir.rglob("*") if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES)
+    def natural_key(path: Path) -> list[object]:
+        return [int(part) if part.isdigit() else part.lower() for part in re.split(r"(\d+)", path.as_posix())]
+
+    return sorted(
+        (path for path in input_dir.rglob("*") if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES),
+        key=natural_key,
+    )
 
 
 def write_mem(image: Image.Image, path: Path) -> None:
@@ -139,6 +146,7 @@ def main() -> int:
             str(root / "rtl" / "roi_start_detector.sv"),
             str(root / "rtl" / "projective_warp_160x120.sv"),
             str(root / "rtl" / "grayscale_grid_8x8.sv"),
+            str(root / "rtl" / "grid_corner_frame_guard.sv"),
             str(root / "rtl" / "roi_warp_grid_pipeline.sv"),
             str(root / "tb" / "roi_warp_grid_pipeline_image_tb.sv"),
         ], build)
@@ -147,6 +155,7 @@ def main() -> int:
 
         frame_rows = read_csv(build / "pipeline_frames.csv")
         grid_rows = read_csv(build / "grid_results.csv")
+        guard_rows = {row["frame"]: row for row in read_csv(build / "frame_guard.csv")}
         if len(frame_rows) != len(sources):
             raise RuntimeError(f"XSim emitted {len(frame_rows)} frame rows; expected {len(sources)}")
         grids: dict[int, list[dict[str, int]]] = {}
@@ -170,6 +179,9 @@ def main() -> int:
             if not row["grid_emitted"]:
                 rejected.append(base)
                 continue
+            guard = guard_rows.get(row["frame"])
+            if guard is None:
+                raise RuntimeError(f"missing RTL frame-guard result for {source['relative_path']}")
             cells = grids.get(row["frame"], [])
             if len(cells) != 64 or any(cell["pixels"] != 300 for cell in cells):
                 raise RuntimeError(f"invalid RTL grid for {source['relative_path']}")
@@ -187,6 +199,21 @@ def main() -> int:
                 "camera_gray_path": output_path.relative_to(output).as_posix(),
                 "perspective_rectified": True,
                 "perspective_engine": "rtl/projective_warp_160x120.sv",
+                "frame_guard": {
+                    "transfer_active": bool(guard["transfer_active"]),
+                    "start_learned": bool(guard["start_learned"]),
+                    "data_valid": bool(guard["data_valid"]),
+                    "discarded": bool(guard["discarded"]),
+                    "end_detected": bool(guard["end_detected"]),
+                    "ignored": bool(guard["ignored"]),
+                    "reason_code": guard["reason"],
+                    "learned_white": guard["learned_white"],
+                    "threshold": guard["threshold"],
+                    "corner_averages": {
+                        "tl": guard["tl_avg"], "tr": guard["tr_avg"],
+                        "bl": guard["bl_avg"], "br": guard["br_avg"],
+                    },
+                },
                 "cells": cells,
             })
         if warped_file.readline():
@@ -203,6 +230,40 @@ def main() -> int:
             draw.rectangle((cell["left"] * 4, cell["top"] * 4, (cell["right"] + 1) * 4 - 1, (cell["bottom"] + 1) * 4 - 1), outline=(255, 40, 48), width=2)
         preview.save(output / "grid_preview.png")
 
+        discard_dir = output / "discarded_images"
+        discard_rows: list[dict[str, object]] = []
+        reason_names = {1: "not_calibrated", 2: "pixel_count", 3: "dark_corner"}
+        for record in records:
+            guard = record["frame_guard"]
+            if not guard["discarded"]:
+                continue
+            relative = Path(str(record["relative_path"])).with_suffix(".png")
+            discard_path = discard_dir / relative
+            discard_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(output / str(record["camera_gray_path"]), discard_path)
+            averages = guard["corner_averages"]
+            discard_rows.append({
+                "frame": record["frame"],
+                "capture_set": record["capture_set"],
+                "source_image": record["relative_path"],
+                "discarded_image": discard_path.relative_to(output).as_posix(),
+                "reason": reason_names.get(guard["reason_code"], "unknown"),
+                "learned_white": guard["learned_white"],
+                "dynamic_threshold": guard["threshold"],
+                "tl_average": averages["tl"], "tr_average": averages["tr"],
+                "bl_average": averages["bl"], "br_average": averages["br"],
+            })
+        discard_sheet = output / "discarded_frames.csv"
+        discard_fields = [
+            "frame", "capture_set", "source_image", "discarded_image", "reason",
+            "learned_white", "dynamic_threshold", "tl_average", "tr_average",
+            "bl_average", "br_average",
+        ]
+        with discard_sheet.open("w", newline="", encoding="utf-8-sig") as handle:
+            writer = csv.DictWriter(handle, fieldnames=discard_fields)
+            writer.writeheader()
+            writer.writerows(discard_rows)
+
         manifest = {
             "format": "cubeocc-grayscale-grid-rtl-v1",
             "mode": "direct-connected-rtl",
@@ -210,6 +271,12 @@ def main() -> int:
             "source_frame_count": len(sources),
             "valid_roi_frame_count": len(records),
             "rejected_frame_count": len(rejected),
+            "guard_valid_data_frame_count": sum(record["frame_guard"]["data_valid"] for record in records),
+            "guard_discarded_frame_count": len(discard_rows),
+            "guard_start_frame_count": sum(record["frame_guard"]["start_learned"] for record in records),
+            "guard_end_frame_count": sum(record["frame_guard"]["end_detected"] for record in records),
+            "discarded_frame_sheet": "discarded_frames.csv",
+            "discarded_image_dir": "discarded_images",
             "camera_model": {
                 "format": "GRAY8", "width": WIDTH, "height": HEIGHT,
                 "perspective_rectified": True, "perspective_engine": "rtl/projective_warp_160x120.sv",
@@ -217,7 +284,8 @@ def main() -> int:
             },
             "rtl": [
                 "rtl/roi_start_detector.sv", "rtl/projective_warp_160x120.sv",
-                "rtl/grayscale_grid_8x8.sv", "rtl/roi_warp_grid_pipeline.sv",
+                "rtl/grayscale_grid_8x8.sv", "rtl/grid_corner_frame_guard.sv",
+                "rtl/roi_warp_grid_pipeline.sv",
             ],
             "testbench": "tb/roi_warp_grid_pipeline_image_tb.sv",
             "simulator": "XSim / Vivado 2019.1",
@@ -226,7 +294,10 @@ def main() -> int:
             "frames": records,
         }
         (output / "grid_results.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-        print(f"Direct FPGA pipeline: {len(records)} emitted, {len(rejected)} rejected: {output / 'grid_results.json'}")
+        print(
+            f"Direct FPGA pipeline: {len(records)} emitted, {len(rejected)} ROI-rejected, "
+            f"{len(discard_rows)} corner-discarded: {output / 'grid_results.json'}"
+        )
         return 0
     except (FileNotFoundError, OSError, RuntimeError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
