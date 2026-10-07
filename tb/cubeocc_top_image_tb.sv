@@ -50,6 +50,36 @@ module cubeocc_top_image_tb;
     wire [15:0] dynamic_thresh_tap      = dut.u_sampler.dynamic_thresh;
     wire [1:0]  sampler_state_tap       = dut.u_sampler.state;
 
+    // grid_corner_frame_guard outputs (already instantiated inside
+    // roi_warp_grid_pipeline, currently not consumed by the sampler).
+    wire        g_transfer_active_tap = dut.u_pipeline.guard_transfer_active;
+    wire        g_start_learned_tap   = dut.u_pipeline.guard_start_learned;
+    wire        g_data_valid_tap      = dut.u_pipeline.guard_data_valid;
+    wire        g_discarded_tap       = dut.u_pipeline.guard_frame_discarded;
+    wire        g_end_detected_tap    = dut.u_pipeline.guard_end_detected;
+    wire        g_ignored_tap         = dut.u_pipeline.guard_frame_ignored;
+    wire [2:0]  g_discard_reason_tap  = dut.u_pipeline.guard_discard_reason;
+    wire [7:0]  g_learned_white_tap   = dut.u_pipeline.guard_learned_white;
+    wire [7:0]  g_white_thresh_tap    = dut.u_pipeline.guard_white_threshold;
+    wire [7:0]  g_tl_tap              = dut.u_pipeline.guard_tl_average;
+    wire [7:0]  g_tr_tap              = dut.u_pipeline.guard_tr_average;
+    wire [7:0]  g_bl_tap              = dut.u_pipeline.guard_bl_average;
+    wire [7:0]  g_br_tap              = dut.u_pipeline.guard_br_average;
+
+    // Threshold/state the sampler actually used to classify the frame.
+    // Sampled on the same edge where the sampler sees grid_frame_done, i.e.
+    // before its non-blocking update of dynamic_thresh/state. The
+    // dynamic_thresh/state columns logged after symbols_valid are the values
+    // AFTER that update, so on the learning frame they differ from these.
+    logic [15:0] thresh_used = 16'd0;
+    logic [1:0]  state_used  = 2'd0;
+    always @(posedge pclk) begin
+        if (dut.u_pipeline.grid_frame_done) begin
+            thresh_used <= dut.u_sampler.dynamic_thresh;
+            state_used  <= dut.u_sampler.state;
+        end
+    end
+
     // Dump the rectified 160x120 warped stream, same convention as
     // roi_warp_grid_pipeline_image_tb.sv, so frames can be turned back into
     // PNGs for visual review.
@@ -83,8 +113,15 @@ module cubeocc_top_image_tb;
 
             if (roi_valid) begin
                 @(posedge symbols_valid); #1;
-                $fwrite(symbols_file, "%0d,%0d,%0d,%b\n",
-                    frame_index, sampler_state_tap, dynamic_thresh_tap, symbols_data);
+                // Guard pulses/levels are registered on the same grid_frame_done
+                // edge as symbols_valid, so they are stable here.
+                $fwrite(symbols_file, "%0d,%0d,%0d,%b,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d\n",
+                    frame_index, sampler_state_tap, dynamic_thresh_tap, symbols_data,
+                    state_used, thresh_used,
+                    g_transfer_active_tap, g_start_learned_tap, g_data_valid_tap,
+                    g_discarded_tap, g_end_detected_tap, g_ignored_tap,
+                    g_discard_reason_tap, g_learned_white_tap, g_white_thresh_tap,
+                    g_tl_tap, g_tr_tap, g_bl_tap, g_br_tap);
                 emitted_index = emitted_index + 1;
             end
         end
@@ -99,8 +136,11 @@ module cubeocc_top_image_tb;
             $fatal(1, "Cannot open cubeocc_top_image_tb output files");
 
         $fwrite(frame_file, "frame,roi_valid,tracking_active,roi_x,roi_y,roi_width,roi_height\n");
-        // sampler_state: 0=IDLE, 1=LEARNING (this frame calibrated dynamic_thresh), 2=PROCESSING
-        $fwrite(symbols_file, "frame,sampler_state,dynamic_thresh,symbols_data_binary\n");
+        // sampler_state / dynamic_thresh: values AFTER the sampler's frame_done update
+        //   (state 0=IDLE, 1=LEARNING, 2=PROCESSING; the learning frame already shows 2).
+        // state_used / thresh_used: values the sampler really classified this frame with.
+        // g_*: grid_corner_frame_guard outputs for the same frame.
+        $fwrite(symbols_file, "frame,sampler_state,dynamic_thresh,symbols_data_binary,state_used,thresh_used,g_transfer_active,g_start_learned,g_data_valid,g_discarded,g_end_detected,g_ignored,g_discard_reason,g_learned_white,g_white_threshold,g_tl,g_tr,g_bl,g_br\n");
 
         reset_pipeline(); frame_index = 0; emitted_index = 0;
         while (!$feof(list_file)) begin
