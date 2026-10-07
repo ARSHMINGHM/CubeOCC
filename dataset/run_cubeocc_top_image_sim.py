@@ -128,6 +128,7 @@ def main() -> int:
             str(root / "rtl" / "roi_start_detector.sv"),
             str(root / "rtl" / "projective_warp_160x120.sv"),
             str(root / "rtl" / "grayscale_grid_8x8.sv"),
+            str(root / "rtl" / "grid_corner_frame_guard.sv"),
             str(root / "rtl" / "roi_warp_grid_pipeline.sv"),
             str(root / "rtl" / "dynamic_threshold_sampler.sv"),
             str(root / "rtl" / "cubeocc_top.sv"),
