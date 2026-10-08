@@ -18,7 +18,7 @@ same convention as run_cubeocc_top_image_sim.py.
 Usage:
   python cell_error_report.py --frames symbols_review.json [--golden-jsonl X.jsonl] [--out cell_errors]
 """
-import argparse, collections, csv, json, sys
+import argparse, collections, csv, json, re, sys
 from pathlib import Path
 
 N = 64
@@ -36,8 +36,12 @@ def align_cost(captured, golden, down_weight=3):
     down = sum(1 for g, c in zip(golden, captured) if g == "1" and c == "0")
     return up + down_weight * down
 
-def load_frames(path):
+def load_frames(path, grades_path=None):
     d = json.loads(Path(path).read_text(encoding="utf-8"))
+    grades = {}
+    if grades_path:
+        g = json.loads(Path(grades_path).read_text(encoding="utf-8"))["frames"]
+        grades = {k.replace("\\", "/"): v.get("grade") for k, v in g.items()}
     frames = d["frames"]
     rows = []
     if isinstance(frames, dict):               # symbols_review.json
@@ -45,10 +49,22 @@ def load_frames(path):
             rows.append({"key": key, "set": v["capture_set"], "bits": v["symbols_bits"], "grade": v.get("grade")})
     else:                                       # results.json
         for v in frames:
-            rows.append({"key": v["relative_path"], "set": v["capture_set"], "bits": v["symbols_bits"], "grade": None})
+            rows.append({"key": v["relative_path"], "set": v["capture_set"], "bits": v["symbols_bits"],
+                         "grade": grades.get(v["relative_path"].replace("\\", "/"))})
     by = collections.OrderedDict()
     for r in rows:
         by.setdefault(r["set"], []).append(r)
+    # Natural frame order: "frame_9.png" must come before "frame_10.png". Plain
+    # string sorting (as in the sim runner) puts it after frame_12.png.
+    def frame_no(r):
+        m = re.findall(r"\d+", r["key"].replace("\\", "/").split("/")[-1])
+        return (int(m[0]) if m else 10**9, r["key"])
+    for s, l in by.items():
+        l.sort(key=frame_no)
+        nums = [frame_no(r)[0] for r in l]
+        dup = sorted({n for n in nums if nums.count(n) > 1})
+        if dup or nums != list(range(len(l))):
+            print(f"WARNING {s}: frame numbers {nums} (duplicates: {dup or 'none'})", file=sys.stderr)
     return by
 
 def to_cellstr(cells):
@@ -83,10 +99,12 @@ def align(frames, gold, step_penalty=14):
     cost = [[align_cost(f["bits"], g) for g in gold] for f in frames]
     dp = [[INF] * m for _ in range(n)]
     back = [[-1] * m for _ in range(n)]
-    for j in range(m):
-        dp[0][j] = cost[0][j] + 2 * j            # mild prior: sets start near frame 0
+    # START is a single optical frame at the beginning of the transfer: the first
+    # captured frame is START, and no later captured frame may be matched to it
+    # (a bloomed DATA frame saturates to all-white and would otherwise "match" START).
+    dp[0][0] = cost[0][0]
     for i in range(1, n):
-        for j in range(m):
+        for j in range(1, m):
             for step in (0, 1, 2):
                 pj = j - step
                 if pj < 0 or dp[i - 1][pj] >= INF:
@@ -104,12 +122,13 @@ def align(frames, gold, step_penalty=14):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--frames", required=True)
+    ap.add_argument("--grades", help="symbols_review.json with your true/mid/false labels; use it when --frames is a fresh results.json (no grades)")
     ap.add_argument("--golden-jsonl")
     ap.add_argument("--out", default="cell_errors")
     ap.add_argument("--step-penalty", type=int, default=14)
     a = ap.parse_args()
 
-    by = load_frames(a.frames)
+    by = load_frames(a.frames, a.grades)
     gold = golden_from_jsonl(a.golden_jsonl) if a.golden_jsonl else golden_from_votes(by)
     src = "sender jsonl" if a.golden_jsonl else "majority of 'true' frames (approximate)"
     print(f"golden: {len(gold)} frames from {src}")
