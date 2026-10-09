@@ -98,11 +98,46 @@ differences of ~0.2 points are within noise):
 - MLCAP_048 (Cam30/Opt60) does not match the golden message; treat its numbers as
   unreliable.
 
+## RTL: linear rule sampler (`rtl/linear_rule_sampler.sv`)
+
+Model I as a division-free integer rule (frame white reference = mean of the 4
+corner sums, plus the cell sum and the neighbour sums); corners are forced to 1 in
+DATA frames, START and END words are emitted from `grid_corner_frame_guard`
+decisions (`m_axis_tuser` = frame kind). Constants (12-bit) come from
+`dataset/export_linear_rule.py` trained on all 62 sets (so the RTL numbers below are
+in-sample; the cross-validated figure is 1.14 %).
+
+- XSim: compiles and runs on all 806 frames; `check_linear_rule_rtl.py` reports 0
+  mismatches against the integer model for every frame kind (START 63, DATA 659,
+  END 61, discarded DATA 22, ignored 1).
+- `cell_error_report.py` on the RTL output, all cells: 435 errors = 0.84 % (was
+  3.86 %), 380 black-as-white and 55 white-as-black; 38 of 62 sets without errors.
+  This is not directly comparable with 3.86 %: START, END and the corners (about
+  21 % of the cells) are now decided by the guard / protocol. Payload cells only,
+  the error is at most 435 / 40,920 = 1.06 % (all errors counted as payload).
+- Worst sets now: 026 (10.7 %), 055 (9.1 %), 039 (5.2 %), 048 (4.8 %), 054 (3.7 %),
+  038 (3.5 %), 033 (2.9 %), 020 (2.3 %), 022 (2.2 %), 037 (1.7 %).
+- Not measured: FPGA resources (no synthesis run yet), timing closure.
+- Frame kinds per set (`check_linear_rule_rtl.py`): 50 of 62 sets give S, 11 x D, E.
+  The 63 START / 61 END counts are explained by two sets:
+  - MLCAP_033: the END frame is not recognised (kind x, discarded DATA);
+  - MLCAP_054 (Cam60/Opt60): S D x9 E i S, i.e. END at position 10, an ignored frame
+    and another START; most likely the capture really contains END, then the sender
+    loops (check the images frame_10..frame_12), not a guard error.
+    The guard START test is permissive (average >= 96 and bright corners) but this
+    data gives no evidence that it misfires.
+- The 22 discarded DATA frames (kind 4) are spread over 11 sets (002, 012, 022, 023,
+  025, 026, 029, 039, 043, 055 and the END of 033); the weakest corner was BL in 17
+  of them. Whether their payload is as accurate as accepted frames is not measured
+  yet (needs per-frame errors joined with `symbols_kind`).
+
 ## Open items
 
-- [ ] Decide between a frame-level reference only (white reference or 2-means) and a
-      linear classifier with the neighbor feature; the data say the frame-level
-      reference is the main gain and the SVM adds little over it (not significant).
+- [x] Provisional: linear rule with frame white reference + neighbor (model I) in RTL.
+- [ ] Compare payload error of discarded DATA frames (kind 4) with accepted ones; if
+      equal, the guard DARK_CORNER threshold (5/8 of the weakest START corner) drops
+      good frames because of the dim BL corner.
+- [ ] MLCAP_033: END not detected; MLCAP_054: confirm the E i S sequence from the images.
 - [ ] Sender `*_frames.jsonl` to replace the approximate golden.
 - [ ] Investigate the BL corner (cell 56, guard DARK_CORNER).
 - [ ] Patch the sim runner with natural frame sorting; confirm MLCAP_044 naming.
