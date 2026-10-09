@@ -23,7 +23,8 @@ module cubeocc_top (
     output logic [9:0] roi_bl_x,
     output logic [9:0] roi_bl_y,
     output logic       symbols_valid,
-    output logic [63:0] symbols_data
+    output logic [63:0] symbols_data,
+    output logic [2:0]  symbols_kind      // 0 ignored, 1 START, 2 DATA, 3 END, 4 discarded DATA
 );
 
     logic        grid_pixel_valid;
@@ -38,6 +39,13 @@ module cubeocc_top (
     logic        sampler_tready;
     logic        sampler_tlast;
 
+    // grid_corner_frame_guard decisions (already computed inside the pipeline)
+    logic        guard_frame_checked;
+    logic        guard_start_learned;
+    logic        guard_data_valid;
+    logic        guard_frame_discarded;
+    logic        guard_end_detected;
+
     roi_warp_grid_pipeline #(.X_BITS(10), .Y_BITS(10)) u_pipeline (
         .pclk(pclk), .rst_n(rst_n),
         .cam_vsync(cam_vsync), .cam_href(cam_href), .cam_gray(cam_pixel_data),
@@ -48,17 +56,23 @@ module cubeocc_top (
         .roi_br_x(roi_br_x), .roi_br_y(roi_br_y), .roi_bl_x(roi_bl_x), .roi_bl_y(roi_bl_y),
         .grid_pixel_valid(grid_pixel_valid), .grid_pixel_gray(grid_pixel_gray),
         .grid_col(grid_col), .grid_row(grid_row), .grid_cell(grid_cell),
-        .grid_pixel_x(grid_pixel_x), .grid_pixel_y(grid_pixel_y), .grid_frame_done(grid_frame_done)
+        .grid_pixel_x(grid_pixel_x), .grid_pixel_y(grid_pixel_y), .grid_frame_done(grid_frame_done),
+        .guard_frame_checked(guard_frame_checked), .guard_start_learned(guard_start_learned),
+        .guard_data_valid(guard_data_valid), .guard_frame_discarded(guard_frame_discarded),
+        .guard_end_detected(guard_end_detected)
     );
 
-    dynamic_threshold_sampler u_sampler (
+    linear_rule_sampler u_sampler (
         .clk(pclk), .rst_n(rst_n),
         .grid_pixel_valid(grid_pixel_valid), .grid_pixel_gray(grid_pixel_gray),
         .grid_cell(grid_cell), .grid_col(grid_col), .grid_row(grid_row),
         .grid_pixel_x(grid_pixel_x), .grid_pixel_y(grid_pixel_y), .grid_frame_done(grid_frame_done),
         .roi_valid(roi_valid),
+        .guard_frame_checked(guard_frame_checked), .guard_start(guard_start_learned),
+        .guard_data_valid(guard_data_valid), .guard_end(guard_end_detected),
+        .guard_discarded(guard_frame_discarded),
         .m_axis_tvalid(symbols_valid), .m_axis_tready(sampler_tready),
-        .m_axis_tdata(symbols_data), .m_axis_tlast(sampler_tlast)
+        .m_axis_tdata(symbols_data), .m_axis_tlast(sampler_tlast), .m_axis_tuser(symbols_kind)
     );
 
     assign sampler_tready = 1'b1;

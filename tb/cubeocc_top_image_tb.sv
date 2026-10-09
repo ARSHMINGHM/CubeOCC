@@ -20,6 +20,7 @@ module cubeocc_top_image_tb;
     logic [9:0] roi_br_x, roi_br_y, roi_bl_x, roi_bl_y;
     logic        symbols_valid;
     logic [63:0] symbols_data;
+    logic [2:0]  symbols_kind;
 
     logic [7:0] frame_mem [0:PIXELS-1];
 
@@ -36,7 +37,7 @@ module cubeocc_top_image_tb;
         .roi_x(roi_x), .roi_y(roi_y), .roi_width(roi_width), .roi_height(roi_height),
         .roi_tl_x(roi_tl_x), .roi_tl_y(roi_tl_y), .roi_tr_x(roi_tr_x), .roi_tr_y(roi_tr_y),
         .roi_br_x(roi_br_x), .roi_br_y(roi_br_y), .roi_bl_x(roi_bl_x), .roi_bl_y(roi_bl_y),
-        .symbols_valid(symbols_valid), .symbols_data(symbols_data)
+        .symbols_valid(symbols_valid), .symbols_data(symbols_data), .symbols_kind(symbols_kind)
     );
 
     // Hierarchical, simulation-only taps. cubeocc_top does not forward these
@@ -115,13 +116,14 @@ module cubeocc_top_image_tb;
                 @(posedge symbols_valid); #1;
                 // Guard pulses/levels are registered on the same grid_frame_done
                 // edge as symbols_valid, so they are stable here.
-                $fwrite(symbols_file, "%0d,%0d,%0d,%b,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d\n",
+                $fwrite(symbols_file, "%0d,%0d,%0d,%b,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d,%0d\n",
                     frame_index, sampler_state_tap, dynamic_thresh_tap, symbols_data,
                     state_used, thresh_used,
                     g_transfer_active_tap, g_start_learned_tap, g_data_valid_tap,
                     g_discarded_tap, g_end_detected_tap, g_ignored_tap,
                     g_discard_reason_tap, g_learned_white_tap, g_white_thresh_tap,
-                    g_tl_tap, g_tr_tap, g_bl_tap, g_br_tap);
+                    g_tl_tap, g_tr_tap, g_bl_tap, g_br_tap,
+                    symbols_kind);
                 emitted_index = emitted_index + 1;
             end
         end
@@ -140,7 +142,7 @@ module cubeocc_top_image_tb;
         //   (state 0=IDLE, 1=LEARNING, 2=PROCESSING; the learning frame already shows 2).
         // state_used / thresh_used: values the sampler really classified this frame with.
         // g_*: grid_corner_frame_guard outputs for the same frame.
-        $fwrite(symbols_file, "frame,sampler_state,dynamic_thresh,symbols_data_binary,state_used,thresh_used,g_transfer_active,g_start_learned,g_data_valid,g_discarded,g_end_detected,g_ignored,g_discard_reason,g_learned_white,g_white_threshold,g_tl,g_tr,g_bl,g_br\n");
+        $fwrite(symbols_file, "frame,sampler_state,dynamic_thresh,symbols_data_binary,state_used,thresh_used,g_transfer_active,g_start_learned,g_data_valid,g_discarded,g_end_detected,g_ignored,g_discard_reason,g_learned_white,g_white_threshold,g_tl,g_tr,g_bl,g_br,symbols_kind\n");
 
         reset_pipeline(); frame_index = 0; emitted_index = 0;
         while (!$feof(list_file)) begin
