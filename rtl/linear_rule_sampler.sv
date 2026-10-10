@@ -8,30 +8,36 @@
 // export_linear_rule.py, model "I"):
 //
 //   score = WC * S_cell  +  WN[n] * (sum of the S of the n neighbours)
-//                        +  WW * (S_TL + S_TR + S_BL + S_BR)
+//                        +  WW * S_white[cell]
 //   bit   = score > 0                      n = 2 (grid corner), 3 (edge), 4 (interior)
 //
-// The 1/81, 1/n and 1/4 of the means are folded into the constants, so the rule
-// needs only integer multiplies and adds. The four corner markers are white in
-// every DATA frame by protocol and are forced to 1; they only feed the white
-// reference. START / END frames are decided by grid_corner_frame_guard (corner
-// based) and emitted as their protocol patterns; m_axis_tuser tells what the
-// frame was.
+// S_white[cell] is the sum of the same cell in the START frame (all cells white), so
+// every cell has its own white reference and a brightness gradient across the
+// screen (viewing angle, vignetting) is calibrated out. Until a START has been
+// accepted, a flat map is used instead: the mean of the 4 corner sums.
+// The 1/81 and 1/n of the means are folded into the constants, so the rule needs only
+// integer multiplies and adds. The four corner markers are white in every DATA
+// frame by protocol and are forced to 1. START / END frames are decided by
+// grid_corner_frame_guard (corner based) and emitted as their protocol patterns;
+// m_axis_tuser tells what the frame was.
 //
 // Timing: classification runs after grid_frame_done and takes 8 cycles per cell
 // (about 530 cycles). The warp cannot start the next output frame earlier than
 // one input frame time (>= 19,000 cycles), so the 64 sums are not overwritten;
 // if pixels ever arrive while busy, `overrun` is set (sticky) and they are dropped.
 //
+// Cost: 64 x 15 flip-flops for the START map and 3 multipliers (cell, neighbours, white).
+//
 // Simulation-only compatibility: `state` and `dynamic_thresh` keep the names read
 // by cubeocc_top_image_tb.sv. state: 0 = accumulating, 1 = classifying.
 // dynamic_thresh: mean white level of the 4 corners for the last frame (logging).
 module linear_rule_sampler #(
+    // constants from dataset/export_linear_rule.py --white-ref start (62 capture sets)
     parameter signed [11:0] WC  = 12'sd2047,
-    parameter signed [11:0] WN2 = -12'sd354,
-    parameter signed [11:0] WN3 = -12'sd236,
-    parameter signed [11:0] WN4 = -12'sd177,
-    parameter signed [11:0] WW  = -12'sd278
+    parameter signed [11:0] WN2 = -12'sd272,
+    parameter signed [11:0] WN3 = -12'sd181,
+    parameter signed [11:0] WN4 = -12'sd136,
+    parameter signed [11:0] WW  = -12'sd1126
 )(
     input  logic       clk,
     input  logic       rst_n,
@@ -77,9 +83,13 @@ module linear_rule_sampler #(
     logic [14:0] s_c;
     logic [16:0] nb_acc;
     logic [16:0] corner_sum;
-    logic signed [31:0] corner_term;
+    logic [14:0] corner_avg;                 // flat white map used before the first START
+    logic [14:0] start_sum [0:63];           // per-cell white map = sums of the START frame
+    logic        start_valid;
+    logic [14:0] w_cell;
     logic signed [31:0] prod_c;
     logic signed [31:0] prod_n;
+    logic signed [31:0] prod_w;
     logic signed [31:0] score;
     logic [63:0] work;
 
@@ -136,9 +146,12 @@ module linear_rule_sampler #(
             s_c <= 15'd0;
             nb_acc <= 17'd0;
             corner_sum <= 17'd0;
-            corner_term <= 32'sd0;
+            corner_avg <= 15'd0;
+            start_valid <= 1'b0;
+            w_cell <= 15'd0;
             prod_c <= 32'sd0;
             prod_n <= 32'sd0;
+            prod_w <= 32'sd0;
             score <= 32'sd0;
             work <= 64'd0;
             lat_start <= 1'b0; lat_data <= 1'b0; lat_end <= 1'b0; lat_disc <= 1'b0;
@@ -147,7 +160,10 @@ module linear_rule_sampler #(
             symbols_reg <= 64'd0;
             kind_reg <= 3'd0;
             dynamic_thresh <= 16'd0;
-            for (i = 0; i < 64; i = i + 1) sum_acc[i] <= 15'd0;
+            for (i = 0; i < 64; i = i + 1) begin
+                sum_acc[i] <= 15'd0;
+                start_sum[i] <= 15'd0;
+            end
         end else begin
             if (valid_out && m_axis_tready) valid_out <= 1'b0;
 
@@ -179,7 +195,7 @@ module linear_rule_sampler #(
                 end
 
                 M_CORNER_MUL: begin
-                    corner_term <= $signed(WW) * $signed({1'b0, corner_sum});
+                    corner_avg <= corner_sum[16:2];          // mean of the 4 corner sums
                     // corner_sum / 324 (4 corners x 81 pixels), logging only
                     dynamic_thresh <= ({8'b0, corner_sum} * 25'd202) >> 16;
                     cidx <= 6'd0;
@@ -191,6 +207,7 @@ module linear_rule_sampler #(
                     case (ph)
                         3'd0: begin
                             s_c <= sum_acc[cidx];
+                            w_cell <= start_valid ? start_sum[cidx] : corner_avg;
                             nb_acc <= 17'd0;
                             ph <= 3'd1;
                         end
@@ -213,10 +230,11 @@ module linear_rule_sampler #(
                         3'd5: begin
                             prod_c <= $signed(WC)     * $signed({1'b0, s_c});
                             prod_n <= $signed(wn_sel) * $signed({1'b0, nb_acc});
+                            prod_w <= $signed(WW)     * $signed({1'b0, w_cell});
                             ph <= 3'd6;
                         end
                         3'd6: begin
-                            score <= prod_c + prod_n + corner_term;
+                            score <= prod_c + prod_n + prod_w;
                             ph <= 3'd7;
                         end
                         default: begin
@@ -239,6 +257,11 @@ module linear_rule_sampler #(
                         symbols_reg <= work;       kind_reg <= 3'd4;
                     end else begin
                         symbols_reg <= work;       kind_reg <= 3'd0;
+                    end
+                    if (lat_start) begin
+                        // an accepted START frame becomes the per-cell white map
+                        for (i = 0; i < 64; i = i + 1) start_sum[i] <= sum_acc[i];
+                        start_valid <= 1'b1;
                     end
                     for (i = 0; i < 64; i = i + 1) sum_acc[i] <= 15'd0;
                     lat_start <= 1'b0; lat_data <= 1'b0; lat_end <= 1'b0; lat_disc <= 1'b0;

@@ -22,7 +22,7 @@ MASK = ((XX - 10) ** 2 + (YY - 7) ** 2) <= 25
 CORNERS = (0, 7, 56, 63)
 START_WORD = (1 << 64) - 1
 END_WORD = 0x0100_0000_0000_0081
-DEFAULT = dict(Wc=2047, Wn2=-354, Wn3=-236, Wn4=-177, Ww=-278)
+DEFAULT = dict(Wc=2047, Wn2=-272, Wn3=-181, Wn4=-136, Ww=-1126)   # start-map rule (62 sets)
 
 def cell_sums(img):
     S = np.zeros(64, dtype=np.int64)
@@ -31,7 +31,8 @@ def cell_sums(img):
         S[c] = int(img[r * CH:(r + 1) * CH, cc * CW:(cc + 1) * CW].astype(np.int64)[MASK].sum())
     return S
 
-def rule_word(S, k):
+def rule_word(S, k, white_map=None):
+    """white_map: per-cell white sums (START frame) -> start-map rule; None -> old mean-of-4-corners rule."""
     corner_term = k["Ww"] * int(S[list(CORNERS)].sum())
     word = 0
     for c in range(64):
@@ -42,7 +43,8 @@ def rule_word(S, k):
         if cc > 0: nbrs.append(c - 1)
         if cc < 7: nbrs.append(c + 1)
         wn = {2: k["Wn2"], 3: k["Wn3"], 4: k["Wn4"]}[len(nbrs)]
-        score = k["Wc"] * int(S[c]) + wn * int(sum(S[n] for n in nbrs)) + corner_term
+        white_term = k["Ww"] * int(white_map[c]) if white_map is not None else corner_term
+        score = k["Wc"] * int(S[c]) + wn * int(sum(S[n] for n in nbrs)) + white_term
         if c in CORNERS or score > 0:
             word |= 1 << c
     return word
@@ -54,8 +56,12 @@ def main():
     a = ap.parse_args()
     sim = Path(a.sim_dir)
     k = DEFAULT
+    mode = "start"
     if a.rule:
-        k = json.loads(Path(a.rule).read_text())["int_constants"]
+        rj = json.loads(Path(a.rule).read_text())
+        k = rj["int_constants"]
+        mode = "start" if rj.get("white_ref") == "start" else "mean4"
+    print(f"rule mode: {mode}  constants: {k}")
     res = json.loads((sim / "results.json").read_text())["frames"]
     path = {f["frame"]: f["camera_gray_path"] for f in res}
     set_of = {f["frame"]: f["capture_set"] for f in res}
@@ -63,14 +69,25 @@ def main():
     if "symbols_kind" not in rows[0]:
         sys.exit("symbols_results.csv has no symbols_kind column: use the updated cubeocc_top_image_tb.sv")
     bad = {}; total = {}; shown = 0; seq = {}
+    cur_set = None; start_map = None
     for r in rows:
         f = int(r["frame"]); kind = int(r["symbols_kind"])
         got = int(r["symbols_data_binary"], 2)
+        if set_of[f] != cur_set:                 # the testbench resets the DUT between capture sets
+            cur_set = set_of[f]; start_map = None
+        img = np.array(Image.open(sim / path[f]).convert("L"))
+        S = cell_sums(img)
         if kind == 1: exp = START_WORD
         elif kind == 3: exp = END_WORD
         else:
-            img = np.array(Image.open(sim / path[f]).convert("L"))
-            exp = rule_word(cell_sums(img), k)
+            if mode == "start":
+                # RTL: START map once a START was accepted, else flat mean of the 4 corner sums (floor)
+                wm = start_map if start_map is not None else np.full(64, int(S[list(CORNERS)].sum()) >> 2)
+                exp = rule_word(S, k, wm)
+            else:
+                exp = rule_word(S, k)
+        if kind == 1:
+            start_map = S.copy()                 # an accepted START becomes the per-cell white map
         total[kind] = total.get(kind, 0) + 1
         seq.setdefault(set_of[f], []).append(kind)
         if got != exp:

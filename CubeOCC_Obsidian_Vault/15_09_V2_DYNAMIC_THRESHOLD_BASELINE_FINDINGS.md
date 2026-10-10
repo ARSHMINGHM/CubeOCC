@@ -13,9 +13,10 @@ alternatives. No RTL was changed in this step.
 
 ## Data
 
-- 62 capture sets x 13 frames = 806 grayscale frames (a stray duplicate
-  `frame_9.png` in MLCAP_054 was removed; MLCAP_044 had a non-padded
-  `frame_9.png` that sorts after `frame_12.png` in plain string order).
+- 62 capture sets x 13 frames = 806 grayscale frames (MLCAP_054 had both `frame_09.png`
+  and `frame_9.png`; one file was removed and `frame_9.png` is the one that remains).
+  A non-padded `frame_9.png` sorts after `frame_12.png` in plain string order, which
+  scrambled the processing order of MLCAP_044 (renamed since) and MLCAP_054 (not yet).
 - Manual frame-level labels (`symbols_review.json`): true 669, mid 19, false 119
   (807 labels from the first run). A few labels are known to be wrong.
 - Golden message per frame index is **approximate**: per-index majority of frames
@@ -119,17 +120,88 @@ in-sample; the cross-validated figure is 1.14 %).
   038 (3.5 %), 033 (2.9 %), 020 (2.3 %), 022 (2.2 %), 037 (1.7 %).
 - Not measured: FPGA resources (no synthesis run yet), timing closure.
 - Frame kinds per set (`check_linear_rule_rtl.py`): 50 of 62 sets give S, 11 x D, E.
-  The 63 START / 61 END counts are explained by two sets:
+  The 63 START / 61 END counts come from two sets:
   - MLCAP_033: the END frame is not recognised (kind x, discarded DATA);
-  - MLCAP_054 (Cam60/Opt60): S D x9 E i S, i.e. END at position 10, an ignored frame
-    and another START; most likely the capture really contains END, then the sender
-    loops (check the images frame_10..frame_12), not a guard error.
-    The guard START test is permissive (average >= 96 and bright corners) but this
-    data gives no evidence that it misfires.
+  - MLCAP_054: S D x9 E i S is a processing-order artefact. The sim runner still sorts
+    file names as plain strings, so `frame_9.png` is processed after `frame_12.png`:
+    frame_11 -> END, frame_12 -> ignored, frame_9 (a DATA frame) -> START. The forced
+    all-ones START word then gives 30 wrong cells for that frame. Evidence: per-frame
+    errors (frame_9: 30 black-as-white, frame_11 equals the END word, frame_12 has one
+    wrong cell) and the string-sort order reproduces the S D x9 E i S sequence exactly.
+    The guard accepts any frame as START while inactive if its average is >= 96 and the
+    corners are bright; on the 14 local sets 115 of 143 DATA frames pass that test, so only
+    the frame order protects the START decision.
 - The 22 discarded DATA frames (kind 4) are spread over 11 sets (002, 012, 022, 023,
   025, 026, 029, 039, 043, 055 and the END of 033); the weakest corner was BL in 17
   of them. Whether their payload is as accurate as accepted frames is not measured
   yet (needs per-frame errors joined with `symbols_kind`).
+
+## After renaming 054 `frame_9.png` -> `frame_09.png` (second linear run)
+
+- Frame kinds for MLCAP_054 are now S D x10 E i: the trailing START is gone, but
+  frame_11 (a DATA frame with a mostly black payload) is still taken as END and the
+  real END (frame_12) is ignored. In the previous run frame_11 had corner averages
+  160 / 87 / 88 / 64 (TL / TR / BL / BR) with a learned white of 210, i.e. a
+  `dynamic_white_threshold >> 1` of 65: BR was one count below the END limit. The
+  cell-error report can hide this because its alignment matches frame_11 to the END
+  word. The END test uses an absolute limit (about 0.31 x white); true END frames
+  in this run have BR / min(other corners) <= 0.19, the false one 0.73.
+- MLCAP_033: the END capture itself is partial (TL average 7), so its x is not a
+  guard threshold problem.
+- `--white-ref bilinear` (white reference interpolated from the 4 corners per cell)
+  is worse than the mean of the 4 corners on all 62 sets: 1.32 % vs 1.14 %
+  cross-validated payload error. Not adopted; the RTL keeps mean4.
+
+## What the photos show (MLCAP_022 frame_03, MLCAP_054 frame_11)
+
+Luminance measured on the original JPGs (not on the warped 160x120 frames):
+
+- MLCAP_054 frame_11: TL / TR / BL markers 227 / 225 / 224, BR marker 173, data cells
+  that should be white 123-132, black 8. This looks like a display update caught
+  half-way from DATA 11 to END: cells white in 11 but black in END (BR and the top-row
+  data cells) are partly dark, the top more (0.55) than the bottom (0.77 at BR), and the
+  markers that stay white are full white. The guard calling it END is therefore not a
+  plain threshold error; a blended frame is neither DATA nor END. The earlier proposal
+  of a relative-BR END test is withdrawn: it would turn this frame into DATA with
+  unreliable cells.
+- MLCAP_022 frame_03: white is 223 on the right, 148 / 142 on the left (TL cell, BL
+  block), BR marker 178; cells that should be black read 5 to 70. The left side is
+  about 0.65 of the right: a viewing-angle brightness gradient. With the mean of the 4
+  corners as white reference (about 173) a white cell with white neighbours needs about
+  154, so white cells on the left (about 145) read black. This matches the errors at
+  cells 48-50 and 57-59 in 022 and 023.
+- Probe on the 14 local sets (black cells misread as white with a fixed 0.5 x white
+  threshold): in the hard sets 67 % when the cell was white in the previous frame vs 67 %
+  when it was black, so temporal ghosting does not explain the hard sets (they look like
+  a global black-level lift, weakly neighbour dependent); in the easy sets 2.1 % vs 0.4 %.
+- Open: `export_linear_rule.py --white-ref start` (per-cell white map taken from the
+  START frame, no interpolation) is implemented; on the 14 local sets it gives 2.75 %
+  vs 2.77 % for mean4 (they have no strong gradient); the 62-set run decides.
+
+## RTL with the per-cell START white map (`--white-ref start`)
+
+- Cross-validated payload error (62 sets, leave-one-set-out): 0.91 % vs 1.14 % for mean4
+  and 1.32 % for bilinear corners.
+- XSim run on all 806 frames, `check_linear_rule_rtl.py`: 0 mismatches against the
+  integer model for every kind (START 62, DATA 660, END 61, discarded DATA 22, ignored 1).
+  Constants (12-bit): WC 2047, WN2 -272, WN3 -181, WN4 -136, WW -1126 (WW multiplies the
+  START sum of the same cell).
+- `cell_error_report.py` on the RTL output: 327 wrong cells of 51,584 = 0.63 % (0.84 %
+  with the mean4 reference, 3.86 % with the original sampler); 244 black-as-white, 83
+  white-as-black; 38 of 62 sets without errors. Payload cells only: at most
+  327 / 40,920 = 0.80 % (the RTL constants are fitted on the same sets, so this is
+  in-sample; the cross-validated figure is 0.91 %).
+- Worst sets: 048 (7.9 %), 026 (6.0 %), 038 (4.9 %), 033 (2.9 %), 039 (2.5 %), 037 (2.4 %),
+  015 (2.0 %), 020 (1.9 %), 022 (1.7 %). 055 fell from 9.1 % to 0.12 %; 037 and 038 got a
+  little worse than with mean4.
+- Where the remaining errors are: MLCAP_048 (content mismatch) 66 of 327; eight frames with
+  9 or more wrong cells hold about 116 more (015 f3, 026 f8 and f10, 030 f3, 033 f9, 037 f2,
+  038 f1, 047 f11). Several of these are transition captures: 038 f1 is closer to the START
+  word (13 cells) than to its own golden frame (25), 033 f9 is closer to frame 8 (10) than
+  to frame 9 (21), and 047 f11 is 2 bits from END (an alignment artefact, not a decoding
+  error). Cells 1, 2, 3, 12, 21, ... are wrong in frame_03 of three different sets (015,
+  030, 048) for an unknown reason.
+- Risk: the START map is copied from whatever frame the guard accepts as START.
 
 ## Open items
 
@@ -137,7 +209,10 @@ in-sample; the cross-validated figure is 1.14 %).
 - [ ] Compare payload error of discarded DATA frames (kind 4) with accepted ones; if
       equal, the guard DARK_CORNER threshold (5/8 of the weakest START corner) drops
       good frames because of the dim BL corner.
-- [ ] MLCAP_033: END not detected; MLCAP_054: confirm the E i S sequence from the images.
+- [ ] Natural sort in `run_cubeocc_top_image_sim.py` (or rename 054 `frame_9.png` to `frame_09.png`) and rerun.
+- [ ] MLCAP_033: END not detected (bright room?).
+- [ ] Flag blended/transition frames (cells in an ambiguous band) instead of decoding them.
+- [ ] Harden the guard START test (all cells bright, not just the average) once tuned on all sets.
 - [ ] Sender `*_frames.jsonl` to replace the approximate golden.
 - [ ] Investigate the BL corner (cell 56, guard DARK_CORNER).
 - [ ] Patch the sim runner with natural frame sorting; confirm MLCAP_044 naming.
