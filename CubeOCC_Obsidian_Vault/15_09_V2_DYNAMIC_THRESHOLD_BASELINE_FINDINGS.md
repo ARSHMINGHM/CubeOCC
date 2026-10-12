@@ -203,6 +203,34 @@ Luminance measured on the original JPGs (not on the warped 160x120 frames):
   030, 048) for an unknown reason.
 - Risk: the START map is copied from whatever frame the guard accepts as START.
 
+## Ambiguous-frame flag (kind 5) in `linear_rule_sampler.sv`
+
+Rule: a DATA frame with at least 3 payload cells whose |score| < (|WW| x S_white) >> 3
+(about 0.069 x white) is reported with `m_axis_tuser = 5` instead of 2; the 64-bit word is
+unchanged, so the cell errors are the same as before (327 wrong cells, 0.63 %).
+
+- `ambiguity_report.py` on the 62 sets (048 excluded): counting all uncertain cells (U)
+  beats counting only cells that changed since the previous frame (T), the opposite of
+  what the 13 local sets suggested. U at delta 0.07, N >= 3: 8.3 % of frames flagged,
+  3.2 % of good frames lost, 83 % of wrong cells removed, 73 % of the frames with >= 3 wrong
+  cells caught (T: 5.2 %, 2.1 %, 64 %, 63 %).
+- XSim run (`sim/cubeocc_top_all_ambig`): `check_linear_rule_rtl.py` reports 0 word
+  mismatches (kinds: START 62, DATA 599, END 61, discarded 22, ambiguous 61). Counts
+  rebuilt from the printed kind sequences and per-frame errors, all 62 sets: 61 of 681
+  DATA frames flagged (9.0 %); 34 of 38 frames with >= 3 wrong cells caught (89 %); 19 of 624
+  frames with <= 1 wrong cell lost (3.0 %); 269 of 323 wrong cells (83 %) sit in flagged
+  frames; precision 56 % (48 % without MLCAP_048). Missed: 020 f9 (3 wrong cells), 022 f1
+  (4) and 022 f2 (5).
+- Guard DARK_CORNER discards (kind 4): 21 DATA frames, only 1 of them has >= 3 wrong
+  cells and 15 are good frames; they remove 21 wrong cells. They do not help; do not drop
+  them on that basis.
+- Frames the flag accepts (kind 2): about 33 wrong cells in 599 frames, about 0.09 % of their
+  payload cells.
+- Caveats: constants and the (delta, N) choice are fitted on the same 62 sets (in-sample);
+  the golden is approximate; the good frames lost are concentrated in MLCAP_055 (10),
+  038 (3), 027 and 039 (2 each).
+- The checker now also compares kind 2/5 with the integer model's uncertain-cell count.
+
 ## Open items
 
 - [x] Provisional: linear rule with frame white reference + neighbor (model I) in RTL.
@@ -211,7 +239,8 @@ Luminance measured on the original JPGs (not on the warped 160x120 frames):
       good frames because of the dim BL corner.
 - [ ] Natural sort in `run_cubeocc_top_image_sim.py` (or rename 054 `frame_9.png` to `frame_09.png`) and rerun.
 - [ ] MLCAP_033: END not detected (bright room?).
-- [ ] Flag blended/transition frames (cells in an ambiguous band) instead of decoding them.
+- [x] Flag uncertain frames (kind 5): done; verify the kinds with the extended checker.
+- [ ] Choose (delta, N) on one half of the sets and evaluate on the other half.
 - [ ] Harden the guard START test (all cells bright, not just the average) once tuned on all sets.
 - [ ] Sender `*_frames.jsonl` to replace the approximate golden.
 - [ ] Investigate the BL corner (cell 56, guard DARK_CORNER).

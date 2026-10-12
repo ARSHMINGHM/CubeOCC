@@ -96,7 +96,7 @@ def build(a):
                 if r < 7: nbr.append(c + 8)
                 if cc > 0: nbr.append(c - 1)
                 if cc < 7: nbr.append(c + 1)
-                rows.append(dict(set=s, cell=c, y=int(gold_cells[j][c]), mean=m[c], nb=nb[c], white=wv[c],
+                rows.append(dict(set=s, key=f["key"], gidx=j, cell=c, y=int(gold_cells[j][c]), mean=m[c], nb=nb[c], white=wv[c],
                                  S=int(S[c]), Snb=int(sum(S[k] for k in nbr)), n=len(nbr),
                                  Scorn=int(sum(S[k] for k in CORNERS)),
                                  Sstart=int(np.rint(wv[c] * 81)) if a.white_ref == "start" else 0,

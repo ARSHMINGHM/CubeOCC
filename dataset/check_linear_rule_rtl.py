@@ -31,10 +31,14 @@ def cell_sums(img):
         S[c] = int(img[r * CH:(r + 1) * CH, cc * CW:(cc + 1) * CW].astype(np.int64)[MASK].sum())
     return S
 
-def rule_word(S, k, white_map=None):
+AMBIG_MIN_CELLS = 3          # a DATA frame with >= 3 uncertain cells becomes kind 5
+AMBIG_SHIFT = 3              # uncertain: |score| < (|WW| * S_white) >> 3   (about 0.069 x white)
+
+def rule_word(S, k, white_map=None, with_ambig=False):
     """white_map: per-cell white sums (START frame) -> start-map rule; None -> old mean-of-4-corners rule."""
     corner_term = k["Ww"] * int(S[list(CORNERS)].sum())
     word = 0
+    n_ambig = 0
     for c in range(64):
         r, cc = divmod(c, 8)
         nbrs = []
@@ -47,7 +51,10 @@ def rule_word(S, k, white_map=None):
         score = k["Wc"] * int(S[c]) + wn * int(sum(S[n] for n in nbrs)) + white_term
         if c in CORNERS or score > 0:
             word |= 1 << c
-    return word
+        if with_ambig and c not in CORNERS and white_map is not None:
+            if abs(score) < ((-k["Ww"] * int(white_map[c])) >> AMBIG_SHIFT):
+                n_ambig += 1
+    return (word, n_ambig) if with_ambig else word
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -69,7 +76,7 @@ def main():
     if "symbols_kind" not in rows[0]:
         sys.exit("symbols_results.csv has no symbols_kind column: use the updated cubeocc_top_image_tb.sv")
     bad = {}; total = {}; shown = 0; seq = {}
-    cur_set = None; start_map = None
+    cur_set = None; start_map = None; kind_bad = 0; kind_shown = 0
     for r in rows:
         f = int(r["frame"]); kind = int(r["symbols_kind"])
         got = int(r["symbols_data_binary"], 2)
@@ -83,7 +90,14 @@ def main():
             if mode == "start":
                 # RTL: START map once a START was accepted, else flat mean of the 4 corner sums (floor)
                 wm = start_map if start_map is not None else np.full(64, int(S[list(CORNERS)].sum()) >> 2)
-                exp = rule_word(S, k, wm)
+                exp, n_amb = rule_word(S, k, wm, with_ambig=True)
+                if kind in (2, 5):                       # RTL: DATA frame, kind 5 if >= 3 uncertain cells
+                    exp_kind = 5 if n_amb >= AMBIG_MIN_CELLS else 2
+                    if kind != exp_kind:
+                        kind_bad += 1
+                        if kind_shown < 8:
+                            kind_shown += 1
+                            print(f"KIND MISMATCH frame {f}: RTL kind {kind}, model kind {exp_kind} ({n_amb} uncertain cells) ({path[f]})")
             else:
                 exp = rule_word(S, k)
         if kind == 1:
@@ -96,19 +110,21 @@ def main():
                 shown += 1
                 diff = bin(got ^ exp).count("1")
                 print(f"MISMATCH frame {f} kind {kind}: {diff} bits differ ({path[f]})")
-    names = {0: "ignored", 1: "START", 2: "DATA", 3: "END", 4: "discarded DATA"}
+    names = {0: "ignored", 1: "START", 2: "DATA", 3: "END", 4: "discarded DATA", 5: "ambiguous DATA"}
     print("\nkind counts / mismatches:")
     for kind in sorted(total):
         print(f"  {kind} {names.get(kind, '?'):15s} frames {total[kind]:4d}   mismatches {bad.get(kind, 0)}")
-    letter = {0: "i", 1: "S", 2: "D", 3: "E", 4: "x"}
+    letter = {0: "i", 1: "S", 2: "D", 3: "E", 4: "x", 5: "A"}
     odd = {s: "".join(letter[k] for k in v) for s, v in seq.items()
            if v != [1] + [2] * (len(v) - 2) + [3]}
     print(f"\nsets whose frame kinds are not S, DATA x{len(next(iter(seq.values()))) - 2}, E (S START, D DATA, E END, "
           f"x discarded DATA, i ignored): {len(odd)} of {len(seq)}")
     for s, q in sorted(odd.items()):
         print(f"  {s:38s} {q}")
-    print("PASS: RTL matches the integer model" if not bad else "FAIL: see mismatches above")
-    return 1 if bad else 0
+    print(f"kind 2/5 decisions that differ from the model's ambiguity count: {kind_bad}")
+    ok = not bad and not kind_bad
+    print("PASS: RTL words and ambiguity flags match the integer model" if ok else "FAIL: see mismatches above")
+    return 0 if ok else 1
 
 if __name__ == "__main__":
     sys.exit(main())

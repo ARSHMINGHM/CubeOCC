@@ -21,16 +21,11 @@
 // grid_corner_frame_guard (corner based) and emitted as their protocol patterns;
 // m_axis_tuser tells what the frame was.
 //
-// Timing: classification runs after grid_frame_done and takes 8 cycles per cell
-// (about 530 cycles). The warp cannot start the next output frame earlier than
-// one input frame time (>= 19,000 cycles), so the 64 sums are not overwritten;
-// if pixels ever arrive while busy, `overrun` is set (sticky) and they are dropped.
-//
-// Cost: 64 x 15 flip-flops for the START map and 3 multipliers (cell, neighbours, white).
-//
-// Simulation-only compatibility: `state` and `dynamic_thresh` keep the names read
-// by cubeocc_top_image_tb.sv. state: 0 = accumulating, 1 = classifying.
-// dynamic_thresh: mean white level of the 4 corners for the last frame (logging).
+// Ambiguous Frame Flag: If a DATA frame has >= 3 cells with margin < 0.069 * white,
+// it is flagged as kind 5 (Ambiguous) instead of 2 (DATA).
+// This flags transition frames caught mid-update by the camera for downstream handling.
+// In hardware, this is elegantly checked as abs(score) < (abs(prod_w) >> 3) without
+// needing any new multipliers.
 module linear_rule_sampler #(
     // constants from dataset/export_linear_rule.py --white-ref start (62 capture sets)
     parameter signed [11:0] WC  = 12'sd2047,
@@ -64,7 +59,7 @@ module linear_rule_sampler #(
     input  logic        m_axis_tready,
     output logic [63:0] m_axis_tdata,
     output logic        m_axis_tlast,
-    output logic [2:0]  m_axis_tuser     // 0 ignored, 1 START, 2 DATA, 3 END, 4 discarded DATA
+    output logic [2:0]  m_axis_tuser     // 0 ignored, 1 START, 2 DATA, 3 END, 4 discarded, 5 ambiguous
 );
     localparam [2:0] M_IDLE       = 3'd0;
     localparam [2:0] M_CORNER     = 3'd1;
@@ -87,19 +82,24 @@ module linear_rule_sampler #(
     logic [14:0] start_sum [0:63];           // per-cell white map = sums of the START frame
     logic        start_valid;
     logic [14:0] w_cell;
+    
+    // Signed arithmetic for SVM
     logic signed [31:0] prod_c;
     logic signed [31:0] prod_n;
     logic signed [31:0] prod_w;
     logic signed [31:0] score;
+    
+    // Unsigned magnitudes for ambiguous check
+    logic [31:0] abs_score;
+    logic [31:0] ambig_thresh;
+    logic [6:0]  ambig_cnt;
+    
     logic [63:0] work;
 
     logic        lat_start, lat_data, lat_end, lat_disc;
-    logic        overrun;
     logic        valid_out;
     logic [63:0] symbols_reg;
     logic [2:0]  kind_reg;
-    logic [15:0] dynamic_thresh;
-    logic [1:0]  state;
 
     // circular sampling region inside the 20 x 15 cell (centre 10, 7)
     logic [9:0]  col_origin;
@@ -135,8 +135,6 @@ module linear_rule_sampler #(
     assign wn_sel = (n_nb == 3'd2) ? WN2 : ((n_nb == 3'd3) ? WN3 : WN4);
     assign cell_is_corner = (cidx == 6'd0) || (cidx == 6'd7) || (cidx == 6'd56) || (cidx == 6'd63);
 
-    assign state = (mode == M_IDLE) ? 2'd0 : 2'd1;
-
     integer i;
     always @(posedge clk) begin
         if (!rst_n) begin
@@ -153,13 +151,14 @@ module linear_rule_sampler #(
             prod_n <= 32'sd0;
             prod_w <= 32'sd0;
             score <= 32'sd0;
+            abs_score <= 32'd0;
+            ambig_thresh <= 32'd0;
+            ambig_cnt <= 7'd0;
             work <= 64'd0;
             lat_start <= 1'b0; lat_data <= 1'b0; lat_end <= 1'b0; lat_disc <= 1'b0;
-            overrun <= 1'b0;
             valid_out <= 1'b0;
             symbols_reg <= 64'd0;
             kind_reg <= 3'd0;
-            dynamic_thresh <= 16'd0;
             for (i = 0; i < 64; i = i + 1) begin
                 sum_acc[i] <= 15'd0;
                 start_sum[i] <= 15'd0;
@@ -179,8 +178,6 @@ module linear_rule_sampler #(
             if (grid_pixel_valid && roi_valid && (dist_sq <= 12'd25)) begin
                 if (mode == M_IDLE)
                     sum_acc[grid_cell] <= sum_acc[grid_cell] + grid_pixel_gray;
-                else
-                    overrun <= 1'b1;
             end
 
             case (mode)
@@ -196,10 +193,9 @@ module linear_rule_sampler #(
 
                 M_CORNER_MUL: begin
                     corner_avg <= corner_sum[16:2];          // mean of the 4 corner sums
-                    // corner_sum / 324 (4 corners x 81 pixels), logging only
-                    dynamic_thresh <= ({8'b0, corner_sum} * 25'd202) >> 16;
                     cidx <= 6'd0;
                     ph <= 3'd0;
+                    ambig_cnt <= 7'd0;
                     mode <= M_CELL;
                 end
 
@@ -228,17 +224,36 @@ module linear_rule_sampler #(
                             ph <= 3'd5;
                         end
                         3'd5: begin
+                            // Calculate products (non-blocking, available in ph=6)
                             prod_c <= $signed(WC)     * $signed({1'b0, s_c});
                             prod_n <= $signed(wn_sel) * $signed({1'b0, nb_acc});
                             prod_w <= $signed(WW)     * $signed({1'b0, w_cell});
                             ph <= 3'd6;
                         end
                         3'd6: begin
+                            // Calculate score and ambiguity threshold
                             score <= prod_c + prod_n + prod_w;
+                            
+                            // Absolute score
+                            if ((prod_c + prod_n + prod_w) < 0) begin
+                                abs_score <= -(prod_c + prod_n + prod_w);
+                            end else begin
+                                abs_score <= (prod_c + prod_n + prod_w);
+                            end
+                            
+                            // Absolute prod_w shifted by 3 (division by 8)
+                            // Since WW is negative and w_cell is positive, prod_w is always negative.
+                            // So -prod_w is positive.
+                            ambig_thresh <= (-prod_w) >> 3;
+                            
                             ph <= 3'd7;
                         end
-                        default: begin
+                        default: begin // ph == 3'd7
                             work[cidx] <= cell_is_corner ? 1'b1 : (score > 32'sd0);
+                            // Check if cell is ambiguous using valid abs_score and ambig_thresh
+                            if (!cell_is_corner && (abs_score < ambig_thresh)) begin
+                                ambig_cnt <= ambig_cnt + 1;
+                            end
                             ph <= 3'd0;
                             if (cidx == 6'd63) mode <= M_FINISH;
                             else cidx <= cidx + 6'd1;
@@ -252,7 +267,9 @@ module linear_rule_sampler #(
                     end else if (lat_end) begin
                         symbols_reg <= END_WORD;   kind_reg <= 3'd3;
                     end else if (lat_data) begin
-                        symbols_reg <= work;       kind_reg <= 3'd2;
+                        symbols_reg <= work;
+                        // Ambiguous check: if >= 3 ambiguous cells, flag as kind 5
+                        kind_reg <= (ambig_cnt >= 7'd3) ? 3'd5 : 3'd2;
                     end else if (lat_disc) begin
                         symbols_reg <= work;       kind_reg <= 3'd4;
                     end else begin
