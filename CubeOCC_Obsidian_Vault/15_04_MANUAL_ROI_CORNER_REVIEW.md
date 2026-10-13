@@ -43,12 +43,12 @@ python dataset\roi_corner_labeler.py --input-dir captures\MLCAP_025_Far_Angle30
 
 For each image, inspect the automatically detected four red corners and red ROI outline. Then press one key. The result saves immediately and the next image opens.
 
-| Key | Label | Meaning |
-| --- | --- | --- |
-| `1` | `true` | The automatic red ROI accurately bounds the sender screen/START frame. |
-| `2` | `mid` | The automatic ROI is usable, but one or more corners are visibly imprecise. |
-| `3` | `false` | The automatic result does not identify the sender screen/START frame. |
-| `S` | skip | Leave this image unlabelled and advance. |
+| Key | Label           | Meaning                                                                           |
+| --- | --------------- | --------------------------------------------------------------------------------- |
+| `1` | `true`          | The automatic red ROI accurately bounds the sender screen/START frame.            |
+| `2` | `mid`           | The automatic ROI is usable, but one or more corners are visibly imprecise.       |
+| `3` | `false`         | The automatic result does not identify the sender screen/START frame.             |
+| `S` | skip            | Leave this image unlabelled and advance.                                          |
 | `A` | re-run detector | Recalculate after changing the brightness threshold or minimum bright-run length. |
 
 Each automatically detected corner is painted as a red circle with a `10 px` radius in the simulated camera image. The numbers `1` through `4` show the corner order, and the red outline joins the four detected points. The `Bright threshold`, `Minimum bright run`, and `Minimum ROI height` fields map directly to the three V1 RTL detector inputs.

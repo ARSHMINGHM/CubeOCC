@@ -4922,13 +4922,6 @@
       "dynamic_thresh": 106,
       "sampler_state": 2
     },
-    "MLCAP_054_Cam60_Screen100_Opt60/frame_9.png": {
-      "grade": "true",
-      "capture_set": "MLCAP_054_Cam60_Screen100_Opt60",
-      "symbols_bits": "1110000100100111011101111011001110110110101100000010000110111001",
-      "dynamic_thresh": 106,
-      "sampler_state": 2
-    },
     "MLCAP_055_Cam60_Defocus_Opt60/frame_00.png": {
       "grade": "true",
       "capture_set": "MLCAP_055_Cam60_Defocus_Opt60",

@@ -48,8 +48,10 @@ module cubeocc_top_image_tb;
     wire        warp_vsync_tap          = dut.u_pipeline.warp_vsync;
     wire        warp_href_tap           = dut.u_pipeline.warp_href;
     wire [7:0]  warp_gray_tap           = dut.u_pipeline.warp_gray;
-    wire [15:0] dynamic_thresh_tap      = dut.u_sampler.dynamic_thresh;
-    wire [1:0]  sampler_state_tap       = dut.u_sampler.state;
+    // Removed: linear_rule_sampler has no dynamic_thresh / state.
+    // Kept as constants so downstream $display / CSV columns still compile.
+    wire [15:0] dynamic_thresh_tap      = 16'd0;
+    wire [1:0]  sampler_state_tap       = 2'd0;
 
     // grid_corner_frame_guard outputs (already instantiated inside
     // roi_warp_grid_pipeline, currently not consumed by the sampler).
@@ -72,14 +74,10 @@ module cubeocc_top_image_tb;
     // before its non-blocking update of dynamic_thresh/state. The
     // dynamic_thresh/state columns logged after symbols_valid are the values
     // AFTER that update, so on the learning frame they differ from these.
+    // Removed: linear_rule_sampler has no such registers.
+    // Kept as constants so existing $display and CSV code compiles.
     logic [15:0] thresh_used = 16'd0;
     logic [1:0]  state_used  = 2'd0;
-    always @(posedge pclk) begin
-        if (dut.u_pipeline.grid_frame_done) begin
-            thresh_used <= dut.u_sampler.dynamic_thresh;
-            state_used  <= dut.u_sampler.state;
-        end
-    end
 
     // Dump the rectified 160x120 warped stream, same convention as
     // roi_warp_grid_pipeline_image_tb.sv, so frames can be turned back into

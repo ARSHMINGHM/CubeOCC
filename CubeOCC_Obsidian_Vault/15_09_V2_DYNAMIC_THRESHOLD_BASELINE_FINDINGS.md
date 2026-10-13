@@ -2,8 +2,26 @@
 project: CubeOCC
 type: working-notes
 status: working-notes (not source-of-truth; does not change 01_CONFIRMED_REQUIREMENTS)
-last_reviewed: 2026-10-09
+last_reviewed: 2026-10-13
 ---
+
+> [!warning] Numbers in this note are historical
+> The statistics below were computed with an **older golden** (before `MLCAP_054/frame_9.png` was removed from `symbols_review.json`) and with the **older RTL coefficients** (`WN2=-272, WN3=-181, WN4=-136, WW=-1126`).
+>
+> For the current, reproducible numbers — including the coefficient update, the golden change, and the bit-exact PASS — use [[15_14_V2_SCRIPT_OUTPUTS_LOG]].
+>
+> Quick differences:
+>
+> | Item                               |                 This file (historical) |                         Current (`15_14`) |
+> | ---------------------------------- | -------------------------------------: | ----------------------------------------: |
+> | Cell error, linear_rule + start    |                                 0.63 % |                                    0.80 % |
+> | CV payload error, method I + start |        1.14 % (mean4) / 0.91 % (start) |           1.69 % (mean4) / 1.31 % (start) |
+> | Ambiguity flag recall              |                                   89 % |                                    81.6 % |
+> | Ambiguity flag FPR                 |                                  3.0 % |                                     2.7 % |
+> | RTL coefficients                   | WN2=-272, WN3=-181, WN4=-136, WW=-1126 |    WN2=-248, WN3=-165, WN4=-124, WW=-1086 |
+> | `symbols_review.json` entries      |                                    807 | 806 (one `MLCAP_054/frame_9.png` removed) |
+>
+> The trends and conclusions below remain valid. The exact percentages shifted because the golden was rebuilt.
 
 # V2 dynamic_threshold_sampler: baseline and classifier comparison (working notes)
 
@@ -180,6 +198,9 @@ Luminance measured on the original JPGs (not on the warped 160x120 frames):
 
 ## RTL with the per-cell START white map (`--white-ref start`)
 
+> [!note] Historical coefficients
+> The RTL coefficients quoted in this section are the **old set** (`WN2=-272, WN3=-181, WN4=-136, WW=-1126`). The current RTL uses (`WN2=-248, WN3=-165, WN4=-124, WW=-1086`) from [[15_14_V2_SCRIPT_OUTPUTS_LOG]]. The qualitative behavior is the same; only the exact numbers below are historical.
+
 - Cross-validated payload error (62 sets, leave-one-set-out): 0.91 % vs 1.14 % for mean4
   and 1.32 % for bilinear corners.
 - XSim run on all 806 frames, `check_linear_rule_rtl.py`: 0 mismatches against the
@@ -216,36 +237,4 @@ unchanged, so the cell errors are the same as before (327 wrong cells, 0.63 %).
   cells caught (T: 5.2 %, 2.1 %, 64 %, 63 %).
 - XSim run (`sim/cubeocc_top_all_ambig`): `check_linear_rule_rtl.py` reports 0 word
   mismatches (kinds: START 62, DATA 599, END 61, discarded 22, ambiguous 61). Counts
-  rebuilt from the printed kind sequences and per-frame errors, all 62 sets: 61 of 681
-  DATA frames flagged (9.0 %); 34 of 38 frames with >= 3 wrong cells caught (89 %); 19 of 624
-  frames with <= 1 wrong cell lost (3.0 %); 269 of 323 wrong cells (83 %) sit in flagged
-  frames; precision 56 % (48 % without MLCAP_048). Missed: 020 f9 (3 wrong cells), 022 f1
-  (4) and 022 f2 (5).
-- Guard DARK_CORNER discards (kind 4): 21 DATA frames, only 1 of them has >= 3 wrong
-  cells and 15 are good frames; they remove 21 wrong cells. They do not help; do not drop
-  them on that basis.
-- Frames the flag accepts (kind 2): about 33 wrong cells in 599 frames, about 0.09 % of their
-  payload cells.
-- Caveats: constants and the (delta, N) choice are fitted on the same 62 sets (in-sample);
-  the golden is approximate; the good frames lost are concentrated in MLCAP_055 (10),
-  038 (3), 027 and 039 (2 each).
-- The checker now also compares kind 2/5 with the integer model's uncertain-cell count.
-
-## Open items
-
-- [x] Provisional: linear rule with frame white reference + neighbor (model I) in RTL.
-- [ ] Compare payload error of discarded DATA frames (kind 4) with accepted ones; if
-      equal, the guard DARK_CORNER threshold (5/8 of the weakest START corner) drops
-      good frames because of the dim BL corner.
-- [ ] Natural sort in `run_cubeocc_top_image_sim.py` (or rename 054 `frame_9.png` to `frame_09.png`) and rerun.
-- [ ] MLCAP_033: END not detected (bright room?).
-- [x] Flag uncertain frames (kind 5): done; verify the kinds with the extended checker.
-- [ ] Choose (delta, N) on one half of the sets and evaluate on the other half.
-- [ ] Harden the guard START test (all cells bright, not just the average) once tuned on all sets.
-- [ ] Sender `*_frames.jsonl` to replace the approximate golden.
-- [ ] Investigate the BL corner (cell 56, guard DARK_CORNER).
-- [ ] Patch the sim runner with natural frame sorting; confirm MLCAP_044 naming.
-- [ ] Armin/Mohsen: Defocus sets (037, 038, 039, 055) dropped from training or kept
-      as hard test. Current lean: keep as hard test.
-- [ ] Feature choice for the SVM stays with the feature document.
-- [ ] RGB later; keep the linear kernel (a Gaussian kernel is expected to overfit).
+  rebuilt from the printed kind sequences and per-frame errors, all 62 sets: 61 of
