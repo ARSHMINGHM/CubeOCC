@@ -22,7 +22,7 @@ MASK = ((XX - 10) ** 2 + (YY - 7) ** 2) <= 25
 CORNERS = (0, 7, 56, 63)
 START_WORD = (1 << 64) - 1
 END_WORD = 0x0100_0000_0000_0081
-DEFAULT = dict(Wc=2047, Wn2=-272, Wn3=-181, Wn4=-136, Ww=-1126)   # start-map rule (62 sets)
+DEFAULT = dict(Wc=2047, Wn2=-255, Wn3=-170, Wn4=-127, Ww=-1168)   # current start-map rule (62 sets)
 
 def cell_sums(img):
     S = np.zeros(64, dtype=np.int64)

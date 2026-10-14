@@ -70,6 +70,8 @@ This vault is the living project specification. It separates **confirmed decisio
 - [[15_14_V2_SCRIPT_OUTPUTS_LOG]]
 - [[15_15_V2_NONLINEAR_SVM_SESSION]]
 - [[15_16_FEATURE_CORRELATION_PCA]]
+- [[15_17_RECENT_V2_BRANCH_MERGE_SUMMARY]]
+- [[15_18_LATEST_GRID_SVM_RETRAIN]]
 - [[17_V2_IMAGE_PROCESSING_ANSWERS_FOR_MOHSEN]]
 
 ## Current V1 concept
@@ -125,13 +127,13 @@ The current V2 classifier replaces the original `dynamic_threshold_sampler` with
 
 **Cell-level results:**
 
-- All-cell error: 3.87 % (dynamic_threshold) → **0.80 %** (linear_rule + START map)
+- All-cell error: 3.87 % (dynamic_threshold) → **0.63 %** (retrained linear rule + START map)
 - Sets with zero errors: 29/62 → 38/62
-- **4.8× error reduction**
+- **6.1× error reduction**
 
 **Classifier cross-validation (payload cells, leave-one-capture-set-out):**
 
-- method I (`[m_w, nb_w]`, 2 features) + START white map: **1.31 %**
+- method I (`[m_w, nb_w]`, 2 features) + START white map: **0.85 %**
 - method I + opt4 preprocessing: 1.49 %
 - method G (`[mean, var, mx, mn, nb, white, lo, hi]`, 8 features): 1.36 %
 - method I + RBF (100 Nystroem components): 1.27 % — **not FPGA-feasible** (~30k LUT for `exp()`)
@@ -140,10 +142,10 @@ The current V2 classifier replaces the original `dynamic_threshold_sampler` with
 
 **Ambiguity flag (kind=5, current golden):**
 
-- Recall: 81.6 % of bad frames caught
-- Precision: 66.0 %
-- FPR: 2.7 % of good frames lost
-- Combined with guard discard: 86.8 % bad removed, 2.7 % good lost
+- Recall: 89.3 % of bad frames caught
+- Precision: 52.1 %
+- FPR: 3.8 % of good frames lost
+- Combined with guard discard: 92.9 % bad removed, 3.8 % good lost
 
 **FPGA resources (Vivado OOC synthesis, `xc7a35t`):**
 
@@ -157,7 +159,7 @@ The current V2 classifier replaces the original `dynamic_threshold_sampler` with
 - Bit-exact RTL vs integer model: PASS, 0 mismatch over 806 frames
 - Ambiguity `(δ, N) = (0.069, 2)` cross-validated: held-out 86.5 % err removed (train 87.3 %)
 
-**Chosen white reference:** per-cell map from the START frame (1.31 % CV) beats mean4 (1.69 %) and bilinear (1.72 %).
+**Chosen white reference:** per-cell map from the START frame, retrained on the latest live RTL ROI/warp/grid output, reaches 0.85 % capture-set CV error.
 
 Full architecture and history:
 
@@ -167,6 +169,7 @@ Full architecture and history:
 - [[15_14_V2_SCRIPT_OUTPUTS_LOG]] — consolidated raw outputs
 - [[15_15_V2_NONLINEAR_SVM_SESSION]] — RBF, poly2, Gaussian exploration
 - [[15_16_FEATURE_CORRELATION_PCA]] — feature correlation and PCA analysis
+- [[15_18_LATEST_GRID_SVM_RETRAIN]] — current ROI/warp/grid retraining and RTL verification
 
 Open tasks: [[15_13_V2_TASK_CHECKLIST]]
 
@@ -175,7 +178,8 @@ Repository checkpoints:
 - V1 pipeline: commit `70d96ec`
 - V2 linear rule: commit `43a35b9`
 - V2 START white map: commit `20818a7`
-- V2 ambiguity flag: commit `78c0785` (not yet pushed)
+- V2 ambiguity flag: commit `78c0785`
+- Complete V2 branch merge and documentation: commit `0a5a0af`
 
 ## Version Direction
 
@@ -191,7 +195,7 @@ Three important clarifications about the V2 work (see [[15_12_V2_WORK_LOG_DECISI
 
 1. **Armin's griding (`grayscale_grid_8x8.sv`) was not replaced.** Only the classifier after gridding changed.
 2. **The new algorithm is not a neural network.** It is a LinearSVC reduced to 5 signed 12-bit integer coefficients. The `start_sum[64]` array is a white-reference map, not weights.
-3. **The 98.5 % accuracy number is invalid** (data leakage from cell-level random splits). The correct number on the current golden is **1.31 % CV error = 98.69 % accuracy** for method I with the START white map, and **0.80 % all-cell error** on the full RTL output.
+3. **The 98.5 % accuracy number is invalid** (data leakage from cell-level random splits). The current leakage-safe result is **0.85 % CV error = 99.15 % accuracy** for method I with the START white map, and **0.63 % all-cell error** on the full RTL output.
 
 > [!warning] Golden note
 > The `symbols_review.json` changed on 2026-10-13: one entry `MLCAP_054_Cam60_Screen100_Opt60/frame_9.png` was removed. All V2 numbers before that date were computed on the **old golden** and are not directly comparable. Any reference to older numbers (1.14 %, 0.91 %, 0.63 %) should be treated as historical. See [[15_14_V2_SCRIPT_OUTPUTS_LOG]] for the full trace.

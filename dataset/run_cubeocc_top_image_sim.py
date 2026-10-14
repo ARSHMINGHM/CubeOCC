@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the full cubeocc_top (ROI + warp + grid + dynamic_threshold_sampler)
+"""Run the full cubeocc_top (ROI + warp + grid + linear_rule_sampler)
 against real captured images and build a visual review manifest.
 
 Mirrors run_roi_warp_grid_rtl_sim.py's frame_list.txt / capture-set-boundary
@@ -12,6 +12,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -57,7 +58,31 @@ def prepare_output(output: Path) -> None:
 
 
 def images_in(input_dir: Path) -> list[Path]:
-    return sorted(p for p in input_dir.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_SUFFIXES)
+    def natural_key(path: Path) -> tuple[object, ...]:
+        relative = path.relative_to(input_dir).as_posix().lower()
+        return tuple(int(part) if part.isdigit() else part for part in re.split(r"(\d+)", relative))
+
+    selected: dict[tuple[object, ...], tuple[Path, int]] = {}
+    for path in input_dir.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in IMAGE_SUFFIXES:
+            continue
+        match = re.match(r"^(.*?)(\d+)$", path.stem)
+        if match:
+            digits = match.group(2)
+            key = (path.parent.relative_to(input_dir).as_posix().lower(), match.group(1).lower(), int(digits))
+            width = len(digits)
+        else:
+            key = (path.relative_to(input_dir).as_posix().lower(),)
+            width = 0
+        previous = selected.get(key)
+        if previous is None or width > previous[1]:
+            if previous is not None:
+                print(f"WARNING: duplicate numeric frame {previous[0]} and {path}; keeping {path.name}")
+            selected[key] = (path, width)
+        else:
+            print(f"WARNING: duplicate numeric frame {previous[0]} and {path}; keeping {previous[0].name}")
+
+    return sorted((item[0] for item in selected.values()), key=natural_key)
 
 
 def write_mem(image: Image.Image, path: Path) -> None:
@@ -131,7 +156,6 @@ def main() -> int:
             str(root / "rtl" / "grid_corner_frame_guard.sv"),
             str(root / "rtl" / "roi_warp_grid_pipeline.sv"),
             str(root / "rtl" / "linear_rule_sampler.sv"),
-            str(root / "rtl" / "dynamic_threshold_sampler.sv"),
             str(root / "rtl" / "cubeocc_top.sv"),
             str(root / "tb" / "cubeocc_top_image_tb.sv"),
         ], build)
@@ -184,6 +208,7 @@ def main() -> int:
                 "sampler_state": int(symbol_row["sampler_state"]),
                 "dynamic_thresh": int(symbol_row["dynamic_thresh"]),
                 "symbols_bits": bits,
+                "symbols_kind": int(symbol_row["symbols_kind"]),
             })
         if warped_file.readline():
             raise RuntimeError("RTL emitted more warped pixels than expected")
@@ -215,19 +240,20 @@ def main() -> int:
         preview.save(output / "symbols_preview.png")
 
         manifest = {
-            "format": "cubeocc-top-image-tb-v1",
+            "format": "cubeocc-top-image-tb-v2-linear-rule",
             "input_dir": str(input_dir),
             "source_frame_count": len(sources),
             "valid_roi_frame_count": len(records),
             "rejected_frame_count": len(rejected),
             "rtl": [
                 "rtl/roi_start_detector.sv", "rtl/projective_warp_160x120.sv",
-                "rtl/grayscale_grid_8x8.sv", "rtl/roi_warp_grid_pipeline.sv",
-                "rtl/dynamic_threshold_sampler.sv", "rtl/cubeocc_top.sv",
+                "rtl/grayscale_grid_8x8.sv", "rtl/grid_corner_frame_guard.sv",
+                "rtl/roi_warp_grid_pipeline.sv", "rtl/linear_rule_sampler.sv",
+                "rtl/cubeocc_top.sv",
             ],
             "testbench": "tb/cubeocc_top_image_tb.sv",
             "simulator": "XSim / Vivado 2019.1",
-            "note": "sampler_state on the frame where dynamic_thresh was learned is 1 (LEARNING); later frames in the same reset-block show 2 (PROCESSING) with that frozen threshold.",
+            "note": "symbols_kind: 0 ignored, 1 START, 2 DATA, 3 END, 4 guard-discarded DATA, 5 ambiguous DATA.",
             "rejected_frames": rejected,
             "frames": records,
         }

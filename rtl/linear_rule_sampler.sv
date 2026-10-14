@@ -29,10 +29,10 @@
 module linear_rule_sampler #(
     // constants from dataset/export_linear_rule.py --white-ref start (62 capture sets)
     parameter signed [11:0] WC  = 12'sd2047,
-    parameter signed [11:0] WN2 = -12'sd248,
-    parameter signed [11:0] WN3 = -12'sd165,
-    parameter signed [11:0] WN4 = -12'sd124,
-    parameter signed [11:0] WW  = -12'sd1086
+    parameter signed [11:0] WN2 = -12'sd255,
+    parameter signed [11:0] WN3 = -12'sd170,
+    parameter signed [11:0] WN4 = -12'sd127,
+    parameter signed [11:0] WW  = -12'sd1168
 )(
     input  logic       clk,
     input  logic       rst_n,

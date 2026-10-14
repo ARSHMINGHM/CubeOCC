@@ -24,7 +24,7 @@ module cubeocc_top (
     output logic [9:0] roi_bl_y,
     output logic       symbols_valid,
     output logic [63:0] symbols_data,
-    output logic [2:0]  symbols_kind      // 0 ignored, 1 START, 2 DATA, 3 END, 4 discarded DATA
+    output logic [2:0]  symbols_kind      // 0 ignored, 1 START, 2 DATA, 3 END, 4 discarded, 5 ambiguous DATA
 );
 
     logic        grid_pixel_valid;

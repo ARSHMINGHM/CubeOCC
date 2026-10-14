@@ -1,10 +1,8 @@
-cat >> .gitignore << 'EOF'
-
-# CubeOCC V2 session artifacts
-*.bak
-evidence.txt
-svm_test_errors.csv
+# Vivado generated simulation & IP artifacts
+vivado/CubeOCC/CubeOCC.sim/
+vivado/CubeOCC/CubeOCC.ip_user_files/ipstatic/
 vivado/CubeOCC/CubeOCC.cache/
+vivado/CubeOCC/CubeOCC.runs/.jobs/
 vivado/CubeOCC/CubeOCC.runs/impl_1/
 vivado/CubeOCC/CubeOCC.runs/synth_1/*.dcp
 vivado/CubeOCC/CubeOCC.runs/synth_1/*.pb
@@ -12,14 +10,39 @@ vivado/CubeOCC/CubeOCC.runs/synth_1/*.vds
 vivado/CubeOCC/CubeOCC.runs/synth_1/*.tcl
 vivado/CubeOCC/CubeOCC.runs/synth_1/*.rpt
 vivado/CubeOCC/CubeOCC.xpr
+xsim.dir/
+dataset/__pycache__/
+*.jou
+*.log
+*.pb
+*.wdf
+*.rst
+*.bak
+evidence.txt
+svm_test_errors.csv
+
+# Regenerable simulation and analysis outputs
+sim/image_test/
+sim/roi_rtl_*/
+sim/grayscale_grid_rtl_*/
+sim/roi_warp_grid_direct_*/
+sim/roi_warp_grid_projective_*/
+sim/warp_diagnostic/
+sim/projective_vivado_*/
+sim/projective_pipeline_vivado/
+sim/camera2_roi_programmer_*/
+sim/camera2_resource_reports/
 sim/cubeocc_top_all_guard/
+sim/cubeocc_top_latest_grid_v2/
+sim/cubeocc_top_latest_grid_retrained_v2/
 sim/cubeocc_top_all_start_v2/camera_gray/
 sim/cubeocc_top_all_start_v2/mem/
 sim/cubeocc_top_all_start_v2/xsim_build/
 svm_cv_opt4_both/
 linear_rule_bilinear/
+
+# Superseded experimental scripts when absent from the index
 dataset/test_svm_eval.py
 dataset/train_v2_svm.py
 dataset/export_svm_weights.py
 dataset/find_missed_bads.py
-EOF

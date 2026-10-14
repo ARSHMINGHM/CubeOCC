@@ -82,6 +82,13 @@ Kept on purpose:
 
 ### `.gitignore` additions
 
+> [!note] Post-merge correction
+> The final branch commit accidentally replaced the original `.gitignore` and
+> included literal `cat >> .gitignore` / `EOF` wrapper lines. The 2026-10-14
+> merge audit restored the old Vivado/XSim rules and added the V2 rules as real
+> gitignore entries. The block below records the intended session patterns, not
+> the malformed intermediate file.
+
 ```gitignore
 sim/*/camera_gray/
 sim/*/mem/

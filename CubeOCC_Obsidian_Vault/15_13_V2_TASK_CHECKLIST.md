@@ -2,7 +2,7 @@
 project: CubeOCC
 type: task-checklist
 status: active
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-14
 parent: 15_TASK_BACKLOG
 ---
 
@@ -34,13 +34,13 @@ Status of work completed and remaining, from V2 image processing up to today.
 - [x] Implemented `--white-ref mean4|median4|max4|bilinear|start` in `export_linear_rule.py`
 - [x] Tested `mean4`: CV payload error **1.69 %** (current golden)
 - [x] Tested `bilinear`: **1.72 %**, rejected
-- [x] Tested `start`: **1.31 %** CV payload error, **chosen**
+- [x] Retrained `start` on the latest live RTL ROI/warp/grid output: **0.85 %** CV payload error, **chosen**
 - [x] Rationale documented: screen brightness gradient
 
 ### Integer rule
 
 - [x] Rewrote LinearSVC as a division-free rule (`sign(a*mean + b*nb + g*white)`)
-- [x] Extracted 5 signed 12-bit constants (current): `WC=2047, WN2=-248, WN3=-165, WN4=-124, WW=-1086`
+- [x] Extracted 5 signed 12-bit constants (current): `WC=2047, WN2=-255, WN3=-170, WN4=-127, WW=-1168`
 - [x] Tested 8, 10, 12, 16-bit widths; 12-bit matches float bit-for-bit
 - [x] Saved in `linear_rule_start/rule.json`
 
@@ -54,7 +54,7 @@ Status of work completed and remaining, from V2 image processing up to today.
 - [x] Ambiguity flag without extra multiplier: `(-prod_w) >> 3`
 - [x] Replaced `dynamic_threshold_sampler` in `cubeocc_top.sv`
 - [x] Removed `dynamic_threshold_sampler` from `.xpr` (file kept as reference)
-- [x] Updated RTL coefficients to match the current `linear_rule_start/rule.json` (`WN2=-248, WN3=-165, WN4=-124, WW=-1086`)
+- [x] Updated RTL coefficients to match the latest-grid `linear_rule_start/rule.json` (`WN2=-255, WN3=-170, WN4=-127, WW=-1168`)
 - [x] Patched `tb/cubeocc_top_image_tb.sv` to remove references to the removed `dynamic_threshold_sampler` ports (`u_sampler.dynamic_thresh`, `u_sampler.state`)
 
 ### Bit-exact validation
@@ -96,7 +96,7 @@ Status of work completed and remaining, from V2 image processing up to today.
 ### Repository cleanup
 
 - [x] Ran `cleanup_sim.sh`: reduced `sim/` from **875 MB / 19,986 files** to **156 MB / 8,093 files** (−82 % size, −60 % files)
-- [x] Updated `.gitignore` with patterns for `sim/*/camera_gray/`, `sim/*/mem/`, `sim/*/xsim_build/`, `svm_cv_*/`, `cell_errors*/`, `ambiguity*/`
+- [x] Repaired `.gitignore` after merge audit: restored the original Vivado/XSim patterns, removed accidentally committed shell-wrapper text, and added the V2 regenerable-output patterns
 - [x] Added `~/.bashrc` shortcuts (`occ-cv-both`, `occ-cv-rbf`, `occ-cv-linear`, `occ-check`, `occ-cell`, `occ-status`)
 
 ### Script outputs log
@@ -114,6 +114,9 @@ Status of work completed and remaining, from V2 image processing up to today.
 - [x] Documented in `15_09_V2_DYNAMIC_THRESHOLD_BASELINE_FINDINGS.md`
 - [x] Documented in `15_14_V2_SCRIPT_OUTPUTS_LOG.md`
 - [x] Documented in `15_15_V2_NONLINEAR_SVM_SESSION.md`
+- [x] Documented every commit and every new utility in [[15_17_RECENT_V2_BRANCH_MERGE_SUMMARY]]
+- [x] Corrected the full-pipeline runner to use natural frame-number ordering and include `symbols_kind` in `results.json`
+- [x] Synchronized the checker's fallback constants with `linear_rule_start/rule.json`
 
 ---
 
@@ -134,11 +137,7 @@ Status of work completed and remaining, from V2 image processing up to today.
 
 ### High priority (do soon)
 
-- [ ] **`git push`** commit `78c0785` and new documentation commits on branch `v2/threshold-baseline-debug`
-
-  ```bash
-  git push -u origin v2/threshold-baseline-debug
-  ```
+- [x] **Branch pushed and merged:** `v2/threshold-baseline-debug` was fast-forwarded into `main` through commit `0a5a0af` on 2026-10-14.
 
 - [ ] **Remove dead code from the Vivado project:** `dynamic_threshold_sampler.sv` is still registered in `.xpr` but is not instantiated. Remove it from the project (keep the file in the repo).
 
@@ -161,7 +160,7 @@ Status of work completed and remaining, from V2 image processing up to today.
 
 - [ ] **Investigate MLCAP_033:** END frame is not detected. Is it bright room or a truly missed END capture?
 
-- [ ] **Decide opt4 adoption:** is the 0.20-point gain of opt4 + linear (1.69 → 1.49 %) worth the ~500 LUT + 3-row line buffer required for a 3×3 median filter in FPGA?
+- [x] **Do not adopt opt4 in the production RTL:** its small CV gain does not justify the nonlinear preprocessing and extra line-buffer logic. It remains an experiment only.
 
 ### Low priority (exploratory)
 
@@ -177,7 +176,7 @@ Status of work completed and remaining, from V2 image processing up to today.
 
 ### Undecided (needs discussion)
 
-- [ ] **Remove `test_svm_eval.py`, `train_v2_svm.py`, `export_svm_weights.py` from the repo** or document that these are experimental and their results are invalid (data leakage).
+- [x] **Document superseded trainers:** `test_svm_eval.py`, `train_v2_svm.py`, and `export_svm_weights.py` are leakage-prone experiments and must not be used for reported accuracy. See [[15_11_V2_TRAINING_VALIDATION_COMMANDS]] and [[15_17_RECENT_V2_BRANCH_MERGE_SUMMARY]].
 
 - [ ] **Document `cell_errors_rgb` and `sim/rgb_warped`:** these are for the future RGB experiment. Start now or wait for V2.5?
 
@@ -187,7 +186,11 @@ Status of work completed and remaining, from V2 image processing up to today.
 
 ---
 
-## Files that should be committed
+## Historical staging list from before the branch merge
+
+The source entries below were merged through `0a5a0af`. This is retained only
+as a record of what belonged to that branch; it is not a current instruction to
+stage generated outputs.
 
 ```bash
 git add dataset/ambiguity_report.py
@@ -215,7 +218,7 @@ git add svm_cv_opt4_both_v2/per_set.csv
 git add ambiguity_cv/per_frame.csv
 ```
 
-## Files that must NOT be committed
+## Generated or superseded files that should not be newly committed
 
 ```bash
 # Vivado auto-generated
@@ -224,7 +227,8 @@ vivado/CubeOCC/CubeOCC.runs/synth_1/*.rpt
 vivado/CubeOCC/CubeOCC.cache/
 vivado/CubeOCC/CubeOCC.xpr  # only inspect manual changes
 
-# Experimental scripts with invalid results (data leakage)
+# Experimental scripts with invalid results (data leakage). Some are already
+# tracked historically; do not use or newly re-add them as production tools.
 dataset/test_svm_eval.py
 dataset/train_v2_svm.py
 dataset/export_svm_weights.py
@@ -269,8 +273,9 @@ ambiguity/                      # regenerate
 | Metric                                           |              Value |
 | ------------------------------------------------ | -----------------: |
 | Cell error, dynamic_threshold baseline           |             3.87 % |
-| Cell error, linear_rule + start (current golden) |             0.80 % |
-| CV payload error, method I + start (no preproc)  |             1.31 % |
+| Cell error, previous weights on corrected grid   |             0.75 % |
+| Cell error, retrained latest-grid RTL            |             0.63 % |
+| CV payload error, retrained method I + start     |             0.85 % |
 | CV payload error, method I + opt4 (linear)       |             1.49 % |
 | CV payload error, method I + RBF (rejected)      |             1.27 % |
 | RTL bit-exact vs model                           |   PASS, 0 mismatch |
@@ -279,6 +284,6 @@ ambiguity/                      # regenerate
 | Combined bad frames removed                      |             86.8 % |
 | Repository size (`sim/`)                         | 156 MB, 8093 files |
 
-**Number to cite for improvement:** linear rule with START white map reduces cell error from 3.87 % to 0.80 %, a **4.8× reduction**.
+**Current number to cite for improvement:** retrained linear rule with START white map reduces cell error from 3.87 % to 0.63 %, a **6.1× reduction**. See [[15_18_LATEST_GRID_SVM_RETRAIN]].
 
 **Number to cite for the nonlinear exploration:** RBF with 100 Nystroem components reaches 1.27 % (0.22 points better than the current linear rule) but requires ~30,000 additional LUT for `exp()` and is not FPGA-feasible on `xc7a35t`. The current linear rule is the final classifier for V2.

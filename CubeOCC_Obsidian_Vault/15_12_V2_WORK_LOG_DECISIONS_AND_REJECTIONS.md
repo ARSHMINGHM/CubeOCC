@@ -8,6 +8,9 @@ parent: 15_TASK_BACKLOG
 
 # V2 Work Log, Decisions, and Rejections
 
+> [!warning] Historical experiment values
+> This chronological note preserves the results available during each phase. The current golden has 806 entries and changed the selected START-reference result from 0.91 % CV / 0.63 % all-cell to **1.31 % CV / 0.80 % all-cell**. Use [[15_14_V2_SCRIPT_OUTPUTS_LOG]] for current authoritative values and [[15_17_RECENT_V2_BRANCH_MERGE_SUMMARY]] for the final plain-language outcome.
+
 Chronological work record from image processing through the final algorithm, including what was tried and rejected.
 
 ## Timeline
@@ -142,7 +145,7 @@ If you want to explain this in the meeting:
 
 ## Suggested next steps
 
-- **Test Gaussian filter + linear/RBF SVM:** add a mild Gaussian preprocessing and see whether error improves. If the RBF kernel is significantly better, investigate an FPGA approximation; otherwise keep linear.
+- **Completed - Gaussian/poly2/RBF comparison:** Gaussian gave no useful gain, poly2 did not improve the selected two-feature method, and RBF's small gain did not justify its FPGA cost. The production choice remains the linear rule. See [[15_15_V2_NONLINEAR_SVM_SESSION]].
 - **Connect accurate golden:** wire up the sender `*_frames.jsonl` so that the `true` frame labels are not used as their own reference.
 - **Fmax of `linear_rule_sampler`:** standalone OOC synthesis with `create_clock -period 10.0` on `clk` to see whether 100 MHz closes.
 - **Decide kind=5 with Armin:** ECC only sees bits; the ambiguity flag must be handled by the control layer.

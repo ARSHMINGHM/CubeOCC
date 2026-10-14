@@ -2,7 +2,7 @@
 
 // Same frame_list.txt / mem-streaming convention as
 // roi_warp_grid_pipeline_image_tb.sv, but drives the full cubeocc_top
-// (ROI detector -> projective warp -> 8x8 grid -> dynamic_threshold_sampler)
+// (ROI detector -> projective warp -> 8x8 grid -> linear_rule_sampler)
 // so the classified 64-bit symbol word and the learned threshold can be
 // reviewed against the actual captured images.
 module cubeocc_top_image_tb;
@@ -53,8 +53,8 @@ module cubeocc_top_image_tb;
     wire [15:0] dynamic_thresh_tap      = 16'd0;
     wire [1:0]  sampler_state_tap       = 2'd0;
 
-    // grid_corner_frame_guard outputs (already instantiated inside
-    // roi_warp_grid_pipeline, currently not consumed by the sampler).
+    // grid_corner_frame_guard outputs, consumed by linear_rule_sampler and
+    // also logged here for frame-kind diagnostics.
     wire        g_transfer_active_tap = dut.u_pipeline.guard_transfer_active;
     wire        g_start_learned_tap   = dut.u_pipeline.guard_start_learned;
     wire        g_data_valid_tap      = dut.u_pipeline.guard_data_valid;

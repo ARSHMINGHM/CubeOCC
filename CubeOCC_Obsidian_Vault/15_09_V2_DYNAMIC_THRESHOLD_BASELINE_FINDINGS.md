@@ -2,7 +2,7 @@
 project: CubeOCC
 type: working-notes
 status: working-notes (not source-of-truth; does not change 01_CONFIRMED_REQUIREMENTS)
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-14
 ---
 
 > [!warning] Numbers in this note are historical
@@ -22,6 +22,10 @@ last_reviewed: 2026-10-13
 > | `symbols_review.json` entries      |                                    807 | 806 (one `MLCAP_054/frame_9.png` removed) |
 >
 > The trends and conclusions below remain valid. The exact percentages shifted because the golden was rebuilt.
+>
+> The plain-string ordering problem described below is also historical. After
+> the merge audit, `run_cubeocc_top_image_sim.py` was corrected to use natural
+> numeric ordering (`frame_9` before `frame_10`).
 
 # V2 dynamic_threshold_sampler: baseline and classifier comparison (working notes)
 
@@ -32,7 +36,7 @@ alternatives. No RTL was changed in this step.
 ## Data
 
 - 62 capture sets x 13 frames = 806 grayscale frames (MLCAP_054 had both `frame_09.png`
-  and `frame_9.png`; one file was removed and `frame_9.png` is the one that remains).
+  and `frame_9.png`; the non-padded duplicate was removed from the current golden).
   A non-padded `frame_9.png` sorts after `frame_12.png` in plain string order, which
   scrambled the processing order of MLCAP_044 (renamed since) and MLCAP_054 (not yet).
 - Manual frame-level labels (`symbols_review.json`): true 669, mid 19, false 119

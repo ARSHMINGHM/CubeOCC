@@ -2,7 +2,7 @@
 project: CubeOCC
 type: architecture
 status: confirmed-architecture
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-14
 parent: 15_TASK_BACKLOG
 ---
 
@@ -44,13 +44,13 @@ The `grid_pixel_gray` and `grid_cell` signals that reach the classifier are **li
 ## The only thing that changed: the per-cell decision
 
 | Aspect           | Old: `dynamic_threshold_sampler.sv` | New: `linear_rule_sampler.sv`                               |
-| ---------------- | ----------------------------------- | ----------------------------------------------------------- | ----- | ---------------- |
+| ---------------- | ----------------------------------- | ----------------------------------------------------------- |
 | White reference  | `(mean of 4 corners) / 2`           | Per-cell map learned from the START frame (`start_sum[64]`) |
-| Decision rule    | `sum_acc[c] > thresh * 81`          | `WC*S_c + WN[n]*ΣS_nb + WW*S_start[c] > 0`                  |
-| Coefficients     | none (single threshold)             | 5 signed 12-bit constants: WC, WN2, WN3, WN4, WW            |
-| Ambiguity flag   | none                                | kind=5 when ≥3 cells have `                                 | score | < 0.069 × white` |
+| Decision rule    | `sum_acc[c] > thresh * 81`          | `WC*S_c + WN[n]*sum(S_nb) + WW*S_start[c] > 0`              |
+| Coefficients     | none (single threshold)             | 5 signed 12-bit constants: WC, WN2, WN3, WN4, WW           |
+| Ambiguity flag   | none                                | kind=5 when at least 3 cells have a low absolute score      |
 | Learning source  | none (rule-based)                   | LinearSVC trained on 62 capture sets                        |
-| CV payload error | 4.72 %                              | **0.91 %**                                                  |
+| CV payload error | 4.72 %                              | **0.85 % after retraining on the latest RTL grid output**    |
 
 ## What the new algorithm actually is
 
@@ -74,10 +74,10 @@ The float coefficients are rewritten as `sign(a*mean + b*nb + g*white)` (all div
 
 ```systemverilog
 parameter signed [11:0] WC  = 12'sd2047;
-parameter signed [11:0] WN2 = -12'sd272;   // corner, 2 neighbors
-parameter signed [11:0] WN3 = -12'sd181;   // edge,   3 neighbors
-parameter signed [11:0] WN4 = -12'sd136;   // center, 4 neighbors
-parameter signed [11:0] WW  = -12'sd1126;  // white reference weight
+parameter signed [11:0] WN2 = -12'sd255;   // corner, 2 neighbors
+parameter signed [11:0] WN3 = -12'sd170;   // edge,   3 neighbors
+parameter signed [11:0] WN4 = -12'sd127;   // center, 4 neighbors
+parameter signed [11:0] WW  = -12'sd1168;  // white reference weight
 ```
 
 Per-cell computation:
@@ -146,3 +146,4 @@ LUT split before merging, from `.vds`:
 - [[15_09_V2_DYNAMIC_THRESHOLD_BASELINE_FINDINGS]] — full baseline and comparison history
 - [[15_11_V2_TRAINING_VALIDATION_COMMANDS]] — reproduction commands
 - [[15_12_V2_WORK_LOG_DECISIONS_AND_REJECTIONS]] — what was tried and rejected
+- [[15_18_LATEST_GRID_SVM_RETRAIN]] — latest dataset retraining and full RTL result
