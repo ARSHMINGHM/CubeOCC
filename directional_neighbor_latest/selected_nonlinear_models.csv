@@ -1,0 +1,6 @@
+name,subset,model,errors,cells,error_percent,host_cv_seconds
+best separate,n+se+s+sw+w+nw,polynomial degree 2,293,40800,0.7181372549019608,11.585751899983734
+all eight separate,n+ne+e+se+s+sw+w+nw,polynomial degree 2,298,40800,0.7303921568627452,19.287609099876136
+best pooled,n+ne+se+s+sw+w+nw,linear,314,40800,0.7696078431372549,0.8861882998608053
+best separate,n+se+s+sw+w+nw,linear,315,40800,0.7720588235294118,1.5051100999116898
+best pooled,n+ne+se+s+sw+w+nw,polynomial degree 2,322,40800,0.7892156862745099,1.553749400191009

@@ -1,0 +1,31 @@
+name,features,errors,cells,error_percent,host_cv_seconds
+all directional summaries,center+neighbor_mean_axial+neighbor_mean_all+neighbor_mean_axial+neighbor_mean_diagonal+neighbor_var_all+neighbor_var_axial+neighbor_var_diagonal+neighbor_range_all+neighbor_range_axial+neighbor_range_diagonal+vertical_contrast+horizontal_contrast+diag_ne_sw_contrast+diag_nw_se_contrast+axial_diagonal_delta+center_neighbor_delta+center_neighbor_abs_mean+center_neighbor_sq_mean+center_x_neighbor_mean+neighbors_above_center+neighbors_below_half_white+fan_top+fan_right+fan_bottom+fan_left,316,40800,0.7745098039215687,6.783363899681717
+fan bundle,center+neighbor_mean_axial+fan_top+fan_right+fan_bottom+fan_left,325,40800,0.7965686274509803,1.33251680014655
+contrast bundle,center+neighbor_mean_axial+vertical_contrast+horizontal_contrast+diag_ne_sw_contrast+diag_nw_se_contrast,328,40800,0.803921568627451,1.4560151998884976
+baseline + center_x_neighbor_mean,center+neighbor_mean_axial+center_x_neighbor_mean,328,40800,0.803921568627451,1.0687246001325548
+baseline + center_neighbor_delta,center+neighbor_mean_axial+center_neighbor_delta,328,40800,0.803921568627451,0.9690908999182284
+baseline + neighbor_mean_all,center+neighbor_mean_axial+neighbor_mean_all,329,40800,0.8063725490196079,0.9562417003326118
+baseline + axial_diagonal_delta,center+neighbor_mean_axial+axial_diagonal_delta,331,40800,0.8112745098039215,0.9930719002149999
+baseline + fan_left,center+neighbor_mean_axial+fan_left,331,40800,0.8112745098039215,1.0064191999845207
+baseline + horizontal_contrast,center+neighbor_mean_axial+horizontal_contrast,332,40800,0.8137254901960784,1.004214399959892
+nonlinear disagreement bundle,center+neighbor_mean_axial+neighbor_var_all+neighbor_range_all+center_neighbor_abs_mean+center_neighbor_sq_mean+neighbors_above_center,332,40800,0.8137254901960784,1.649311300367117
+baseline + neighbor_mean_diagonal,center+neighbor_mean_axial+neighbor_mean_diagonal,332,40800,0.8137254901960784,1.0149294999428093
+baseline + fan_top,center+neighbor_mean_axial+fan_top,334,40800,0.8186274509803921,0.9879910997115076
+baseline + neighbor_range_axial,center+neighbor_mean_axial+neighbor_range_axial,335,40800,0.8210784313725491,1.001111099962145
+baseline + fan_bottom,center+neighbor_mean_axial+fan_bottom,335,40800,0.8210784313725491,1.0157008999958634
+production-like center + axial mean,center+neighbor_mean_axial,336,40800,0.823529411764706,0.9324901001527905
+baseline + neighbor_mean_axial,center+neighbor_mean_axial+neighbor_mean_axial,336,40800,0.823529411764706,0.9817872000858188
+baseline + diag_ne_sw_contrast,center+neighbor_mean_axial+diag_ne_sw_contrast,337,40800,0.8259803921568628,1.0046351002529263
+baseline + center_neighbor_abs_mean,center+neighbor_mean_axial+center_neighbor_abs_mean,337,40800,0.8259803921568628,0.9689437001943588
+variance bundle,center+neighbor_mean_axial+neighbor_var_all+neighbor_var_axial+neighbor_var_diagonal,338,40800,0.8284313725490196,1.24047140032053
+baseline + neighbors_above_center,center+neighbor_mean_axial+neighbors_above_center,338,40800,0.8284313725490196,1.066469400189817
+baseline + diag_nw_se_contrast,center+neighbor_mean_axial+diag_nw_se_contrast,338,40800,0.8284313725490196,0.9956555999815464
+baseline + neighbor_var_axial,center+neighbor_mean_axial+neighbor_var_axial,339,40800,0.8308823529411764,0.9806925999000669
+baseline + vertical_contrast,center+neighbor_mean_axial+vertical_contrast,339,40800,0.8308823529411764,0.9996134000830352
+baseline + neighbor_range_all,center+neighbor_mean_axial+neighbor_range_all,341,40800,0.8357843137254902,0.9863387001678348
+baseline + center_neighbor_sq_mean,center+neighbor_mean_axial+center_neighbor_sq_mean,342,40800,0.8382352941176471,0.9561756998300552
+baseline + neighbor_var_diagonal,center+neighbor_mean_axial+neighbor_var_diagonal,342,40800,0.8382352941176471,0.9862198000773787
+baseline + neighbor_range_diagonal,center+neighbor_mean_axial+neighbor_range_diagonal,343,40800,0.840686274509804,0.9858027999289334
+baseline + fan_right,center+neighbor_mean_axial+fan_right,347,40800,0.8504901960784313,1.0160095002502203
+baseline + neighbor_var_all,center+neighbor_mean_axial+neighbor_var_all,349,40800,0.8553921568627452,0.9938105000182986
+baseline + neighbors_below_half_white,center+neighbor_mean_axial+neighbors_below_half_white,359,40800,0.8799019607843137,0.9672945998609066

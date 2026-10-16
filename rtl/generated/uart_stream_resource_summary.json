@@ -1,0 +1,41 @@
+{
+  "device": "xc7a35tcpg236-1",
+  "vivado": "2019.1",
+  "clock_constraint_ns": 10.0,
+  "uart": {
+    "baud": 115200,
+    "format": "8-N-1",
+    "packet_bytes": 15,
+    "packet_wire_bits": 150,
+    "packet_time_ms": 1.3021,
+    "maximum_packets_per_second": 768.0
+  },
+  "packetizer_only": {
+    "top": "cubeocc_uart_frame_streamer",
+    "slice_luts": 81,
+    "slice_registers": 122,
+    "bram_tiles": 0,
+    "dsps": 0,
+    "wns_ns": 6.425,
+    "critical_data_path_ns": 3.289
+  },
+  "old_poly_uart_top": {
+    "top": "cubeocc_uart_stream_top",
+    "classifier_model": 1,
+    "slice_luts": 9636,
+    "slice_registers": 5295,
+    "bram_tiles": 8,
+    "dsps": 16,
+    "wns_ns": -11.808
+  },
+  "pca30_fused_uart_top": {
+    "top": "cubeocc_uart_stream_top",
+    "classifier_model": 2,
+    "slice_luts": 9634,
+    "slice_registers": 5293,
+    "bram_tiles": 8,
+    "dsps": 16,
+    "wns_ns": -11.808
+  },
+  "timing_note": "The unchanged projective warp is the failing 100 MHz path; the UART packetizer itself meets 100 MHz."
+}

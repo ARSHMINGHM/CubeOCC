@@ -1,0 +1,19 @@
+{
+  "reference_exact_polynomial": {
+    "errors": 293,
+    "cells": 40800,
+    "error_percent": 0.7181372549019608,
+    "host_cv_seconds": 12.142460099887103
+  },
+  "best_pca": {
+    "errors": 253,
+    "cells": 40800,
+    "error_percent": 0.6200980392156863,
+    "host_cv_seconds": 10.245888100005686
+  },
+  "best_pca_components": 30,
+  "reference_wrong_pca_right": 52,
+  "reference_right_pca_wrong": 12,
+  "mcnemar_exact_p_unadjusted": 4.5666107004454105e-07,
+  "selection_warning": "The PCA count was selected on this corpus; confirm it without retuning on an untouched exact-truth capture."
+}

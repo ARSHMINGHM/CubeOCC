@@ -24,8 +24,15 @@ add_files -fileset sources_1 [list \
   [file join $script_dir rtl perspective_warp_160x120.sv] \
   [file join $script_dir rtl projective_warp_160x120.sv] \
   [file join $script_dir rtl grayscale_grid_8x8.sv] \
+  [file join $script_dir rtl grid_corner_frame_guard.sv] \
   [file join $script_dir rtl roi_warp_grid_pipeline.sv] \
+  [file join $script_dir rtl linear_rule_sampler.sv] \
+  [file join $script_dir rtl directional_dual_polynomial_sampler.sv] \
   [file join $script_dir rtl cubeocc_top.sv] \
+  [file join $script_dir rtl cubeocc_dual_classifier_top.sv] \
+  [file join $script_dir rtl uart_tx_byte.sv] \
+  [file join $script_dir rtl cubeocc_uart_frame_streamer.sv] \
+  [file join $script_dir rtl cubeocc_uart_stream_top.sv] \
 ]
 
 add_files -fileset sim_1 [list \
@@ -43,6 +50,10 @@ add_files -fileset sim_1 [list \
   [file join $script_dir tb grayscale_grid_8x8_image_tb.sv] \
   [file join $script_dir tb roi_warp_grid_pipeline_image_tb.sv] \
   [file join $script_dir tb cubeocc_top_tb.sv] \
+  [file join $script_dir tb directional_dual_polynomial_sampler_tb.sv] \
+  [file join $script_dir tb cubeocc_dual_classifier_image_tb.sv] \
+  [file join $script_dir tb cubeocc_uart_stream_tb.sv] \
+  [file join $script_dir tb cubeocc_uart_image_chain_tb.sv] \
 ]
 
 update_compile_order -fileset sources_1

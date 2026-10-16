@@ -1,0 +1,390 @@
+[
+  {
+    "name": "Current 2: mean + neighbor",
+    "family": "subset",
+    "method": "svm",
+    "components": null,
+    "features": [
+      "mean_w",
+      "neighbor_w"
+    ],
+    "errors": 336,
+    "cells": 40800,
+    "error_percent": 0.8235294117647058,
+    "host_cv_seconds": 1.12413000036031,
+    "operation_cost": {
+      "linear_weights": 2,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": false,
+      "needs_min_tracker": false,
+      "needs_max_tracker": false,
+      "normalization_complexity": "shared_white"
+    }
+  },
+  {
+    "name": "Full 5: no PCA",
+    "family": "subset",
+    "method": "svm",
+    "components": null,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 334,
+    "cells": 40800,
+    "error_percent": 0.8186274509803921,
+    "host_cv_seconds": 1.6084501002915204,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA1 -> SVM",
+    "family": "pca",
+    "method": "svm",
+    "components": 1,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 838,
+    "cells": 40800,
+    "error_percent": 2.053921568627451,
+    "host_cv_seconds": 1.5182696999982,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA2 -> SVM",
+    "family": "pca",
+    "method": "svm",
+    "components": 2,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 854,
+    "cells": 40800,
+    "error_percent": 2.093137254901961,
+    "host_cv_seconds": 1.4270147997885942,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA3 -> SVM",
+    "family": "pca",
+    "method": "svm",
+    "components": 3,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 444,
+    "cells": 40800,
+    "error_percent": 1.088235294117647,
+    "host_cv_seconds": 1.7624784000217915,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA4 -> SVM",
+    "family": "pca",
+    "method": "svm",
+    "components": 4,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 461,
+    "cells": 40800,
+    "error_percent": 1.1299019607843137,
+    "host_cv_seconds": 1.8581691002473235,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA5 -> SVM",
+    "family": "pca",
+    "method": "svm",
+    "components": 5,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 334,
+    "cells": 40800,
+    "error_percent": 0.8186274509803921,
+    "host_cv_seconds": 2.0250599002465606,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> LDA",
+    "family": "lda",
+    "method": "lda",
+    "components": null,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 729,
+    "cells": 40800,
+    "error_percent": 1.786764705882353,
+    "host_cv_seconds": 1.2179727000184357,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA1 -> LDA",
+    "family": "pca_lda",
+    "method": "lda",
+    "components": 1,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 1477,
+    "cells": 40800,
+    "error_percent": 3.6200980392156863,
+    "host_cv_seconds": 0.8644944997504354,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA2 -> LDA",
+    "family": "pca_lda",
+    "method": "lda",
+    "components": 2,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 1465,
+    "cells": 40800,
+    "error_percent": 3.590686274509804,
+    "host_cv_seconds": 1.0884464997798204,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA3 -> LDA",
+    "family": "pca_lda",
+    "method": "lda",
+    "components": 3,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 1105,
+    "cells": 40800,
+    "error_percent": 2.7083333333333335,
+    "host_cv_seconds": 1.1768780001439154,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA4 -> LDA",
+    "family": "pca_lda",
+    "method": "lda",
+    "components": 4,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 949,
+    "cells": 40800,
+    "error_percent": 2.325980392156863,
+    "host_cv_seconds": 1.2761987000703812,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Full 5 -> PCA5 -> LDA",
+    "family": "pca_lda",
+    "method": "lda",
+    "components": 5,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "max_w",
+      "min_w",
+      "neighbor_w"
+    ],
+    "errors": 729,
+    "cells": 40800,
+    "error_percent": 1.786764705882353,
+    "host_cv_seconds": 1.4017322002910078,
+    "operation_cost": {
+      "linear_weights": 5,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": true,
+      "needs_max_tracker": true,
+      "normalization_complexity": "white_squared"
+    }
+  },
+  {
+    "name": "Best 1-feature subset: mean_w",
+    "family": "best_subset",
+    "method": "svm",
+    "components": null,
+    "features": [
+      "mean_w"
+    ],
+    "errors": 402,
+    "cells": 40800,
+    "error_percent": 0.9852941176470589,
+    "host_cv_seconds": 0.7675020000897348,
+    "operation_cost": {
+      "linear_weights": 1,
+      "needs_neighbor_accumulator": false,
+      "needs_sum_of_squares": false,
+      "needs_min_tracker": false,
+      "needs_max_tracker": false,
+      "normalization_complexity": "shared_white"
+    }
+  },
+  {
+    "name": "Best 2-feature subset: mean_w + neighbor_w",
+    "family": "best_subset",
+    "method": "svm",
+    "components": null,
+    "features": [
+      "mean_w",
+      "neighbor_w"
+    ],
+    "errors": 336,
+    "cells": 40800,
+    "error_percent": 0.8235294117647058,
+    "host_cv_seconds": 1.0664376998320222,
+    "operation_cost": {
+      "linear_weights": 2,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": false,
+      "needs_min_tracker": false,
+      "needs_max_tracker": false,
+      "normalization_complexity": "shared_white"
+    }
+  },
+  {
+    "name": "Best 3-feature subset: mean_w + var_w2 + neighbor_w",
+    "family": "best_subset",
+    "method": "svm",
+    "components": null,
+    "features": [
+      "mean_w",
+      "var_w2",
+      "neighbor_w"
+    ],
+    "errors": 335,
+    "cells": 40800,
+    "error_percent": 0.821078431372549,
+    "host_cv_seconds": 1.143874699715525,
+    "operation_cost": {
+      "linear_weights": 3,
+      "needs_neighbor_accumulator": true,
+      "needs_sum_of_squares": true,
+      "needs_min_tracker": false,
+      "needs_max_tracker": false,
+      "normalization_complexity": "white_squared"
+    }
+  }
+]

@@ -1,0 +1,502 @@
+{
+  "cells": 40800,
+  "capture_sets": 62,
+  "ground_truth": "all-set majority vote",
+  "models": {
+    "directional_subsets": 510,
+    "engineered": 30,
+    "selected_kernel": 5
+  },
+  "baseline": {
+    "errors": 336,
+    "cells": 40800,
+    "error_percent": 0.823529411764706,
+    "host_cv_seconds": 0.9324901001527905
+  },
+  "best_directional": {
+    "representation": "pooled_mean",
+    "mask": 251,
+    "subset": "n+ne+se+s+sw+w+nw",
+    "neighbor_count": 7,
+    "input_features": 2,
+    "errors": 314,
+    "cells": 40800,
+    "error_percent": 0.7696078431372549,
+    "host_cv_seconds": 2.635020600166172
+  },
+  "best_engineered": {
+    "name": "all directional summaries",
+    "features": "center+neighbor_mean_axial+neighbor_mean_all+neighbor_mean_axial+neighbor_mean_diagonal+neighbor_var_all+neighbor_var_axial+neighbor_var_diagonal+neighbor_range_all+neighbor_range_axial+neighbor_range_diagonal+vertical_contrast+horizontal_contrast+diag_ne_sw_contrast+diag_nw_se_contrast+axial_diagonal_delta+center_neighbor_delta+center_neighbor_abs_mean+center_neighbor_sq_mean+center_x_neighbor_mean+neighbors_above_center+neighbors_below_half_white+fan_top+fan_right+fan_bottom+fan_left",
+    "errors": 316,
+    "cells": 40800,
+    "error_percent": 0.7745098039215687,
+    "host_cv_seconds": 6.783363899681717
+  },
+  "best_nonlinear": {
+    "name": "best separate",
+    "subset": "n+se+s+sw+w+nw",
+    "model": "polynomial degree 2",
+    "errors": 293,
+    "cells": 40800,
+    "error_percent": 0.7181372549019608,
+    "host_cv_seconds": 11.585751899983734
+  },
+  "paired_winner_comparison": {
+    "baseline": {
+      "errors": 336,
+      "cells": 40800,
+      "error_percent": 0.823529411764706,
+      "host_cv_seconds": 0.8750632000155747
+    },
+    "winner": {
+      "errors": 293,
+      "cells": 40800,
+      "error_percent": 0.7181372549019608,
+      "host_cv_seconds": 12.669943400193006
+    },
+    "winner_subset": [
+      "n",
+      "se",
+      "s",
+      "sw",
+      "w",
+      "nw"
+    ],
+    "winner_model": "polynomial degree 2",
+    "baseline_wrong_winner_right": 78,
+    "baseline_right_winner_wrong": 35,
+    "mcnemar_exact_p_unadjusted": 6.445381010320707e-05,
+    "selection_warning": "The winner was selected from many models on this corpus, so this p-value is descriptive and not confirmatory.",
+    "per_set": [
+      {
+        "set": "MLCAP_001_Baseline_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_002_Near_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 1,
+        "improvement": -1
+      },
+      {
+        "set": "MLCAP_003_MidNear_30fps",
+        "baseline_errors": 2,
+        "winner_errors": 1,
+        "improvement": 1
+      },
+      {
+        "set": "MLCAP_004_MidFar_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_005_Far_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_006_AngleNeg30_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_007_AngleNeg15_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_008_Angle15_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_009_Angle30_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_010_DarkRoom_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_011_DimRoom_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_012_BrightRoom_30fps",
+        "baseline_errors": 4,
+        "winner_errors": 1,
+        "improvement": 3
+      },
+      {
+        "set": "MLCAP_013_Screen40_30fps",
+        "baseline_errors": 3,
+        "winner_errors": 3,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_014_Screen55_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 1,
+        "improvement": -1
+      },
+      {
+        "set": "MLCAP_015_Screen85_30fps",
+        "baseline_errors": 15,
+        "winner_errors": 11,
+        "improvement": 4
+      },
+      {
+        "set": "MLCAP_016_Screen100_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_017_SlightDefocus_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_018_MediumDefocus_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_019_MildReflection_30fps",
+        "baseline_errors": 0,
+        "winner_errors": 1,
+        "improvement": -1
+      },
+      {
+        "set": "MLCAP_020_StrongReflection_30fps",
+        "baseline_errors": 15,
+        "winner_errors": 15,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_021_LockedExposureBase",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_022_Near_Angle15",
+        "baseline_errors": 16,
+        "winner_errors": 18,
+        "improvement": -2
+      },
+      {
+        "set": "MLCAP_023_Near_Angle30",
+        "baseline_errors": 5,
+        "winner_errors": 6,
+        "improvement": -1
+      },
+      {
+        "set": "MLCAP_024_Far_Angle15",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_025_Far_Angle30",
+        "baseline_errors": 3,
+        "winner_errors": 3,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_026_Dark_Screen100",
+        "baseline_errors": 48,
+        "winner_errors": 44,
+        "improvement": 4
+      },
+      {
+        "set": "MLCAP_027_Dark_Screen40",
+        "baseline_errors": 1,
+        "winner_errors": 2,
+        "improvement": -1
+      },
+      {
+        "set": "MLCAP_028_Bright_Screen100",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_029_Bright_Screen40",
+        "baseline_errors": 7,
+        "winner_errors": 7,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_030_Dim_Angle15",
+        "baseline_errors": 8,
+        "winner_errors": 5,
+        "improvement": 3
+      },
+      {
+        "set": "MLCAP_031_Dim_Angle30",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_032_Bright_Angle15",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_033_Bright_Angle30",
+        "baseline_errors": 23,
+        "winner_errors": 23,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_034_Near_SlightDefocus",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_035_Far_SlightDefocus",
+        "baseline_errors": 2,
+        "winner_errors": 1,
+        "improvement": 1
+      },
+      {
+        "set": "MLCAP_036_Angle15_SlightDefocus",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_037_Angle30_SlightDefocus",
+        "baseline_errors": 17,
+        "winner_errors": 21,
+        "improvement": -4
+      },
+      {
+        "set": "MLCAP_038_Dark_SlightDefocus",
+        "baseline_errors": 49,
+        "winner_errors": 40,
+        "improvement": 9
+      },
+      {
+        "set": "MLCAP_039_Bright_SlightDefocus",
+        "baseline_errors": 22,
+        "winner_errors": 23,
+        "improvement": -1
+      },
+      {
+        "set": "MLCAP_040_Angle15_MildReflection",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_041_Angle30_MildReflection",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_042_Dark_MildReflection",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_043_Bright_MildReflection",
+        "baseline_errors": 3,
+        "winner_errors": 2,
+        "improvement": 1
+      },
+      {
+        "set": "MLCAP_044_Near_MildReflection",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_045_Far_MildReflection",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_046_Cam60_Opt30",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_047_Cam60_Opt60",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_048_Cam30_Opt60",
+        "baseline_errors": 64,
+        "winner_errors": 50,
+        "improvement": 14
+      },
+      {
+        "set": "MLCAP_049_Cam60_Angle15_Opt60",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_050_Cam60_Angle30_Opt60",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_051_Cam60_Dark_Opt60",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_052_Cam60_Bright_Opt60",
+        "baseline_errors": 1,
+        "winner_errors": 0,
+        "improvement": 1
+      },
+      {
+        "set": "MLCAP_053_Cam60_Screen40_Opt60",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_054_Cam60_Screen100_Opt60",
+        "baseline_errors": 9,
+        "winner_errors": 6,
+        "improvement": 3
+      },
+      {
+        "set": "MLCAP_055_Cam60_Defocus_Opt60",
+        "baseline_errors": 12,
+        "winner_errors": 3,
+        "improvement": 9
+      },
+      {
+        "set": "MLCAP_056_Cam60_Reflection_Opt60",
+        "baseline_errors": 7,
+        "winner_errors": 5,
+        "improvement": 2
+      },
+      {
+        "set": "MLCAP_057_Locked_Near",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_058_Locked_Far",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_059_Locked_Dark",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_060_Locked_Bright",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_061_Locked_Angle15",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      },
+      {
+        "set": "MLCAP_062_Locked_Angle30",
+        "baseline_errors": 0,
+        "winner_errors": 0,
+        "improvement": 0
+      }
+    ]
+  },
+  "leave_one_payload_frame_out": [
+    {
+      "name": "baseline axial mean",
+      "model": "linear",
+      "errors": 317,
+      "cells": 40800,
+      "error_percent": 0.7769607843137255,
+      "host_cv_seconds": 0.15352160017937422
+    },
+    {
+      "name": "best pooled subset",
+      "model": "linear",
+      "subset": "n+ne+se+s+sw+w+nw",
+      "errors": 301,
+      "cells": 40800,
+      "error_percent": 0.7377450980392157,
+      "host_cv_seconds": 0.1449023000895977
+    },
+    {
+      "name": "best separate subset",
+      "model": "linear",
+      "subset": "n+se+s+sw+w+nw",
+      "errors": 305,
+      "cells": 40800,
+      "error_percent": 0.7475490196078431,
+      "host_cv_seconds": 0.24597549997270107
+    },
+    {
+      "name": "best separate subset",
+      "model": "polynomial degree 2",
+      "subset": "n+se+s+sw+w+nw",
+      "errors": 274,
+      "cells": 40800,
+      "error_percent": 0.6715686274509804,
+      "host_cv_seconds": 2.0561973000876606
+    },
+    {
+      "name": "all eight separate",
+      "model": "polynomial degree 2",
+      "subset": "n+ne+e+se+s+sw+w+nw",
+      "errors": 277,
+      "cells": 40800,
+      "error_percent": 0.678921568627451,
+      "host_cv_seconds": 3.1750616999343038
+    }
+  ],
+  "top32_direction_frequency": {
+    "n": 30,
+    "ne": 13,
+    "e": 13,
+    "se": 13,
+    "s": 31,
+    "sw": 26,
+    "w": 20,
+    "nw": 30
+  },
+  "warning": "Exploratory selection on the existing corpus; confirm the frozen winner on untouched exact sender truth."
+}

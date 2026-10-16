@@ -1,0 +1,61 @@
+{
+  "device": "xc7a35tcpg236-1",
+  "vivado": "2019.1",
+  "clock_constraint_ns": 10.0,
+  "classifier": {
+    "top": "directional_dual_polynomial_sampler",
+    "slice_luts": 2169,
+    "slice_registers": 2225,
+    "bram_tiles": 0,
+    "dsps": 3,
+    "wns_ns": 1.986,
+    "critical_data_path_ns": 4.208,
+    "cycles_per_8x8_frame": 7489,
+    "latency_us_at_100mhz": 74.89
+  },
+  "alternate_full_top": {
+    "top": "cubeocc_dual_classifier_top",
+    "slice_luts": 9795,
+    "slice_registers": 5378,
+    "bram_tiles": 8,
+    "dsps": 17,
+    "wns_ns": -11.808,
+    "critical_data_path_ns": 21.753,
+    "note": "The unchanged projective warp is the failing 100 MHz path."
+  },
+  "old_poly_only_full_top": {
+    "top": "cubeocc_dual_classifier_top",
+    "model_select": 1,
+    "slice_luts": 9575,
+    "slice_registers": 5193,
+    "bram_tiles": 8,
+    "dsps": 16,
+    "wns_ns": -11.808,
+    "note": "The PCA30-fused branch is disabled and trimmed by synthesis."
+  },
+  "pca30_fused_only_full_top": {
+    "top": "cubeocc_dual_classifier_top",
+    "model_select": 2,
+    "slice_luts": 9569,
+    "slice_registers": 5195,
+    "bram_tiles": 8,
+    "dsps": 16,
+    "wns_ns": -11.808,
+    "note": "The old polynomial branch is disabled and trimmed by synthesis."
+  },
+  "production_full_top_baseline": {
+    "top": "cubeocc_top",
+    "slice_luts": 9622,
+    "slice_registers": 5374,
+    "bram_tiles": 8,
+    "dsps": 17
+  },
+  "alternate_minus_baseline": {
+    "slice_luts": 173,
+    "slice_luts_percent": 1.798,
+    "slice_registers": 4,
+    "slice_registers_percent": 0.074,
+    "bram_tiles": 0,
+    "dsps": 0
+  }
+}

@@ -14,6 +14,7 @@ xsim.dir/
 dataset/__pycache__/
 *.jou
 *.log
+.Xil/
 *.pb
 *.wdf
 *.rst
@@ -32,9 +33,14 @@ sim/projective_vivado_*/
 sim/projective_pipeline_vivado/
 sim/camera2_roi_programmer_*/
 sim/camera2_resource_reports/
+sim/dual_classifier_resource_reports/
+sim/dual_classifier_top_smoke/
+sim/uart_stream_resource_reports/
 sim/cubeocc_top_all_guard/
 sim/cubeocc_top_latest_grid_v2/
 sim/cubeocc_top_latest_grid_retrained_v2/
+sim/cubeocc_top_fpga_svm_fresh_mlc048/
+sim/my_svm_*/
 sim/cubeocc_top_all_start_v2/camera_gray/
 sim/cubeocc_top_all_start_v2/mem/
 sim/cubeocc_top_all_start_v2/xsim_build/

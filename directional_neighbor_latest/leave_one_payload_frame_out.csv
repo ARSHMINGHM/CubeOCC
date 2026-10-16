@@ -1,0 +1,6 @@
+name,model,errors,cells,error_percent,host_cv_seconds,subset
+best separate subset,polynomial degree 2,274,40800,0.6715686274509804,2.0561973000876606,n+se+s+sw+w+nw
+all eight separate,polynomial degree 2,277,40800,0.678921568627451,3.1750616999343038,n+ne+e+se+s+sw+w+nw
+best pooled subset,linear,301,40800,0.7377450980392157,0.1449023000895977,n+ne+se+s+sw+w+nw
+best separate subset,linear,305,40800,0.7475490196078431,0.24597549997270107,n+se+s+sw+w+nw
+baseline axial mean,linear,317,40800,0.7769607843137255,0.15352160017937422,

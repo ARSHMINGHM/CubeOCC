@@ -30,6 +30,7 @@ This vault is the living project specification. It separates **confirmed decisio
 - [[07_02_SENDER_BITSTREAM_TESTING]]
 - [[07_03_SENDER_FRAME_MAPPING]]
 - [[07_04_SENDER_FRAME_PLAYER]]
+- [[15_25_FPGA_UART_OUTPUT_AND_SIM_DECODER]]
 - [[07_05_FULL_FRAME_GENERATION_WALKTHROUGH]]
 
 ### Simulation, experiments, and planning
